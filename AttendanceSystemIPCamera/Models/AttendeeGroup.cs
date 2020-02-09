@@ -8,8 +8,8 @@ namespace AttendanceSystemIPCamera.Models
     public class AttendeeGroup
     {
         public int AttendeeId { get; set; }
-        public Attendee Attendee { get; set; }
+        public virtual Attendee Attendee { get; set; }
         public int GroupId { get; set; }
-        public Group Group { get; set; }
+        public virtual Group Group { get; set; }
     }
 }

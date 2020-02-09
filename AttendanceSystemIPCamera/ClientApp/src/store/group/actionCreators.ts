@@ -4,6 +4,8 @@ import { getGroups } from "../../services/group";
 import { ThunkDispatch } from "redux-thunk";
 import { AppThunkAction } from "..";
 import { AnyAction } from "redux";
+import PaginatedList from "../../models/PaginatedList";
+import GroupSearch from "../../models/GroupSearch";
 
 export const ACTIONS = {
     START_REQUEST_GROUPS: 'START_REQUEST_GROUPS',
@@ -11,9 +13,10 @@ export const ACTIONS = {
     RECEIVE_GROUPS_DATA: 'RECEIVE_GROUPS_DATA'
 }
 
-function startRequestGroups() {
+function startRequestGroups(groupSearch: GroupSearch) {
     return {
-        type: ACTIONS.START_REQUEST_GROUPS
+        type: ACTIONS.START_REQUEST_GROUPS,
+        groupSearch
     };
 }
 
@@ -24,17 +27,18 @@ function stopRequestGroupsWithError(errors: any[]) {
     };
 }
 
-function receiveGroupsData(groups: Group[]) {
+function receiveGroupsData(paginatedGroupList: PaginatedList<Group>) {
+    console.log(paginatedGroupList);
     return {
         type: ACTIONS.RECEIVE_GROUPS_DATA,
-        groups
+        paginatedGroupList
     };
 }
 
-const requestGroups = (): AppThunkAction => async (dispatch, getState) => {
-    dispatch(startRequestGroups());
+const requestGroups = (groupSearch: GroupSearch): AppThunkAction => async (dispatch, getState) => {
+    dispatch(startRequestGroups(groupSearch));
 
-    const apiResponse: ApiResponse = await getGroups();
+    const apiResponse: ApiResponse = await getGroups(groupSearch);
     if (apiResponse.success) {
         dispatch(receiveGroupsData(apiResponse.data));
     } else {

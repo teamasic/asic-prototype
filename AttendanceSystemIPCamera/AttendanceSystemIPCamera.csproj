@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.1">
@@ -33,9 +34,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\components\GroupCard.tsx" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
+    <None Remove="ClientApp\src\models\Attendee.ts" />
+    <None Remove="ClientApp\src\models\Group - Copy.ts" />
     <None Remove="ClientApp\src\models\Group.ts" />
+    <None Remove="ClientApp\src\models\Session.ts" />
     <None Remove="ClientApp\src\services\group.ts" />
+    <None Remove="ClientApp\src\services\session.ts" />
     <None Remove="ClientApp\src\store\group\actionCreators.ts" />
     <None Remove="ClientApp\src\store\group\reducers.ts" />
     <None Remove="ClientApp\src\store\group\state.ts" />
@@ -50,8 +56,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\components\GroupCard.tsx" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\Attendee.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\models\Session.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\Group.ts" />
+    <TypeScriptCompile Include="ClientApp\src\services\session.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\group.ts" />
     <TypeScriptCompile Include="ClientApp\src\store\group\actionCreators.ts">
       <SubType>Code</SubType>
@@ -60,6 +76,15 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\store\group\state.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ClientApp\src\models\Attendee.js">
+      <DependentUpon>Attendee.ts</DependentUpon>
+    </None>
+    <None Update="ClientApp\src\models\Attendee.js.map">
+      <DependentUpon>Attendee.js</DependentUpon>
+    </None>
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

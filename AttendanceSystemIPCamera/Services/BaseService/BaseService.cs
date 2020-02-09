@@ -1,200 +1,83 @@
 ﻿using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
+using AttendanceSystemIPCamera.Repositories;
 using AttendanceSystemIPCamera.Repositories.UnitOfWork;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Services.BaseService
 {
-    public class BaseService<TEntity, TViewModel>: IBaseService<TEntity, TViewModel>
-        where TEntity : class, new()
-        where TViewModel : BaseViewModel<TEntity>, new()
+    public class BaseService<T>: IBaseService<T>
+        where T : class, BaseEntity
     {
-        private IUnitOfWork unitOfWork;
-        private IMapper mapper;
-        private DbContext dbContext;
+        protected readonly MyUnitOfWork unitOfWork;
+        protected readonly DbContext dbContext;
+        protected readonly IRepository<T> repository;
 
-        public IUnitOfWork UnitOfWork { get => unitOfWork; }
-        public IMapper Mapper { get => mapper; }
-
-        private DbSet<TEntity> selfDbSet;
-
-        public DbSet<TEntity> SelfDbSet { get => selfDbSet; }
-
-        public BaseService(IUnitOfWork unitOfWork, IMapper mapper)
+        public BaseService(MyUnitOfWork unitOfWork)
         {
             this.unitOfWork = unitOfWork;
             this.dbContext = unitOfWork.DbContext;
-            this.selfDbSet = this.dbContext.Set<TEntity>();
-            this.mapper = mapper;
+            this.repository = unitOfWork.GetRepository<T>();
         }
 
-        public TViewModel FindById(int id)
+        public async Task<T> Add(T entity)
         {
-            var entity = selfDbSet.Find(id);
-            return CreateViewModel(entity);
+            await repository.Add(entity);
+            unitOfWork.Commit();
+            return entity;
         }
 
-        public async Task<TViewModel> FindByIdAsync(int id)
+        public async Task Add(IEnumerable<T> entities)
         {
-            var entity = await selfDbSet.FindAsync(id);
-            return CreateViewModel(entity);
+            await repository.Add(entities);
+            unitOfWork.Commit();
         }
 
-        public TViewModel FindById<TKey>(TKey id)
+        public void Delete(T entity)
         {
-            var entity = selfDbSet.Find(id);
-            return CreateViewModel(entity);
+            repository.Delete(entity);
+            unitOfWork.Commit();
         }
 
-        public async Task<TViewModel> FindByIdAsync<TKey>(TKey id)
+        public void Delete(object id)
         {
-            var entity = await selfDbSet.FindAsync(id);
-            return CreateViewModel(entity);
+            repository.Delete(id);
+            unitOfWork.Commit();
         }
 
-        public IQueryable<TViewModel> GetAll()
+        public void Delete(IEnumerable<T> entities)
         {
-            var entities = GetAllAsNoTracking().ToList();
-            return entities.Select(entity => CreateViewModel(entity)).AsQueryable();
+            repository.Delete(entities);
+            unitOfWork.Commit();
         }
 
-        public IQueryable<TViewModel> Get(Expression<Func<TEntity, bool>> predicate)
+        public async Task<IEnumerable<T>> GetAll()
         {
-            return GetAsNoTracking(predicate).Select(entity => CreateViewModel(entity));
+            return await repository.GetAll();
         }
 
-        public TViewModel FirstOrDefault()
+        public async Task<T> GetById(object id)
         {
-            var e = GetAllAsNoTracking().FirstOrDefault();
-            return CreateViewModel(e);
+            return await repository.GetById(id);
         }
 
-        public TViewModel FirstOrDefault(Expression<Func<TEntity, bool>> predicate)
+        public void Update(T entity)
         {
-            var e = GetAsNoTracking(predicate).FirstOrDefault();
-            return CreateViewModel(e);
+            repository.Update(entity);
+            unitOfWork.Commit();
         }
 
-        public async Task<TViewModel> FirstOrDefaultAsync()
+        public void Update(IEnumerable<T> entities)
         {
-            var e = await GetAllAsNoTracking().FirstOrDefaultAsync();
-            return CreateViewModel(e);
-        }
-        public async Task<TViewModel> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
-        {
-            var e = await GetAsNoTracking(predicate).FirstOrDefaultAsync();
-            return CreateViewModel(e);
-        }
-
-        protected IQueryable<TEntity> GetAllAsNoTracking()
-        {
-            return selfDbSet.AsNoTracking();
-        }
-        private IQueryable<TEntity> GetAsNoTracking(Expression<Func<TEntity, bool>> predicate)
-        {
-            return selfDbSet.AsNoTracking().Where(predicate);
-        }
-        protected TEntity CreateEntity(TViewModel viewModel)
-        {
-            if (viewModel == null) return null;
-            viewModel.SetMapper(Mapper);
-            return viewModel.ToEntity();
-        }
-        protected TViewModel CreateViewModel(TEntity entity)
-        {
-            if (entity == null)
-            {
-                return null;
-            }
-            TViewModel vModel = new TViewModel();
-            vModel.SetMapper(mapper);
-            vModel.CopyFromEntity(entity);
-            return vModel;
-        }
-
-        public TViewModel Create(TViewModel viewModel)
-        {
-            var e = CreateEntity(viewModel);
-            NormalizeToCreate(e);
-            selfDbSet.Add(e);
-            dbContext.SaveChanges();
-            return CreateViewModel(e);
-        }
-        private void NormalizeToCreate(TEntity entity)
-        {
-            AddDeleted(entity);
-            AddDateTimeCreated(entity);
-        }
-
-        public async Task<TViewModel> CreateAsync(TViewModel viewModel)
-        {
-            var e = CreateEntity(viewModel);
-            NormalizeToCreate(e);
-            await selfDbSet.AddAsync(e);
-            await dbContext.SaveChangesAsync();
-            return CreateViewModel(e);
-        }
-        private void AddDeleted(TEntity entity)
-        {
-            if (typeof(IDeletable).IsAssignableFrom(typeof(TEntity)))
-            {
-                ((IDeletable)entity).Deleted = false;
-            }
-        }
-        private void AddDateTimeCreated(TEntity entity)
-        {
-            if (typeof(IHasDateTimeCreated).IsAssignableFrom(typeof(TEntity)))
-            {
-                ((IHasDateTimeCreated)entity).DateTimeCreated = DateTime.UtcNow;
-            }
-        }
-        public TViewModel Update(TViewModel viewModel)
-        {
-            var entity = CreateEntity(viewModel);
-            selfDbSet.Update(entity);
-            dbContext.SaveChanges();
-            return CreateViewModel(entity);
-        }
-
-        public async Task<TViewModel> UpdateAsync(TViewModel viewModel)
-        {
-            var entity = CreateEntity(viewModel);
-            selfDbSet.Update(entity);
-            await dbContext.SaveChangesAsync();
-            return CreateViewModel(entity);
-        }
-
-        public void DeleteByObj(TViewModel viewModel)
-        {
-            var e = CreateEntity(viewModel);
-            selfDbSet.Remove(e);
-            dbContext.SaveChanges();
-        }
-
-        public async Task DeleteByObjAsync(TViewModel viewModel)
-        {
-            var e = CreateEntity(viewModel);
-            selfDbSet.Remove(e);
-            await dbContext.SaveChangesAsync();
-        }
-
-        public void DeleteByKey<TKey>(TKey id)
-        {
-            var entity = selfDbSet.Find(id);
-            selfDbSet.Remove(entity);
-            dbContext.SaveChanges();
-        }
-
-        public async Task DeleteByKeyAsync<TKey>(TKey id)
-        {
-            var entity = selfDbSet.Find(id);
-            selfDbSet.Remove(entity);
-            await dbContext.SaveChangesAsync();
+            repository.Update(entities);
+            unitOfWork.Commit();
         }
     }
 }
