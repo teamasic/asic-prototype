@@ -39,6 +39,7 @@
     <None Remove="ClientApp\src\models\Attendee.ts" />
     <None Remove="ClientApp\src\models\Group - Copy.ts" />
     <None Remove="ClientApp\src\models\Group.ts" />
+    <None Remove="ClientApp\src\models\Record.ts" />
     <None Remove="ClientApp\src\models\Session.ts" />
     <None Remove="ClientApp\src\services\group.ts" />
     <None Remove="ClientApp\src\services\session.ts" />
@@ -58,6 +59,9 @@
   <ItemGroup>
     <TypeScriptCompile Include="ClientApp\src\components\GroupCard.tsx" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\Record.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\Attendee.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -79,6 +83,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="ClientApp\src\models\Attendee - Copy.js">
+      <DependentUpon>Attendee.ts</DependentUpon>
+    </None>
+    <None Update="ClientApp\src\models\Attendee - Copy.js.map">
+      <DependentUpon>Attendee.js</DependentUpon>
+    </None>
     <None Update="ClientApp\src\models\Attendee.js">
       <DependentUpon>Attendee.ts</DependentUpon>
     </None>
