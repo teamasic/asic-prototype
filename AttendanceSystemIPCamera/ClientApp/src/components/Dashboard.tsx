@@ -6,7 +6,7 @@ import Group from '../models/Group';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
-import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col } from 'antd';
+import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination } from 'antd';
 import { Typography } from 'antd';
 import { Input } from 'antd';
 import classNames from 'classnames';
@@ -43,6 +43,17 @@ class Dashboard extends React.PureComponent<GroupProps> {
             nameContains: value
         };
         this.props.requestGroups(updatedGroupSearch);
+    }
+
+    public pageChange(page?: number, pageSize?: number) {
+        if (page != null && pageSize != null) {
+            var updatedGroupSearch = {
+                ...this.props.groupSearch,
+                page,
+                pageSize
+            };
+            this.props.requestGroups(updatedGroupSearch);
+        }
     }
 
     public render() {
@@ -113,20 +124,26 @@ class Dashboard extends React.PureComponent<GroupProps> {
 
     private renderGroupsTable() {
         return (
-            <List
-                grid={{
-                    gutter: 32,
-                    xs: 1,
-                    sm: 2,
-                    md: 3
-                }}
-                dataSource={this.props.paginatedGroupList!.list}
-                renderItem={group => (
-                    <List.Item>
-                        <GroupCard group={group} />
-                    </List.Item>
-                )}
-            />
+            <div>
+                <List
+                    grid={{
+                        gutter: 32,
+                        xs: 1,
+                        sm: 2,
+                        md: 3
+                    }}
+                    dataSource={this.props.paginatedGroupList!.list}
+                    renderItem={group => (
+                        <List.Item>
+                            <GroupCard group={group} />
+                        </List.Item>
+                    )}
+                />
+                <div className="pagination-container">
+                    <Pagination onChange={(page, pageSize) => this.pageChange(page, pageSize)}
+                        defaultCurrent={1} total={this.props.paginatedGroupList!.total} hideOnSinglePage={true} />
+                </div>
+            </div>
         );
     }
 }
