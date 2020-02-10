@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Models
 {
-    public class Group: BaseEntity, IDeletable, IHasDateTimeCreated
+    public class Group : BaseEntity, IDeletable, IHasDateTimeCreated
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

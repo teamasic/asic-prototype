@@ -3,8 +3,10 @@ using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using AttendanceSystemIPCamera.Framework.Database;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
+using AttendanceSystemIPCamera.Repositories;
 using AttendanceSystemIPCamera.Repositories.UnitOfWork;
 using AttendanceSystemIPCamera.Services.GroupService;
+using AttendanceSystemIPCamera.Services.SessionService;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,7 +32,10 @@ namespace AttendanceSystemIPCamera
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddControllersWithViews()
+                .AddNewtonsoftJson(options => {
+                    options.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects;
+                });
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -105,9 +110,22 @@ namespace AttendanceSystemIPCamera
             // services.AddSingleton<IMapper>(Mapper.Instance);
 
             services.AddScoped<DbContext, MainDbContext>();
-            services.AddScoped<IGroupService, GroupService>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<MyUnitOfWork>();
             services.AddScoped<GroupValidation>();
+
+            SetupServices(services);
+            SetupRepositories(services);
+        }
+
+        private void SetupServices(IServiceCollection services)
+        {
+            services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<ISessionService, SessionService>();
+        }
+        private void SetupRepositories(IServiceCollection services)
+        {
+            services.AddScoped<IGroupRepository, GroupRepository>();
+            services.AddScoped<ISessionRepository, SessionRepository>();
         }
 
         private void SetupBackgroundService(IServiceCollection services)

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using AttendanceSystemIPCamera.Framework.Database;
+using AttendanceSystemIPCamera.Models;
 
 namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
 {

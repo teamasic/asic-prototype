@@ -1,4 +1,6 @@
 ﻿using AttendanceSystemIPCamera.Framework.ViewModels;
+using AttendanceSystemIPCamera.Models;
+using Microsoft.EntityFrameworkCore.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,28 +9,22 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Services.BaseService
 {
-    public interface IBaseService<TEntity, TViewModel>
-        where TEntity : class, new()
-        where TViewModel : BaseViewModel<TEntity>, new()
+    public interface IBaseService<T>
+        where T : class, BaseEntity
     {
-        TViewModel FindById(int id);
-        Task<TViewModel> FindByIdAsync(int id);
-        TViewModel FindById<TKey>(TKey id);
-        Task<TViewModel> FindByIdAsync<TKey>(TKey id);
+        Task<IEnumerable<T>> GetAll();
+        Task<T> GetById(object id);
 
-        IQueryable<TViewModel> GetAll();
-        IQueryable<TViewModel> Get(Expression<Func<TEntity, bool>> predicate);
+        Task<T> Add(T entity);
+        Task Add(IEnumerable<T> entities);
 
-        TViewModel FirstOrDefault();
-        TViewModel FirstOrDefault(Expression<Func<TEntity, bool>> predicate);
-        Task<TViewModel> FirstOrDefaultAsync();
-        TViewModel Create(TViewModel viewModel);
-        Task<TViewModel> CreateAsync(TViewModel viewModel);
-        TViewModel Update(TViewModel viewModel);
-        Task<TViewModel> UpdateAsync(TViewModel viewModel);
-        void DeleteByObj(TViewModel viewModel);
-        Task DeleteByObjAsync(TViewModel viewModel);
-        void DeleteByKey<TKey>(TKey id);
-        Task DeleteByKeyAsync<TKey>(TKey id);
+
+        void Delete(T entity);
+        void Delete(object id);
+        void Delete(IEnumerable<T> entities);
+
+
+        void Update(T entity);
+        void Update(IEnumerable<T> entities);
     }
 }
