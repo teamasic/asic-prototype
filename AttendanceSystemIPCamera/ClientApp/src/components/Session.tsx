@@ -29,6 +29,10 @@ class Session extends React.PureComponent<SessionProps> {
         this.ensureDataFetched();
     }
 
+    public searchBy(query: string) {
+
+    }
+
     public render() {
         const columns = [
             {
@@ -79,6 +83,7 @@ class Session extends React.PureComponent<SessionProps> {
                 <div className="title-container">
                     <Title className="title" level={3}>Session</Title>
                 </div>
+                <Search className="search-input" placeholder="Search..." onSearch={value => this.searchBy(value)} enterButton />
                 <Table columns={columns} dataSource={this.props.activeSession!.attendees} />
             </React.Fragment>
         );
