@@ -114,6 +114,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<DbContext, MainDbContext>();
             services.AddScoped<MyUnitOfWork>();
             services.AddScoped<GroupValidation>();
+            services.AddSignalR();
 
             SetupServices(services);
             SetupRepositories(services);
@@ -125,6 +126,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<ISessionService, SessionService>();
             services.AddScoped<IRecordService, RecordService>();
             services.AddScoped<IAttendeeService, AttendeeService>();
+            services.AddScoped<IRealTimeService, RealTimeService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
