@@ -13,27 +13,17 @@ const unloadedState: GroupsState = {
         page: 1,
         pageSize: 15
     },
-    activeSession: {
+    activeSession: { // temporary, might be restructured
         id: 1,
         startTime: new Date(),
         attendees: [{
             id: 1,
+            code: 'SE63147',
             name: 'Strawberry'
         }, {
             id: 2,
+            code: 'SE63147',
             name: 'Blackberry'
-        }, {
-            id: 3,
-            name: 'Winterberry'
-        }, {
-            id: 4,
-            name: 'Bitterberry'
-        }, {
-            id: 5,
-            name: 'Blueberry'
-        }, {
-            id: 6,
-            name: 'Mulberry'
         }]
     }
 };

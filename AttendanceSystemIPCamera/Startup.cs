@@ -7,6 +7,7 @@ using AttendanceSystemIPCamera.Repositories;
 using AttendanceSystemIPCamera.Repositories.UnitOfWork;
 using AttendanceSystemIPCamera.Services.GroupService;
 using AttendanceSystemIPCamera.Services.SessionService;
+using AttendanceSystemIPCamera.Services.RecordService;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using AttendanceSystemIPCamera.Services.AttendeeService;
 
 namespace AttendanceSystemIPCamera
 {
@@ -134,11 +136,15 @@ namespace AttendanceSystemIPCamera
         {
             services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<ISessionService, SessionService>();
+            services.AddScoped<IRecordService, RecordService>();
+            services.AddScoped<IAttendeeService, AttendeeService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<ISessionRepository, SessionRepository>();
+            services.AddScoped<IRecordRepository, RecordRepository>();
+            services.AddScoped<IAttendeeRepository, AttendeeRepository>();
         }
 
         private void SetupBackgroundService(IServiceCollection services)
