@@ -47,6 +47,7 @@ namespace AttendanceSystemIPCamera
             SetupAutoMapper(services);
             SetupDependencyInjection(services);
             SetupBackgroundService(services);
+            setupSwagger(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,6 +68,9 @@ namespace AttendanceSystemIPCamera
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ASIC API"));
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
@@ -86,6 +90,15 @@ namespace AttendanceSystemIPCamera
                 }
             });
         }
+
+        private void setupSwagger(IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "ASIC API", Version = "v1" });
+            });
+        }
+
 
         private void SetupDatabaseContext(IServiceCollection services)
         {

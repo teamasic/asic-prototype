@@ -24,13 +24,18 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
+    <Compile Remove="GPUCache\**" />
     <Content Remove="$(SpaRoot)**" />
+    <Content Remove="GPUCache\**" />
+    <EmbeddedResource Remove="GPUCache\**" />
     <None Remove="$(SpaRoot)**" />
+    <None Remove="GPUCache\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
 
@@ -46,6 +51,7 @@
     <None Remove="ClientApp\src\store\group\actionCreators.ts" />
     <None Remove="ClientApp\src\store\group\reducers.ts" />
     <None Remove="ClientApp\src\store\group\state.ts" />
+    <None Remove="debug.log" />
   </ItemGroup>
 
   <ItemGroup>
