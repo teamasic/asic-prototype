@@ -8,6 +8,7 @@ import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import { Card, Button, Dropdown, Icon, Menu, Row, Col } from 'antd';
 import { Typography } from 'antd';
+import format from 'date-fns/format';
 import classNames from 'classnames';
 
 const { Title } = Typography;
@@ -27,7 +28,8 @@ type GroupProps =
 
 class GroupCard extends React.PureComponent<GroupProps> {
     public render() {
-        var group = this.props.group;
+        const group = this.props.group;
+        const lastSessionTime = group.sessions.length > 0 ? group.sessions[group.sessions.length - 1].startTime : null;
         const menu = (
             <Menu onClick={(click: any) => console.log(click)}>
                 <Menu.Item key="1">
@@ -58,7 +60,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                         <Icon type="calendar" /><span>{group.sessions.length} {group.sessions.length > 1 ? 'sessions' : 'session'}</span>
                     </div>
                     <div className="description">
-                        <Icon type="history" /><span>Last session: Today</span>
+                        <Icon type="history" /><span>Last session: {this.formatLastSessionTime(lastSessionTime)}</span>
                     </div>
                 </div>
                 <div className="actions">
@@ -67,6 +69,13 @@ class GroupCard extends React.PureComponent<GroupProps> {
                 </div>
             </Card>
         );
+    }
+
+    private formatLastSessionTime(time: Date | null): string {
+        if (time != null) {
+            return format(new Date(time), 'EEEE, MMMM d, yyyy');
+        }
+        return 'Never';
     }
 }
 
