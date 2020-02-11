@@ -11,7 +11,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using AttendanceSystemIPCamera.Repositories;
-using AttendanceSystemIPCamera.Framework.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
 namespace AttendanceSystemIPCamera.Services.RecordService
