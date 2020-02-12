@@ -6,11 +6,10 @@ import Group from '../models/Group';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
-import { Card, Button, Dropdown, Icon, Menu, Row, Col } from 'antd';
-import { Typography } from 'antd';
-import classNames from 'classnames';
-
+import { Card, Button, Dropdown, Icon, Menu, Row, Col, Input, InputNumber } from 'antd';
+import { Typography, Modal, TimePicker  } from 'antd';
 const { Title } = Typography;
+import * as moment from 'moment'
 
 
 interface Props {
@@ -26,8 +25,53 @@ type GroupProps =
 
 
 class GroupCard extends React.PureComponent<GroupProps> {
+    public state = {
+        modelOpen: false,
+        startTime: moment(),
+        duration: 30,
+    };
+
+    private takeAttendance = () => {
+        this.setState({
+            modelOpen: true,
+            startTime: moment()
+        })
+    };
+
+    private handleModelOk = () => {
+        this.setState({
+            modelOpen: false,
+        })
+    }
+
+    private handleModelCancel = () => {
+        this.setState({
+            modelOpen: false,
+        })
+    }
+
+    private handleChangeStartTime = (time: any, timeString: any) => {
+        this.setState({
+            startTime: time,
+        })
+    }
+
+    private handleChangeDuration = (duration: number | undefined) => {
+        if (duration) {
+            this.setState({
+                duration: duration
+            })
+        }
+        else {
+            this.setState({
+                duration: 30
+            })
+        }
+    }
     public render() {
         var group = this.props.group;
+        const { startTime, duration } = { ...this.state };
+        const endTime = moment(startTime).add(duration, "minutes");
         const menu = (
             <Menu onClick={(click: any) => console.log(click)}>
                 <Menu.Item key="1">
@@ -63,7 +107,30 @@ class GroupCard extends React.PureComponent<GroupProps> {
                 </div>
                 <div className="actions">
                     <Button className="past-button" type="link">Past sessions</Button>
-                    <Button className="take-attendance-button" type="primary">Take attendance</Button>
+                    <Button className="take-attendance-button" type="primary" onClick={this.takeAttendance}>Take attendance</Button>
+                    <Modal
+                        title="Input session for attendance"
+                        visible={this.state.modelOpen}
+                        onOk={this.handleModelOk}
+                        onCancel={this.handleModelCancel}
+                        okText="Start"
+                    >
+                        <div>
+                            <Row type="flex" justify="start" align="middle" gutter={[16,16]}> 
+                                <Col span={4}>Start time</Col>
+                                <Col span={7}><TimePicker onChange={this.handleChangeStartTime} value={startTime} format={'HH:mm'} /></Col>
+                            </Row>
+                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
+                                <Col span={4}>Duration</Col>
+                                <Col><InputNumber min={5} max={90} value={duration} onChange={this.handleChangeDuration} /></Col>
+                                <Col> minutes</Col>
+                            </Row>
+                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
+                                <Col span={4}>End time</Col>
+                                <Col span={7}><TimePicker value={endTime} placeholder="" disabled format={'HH:mm'} /></Col>
+                            </Row>
+                        </div>
+                    </Modal>
                 </div>
             </Card>
         );

@@ -47,6 +47,5 @@ const requestGroups = (groupSearch: GroupSearch): AppThunkAction => async (dispa
 }
 
 export const groupActionCreators = {
-    startRequestGroups,
     requestGroups
 };
