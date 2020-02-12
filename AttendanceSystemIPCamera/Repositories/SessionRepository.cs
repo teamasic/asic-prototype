@@ -21,5 +21,14 @@ namespace AttendanceSystemIPCamera.Repositories
         public SessionRepository(DbContext context) : base(context)
         {
         }
+        public new async Task<Session> GetById(object id)
+        {
+            return dbSet
+                .Include(s => s.Records)
+                    .ThenInclude(r => r.Attendee)
+                .Include(s => s.Group)
+                    .ThenInclude(g => g.AttendeeGroups)
+                .FirstOrDefault(x => (int) id == x.Id);
+        }
     }
 }
