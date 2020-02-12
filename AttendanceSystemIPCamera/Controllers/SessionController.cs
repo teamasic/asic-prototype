@@ -36,11 +36,19 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var session = mapper.Map<Session>(sessionStarterViewModel);
-                session.Active = true;
-                session.Group = await groupService.GetById(sessionStarterViewModel.GroupId);
-                var sessionAdded = await sessionService.Add(session);
-                return mapper.Map<SessionViewModel>(sessionAdded);
+                var sessionAlreadyRunning = sessionService.isSessionRunning();
+                if (sessionAlreadyRunning)
+                {
+                    return null;
+                }
+                else
+                {
+                    var session = mapper.Map<Session>(sessionStarterViewModel);
+                    session.Active = true;
+                    session.Group = await groupService.GetById(sessionStarterViewModel.GroupId);
+                    var sessionAdded = await sessionService.Add(session);
+                    return mapper.Map<SessionViewModel>(sessionAdded);
+                }
             });
         }
     }

@@ -16,6 +16,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 {
     public interface ISessionService : IBaseService<Session>
     {
+        bool isSessionRunning();
     }
 
     public class SessionService: BaseService<Session>, ISessionService
@@ -38,6 +39,11 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             });
             groupRepository.Update(group);
             unitOfWork.Commit();
+        }
+
+        public bool isSessionRunning()
+        {
+            return sessionRepository.isSessionRunning();
         }
     }
 }
