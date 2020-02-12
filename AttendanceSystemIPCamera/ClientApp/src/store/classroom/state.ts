@@ -5,6 +5,5 @@ import Session from "../../models/Session";
 import Classroom from "../../models/classroom";
 
 export interface ClassroomsState {
-    isLoading: boolean;
     classroomList: Classroom[];
 }

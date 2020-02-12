@@ -16,6 +16,7 @@ namespace AttendanceSystemIPCamera.Framework.AutoMapperProfiles
             CreateMap<Attendee, AttendeeViewModel>().ReverseMap();
             CreateMap<Session, SessionViewModel>().ReverseMap();
             CreateMap<Classroom, ClassroomViewModel>().ReverseMap();
+            CreateMap<Session, SessionStarterViewModel>().ReverseMap();
         }
     }
 }

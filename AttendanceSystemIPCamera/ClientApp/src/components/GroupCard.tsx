@@ -6,20 +6,31 @@ import Group from '../models/Group';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
-import { Card, Button, Dropdown, Icon, Menu, Row, Col, Input, InputNumber } from 'antd';
-import { Typography, Modal, TimePicker  } from 'antd';
-const { Title } = Typography;
+import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber } from 'antd';
+import { Typography, Modal, TimePicker } from 'antd';
 import * as moment from 'moment'
+import Classroom from '../models/classroom';
+import {startSession} from '../services/session';
+const { Title } = Typography;
+const { Option } = Select;
 
 
 interface Props {
     group: Group;
+    classroomList: Classroom[];
+}
+interface CurrentState {
+    modelOpen: boolean,
+    startTime: moment.Moment,
+    classroom: Classroom,
+    duration: number
 }
 
 // At runtime, Redux will merge together...
 type GroupProps =
-    Props &
-    GroupsState // ... state we've requested from the Redux store
+    Props
+    & CurrentState
+    & GroupsState // ... state we've requested from the Redux store
     & typeof groupActionCreators // ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
@@ -29,6 +40,8 @@ class GroupCard extends React.PureComponent<GroupProps> {
         modelOpen: false,
         startTime: moment(),
         duration: 30,
+        classroomName: "",
+        rtspString: "",
     };
 
     private takeAttendance = () => {
@@ -42,6 +55,11 @@ class GroupCard extends React.PureComponent<GroupProps> {
         this.setState({
             modelOpen: false,
         })
+        const {startTime, duration, classroomName, rtspString} = {...this.state};
+        const groupId = this.props.group.id;
+        let startTimeString = startTime.format('YYYY-MM-DD HH:mm');
+        console.log({startTime: startTimeString, duration, rtspString, classroomName, groupId});
+        startSession({startTime: startTimeString, duration, rtspString, classroomName, groupId});
     }
 
     private handleModelCancel = () => {
@@ -67,6 +85,21 @@ class GroupCard extends React.PureComponent<GroupProps> {
                 duration: 30
             })
         }
+    }
+    private onChange = (value: any) => {
+        let currentClassroom = this.props.classroomList.filter(c => c.id == value)[0];
+        this.setState({
+            classroomName: currentClassroom.name,
+            rtspString: currentClassroom.rtspString
+        })
+    }
+    private renderClassroomOptions = () => {
+        const { classroomList } = this.props;
+        console.log(classroomList);
+        const classroomOptions = classroomList.map(classroom => {
+            return <Option key={classroom.id} value={classroom.id}>{classroom.name}</Option>
+        })
+        return classroomOptions;
     }
     public render() {
         var group = this.props.group;
@@ -116,18 +149,34 @@ class GroupCard extends React.PureComponent<GroupProps> {
                         okText="Start"
                     >
                         <div>
-                            <Row type="flex" justify="start" align="middle" gutter={[16,16]}> 
+                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
                                 <Col span={4}>Start time</Col>
                                 <Col span={7}><TimePicker onChange={this.handleChangeStartTime} value={startTime} format={'HH:mm'} /></Col>
                             </Row>
                             <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
                                 <Col span={4}>Duration</Col>
                                 <Col><InputNumber min={5} max={90} value={duration} onChange={this.handleChangeDuration} /></Col>
-                                <Col> minutes</Col>
                             </Row>
                             <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
                                 <Col span={4}>End time</Col>
                                 <Col span={7}><TimePicker value={endTime} placeholder="" disabled format={'HH:mm'} /></Col>
+                            </Row>
+                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
+                                <Col span={4}>Choose room</Col>
+                                <Col span={7}>
+                                    <Select
+                                        showSearch
+                                        style={{ width: 200 }}
+                                        placeholder="Select a person"
+                                        optionFilterProp="children"
+                                        onChange={this.onChange}
+                                        filterOption={(input: any, option: any) =>
+                                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                        }
+                                    >
+                                        {this.renderClassroomOptions()}
+                                    </Select>,
+                                </Col>
                             </Row>
                         </div>
                     </Modal>

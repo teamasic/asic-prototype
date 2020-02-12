@@ -111,7 +111,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
 
     private ensureDataFetched() {
         this.props.requestGroups(this.props.groupSearch);
-        //this.props.requestClassrooms();
+        this.props.requestClassrooms();
     }
 
     private hasGroups(): boolean {
@@ -141,7 +141,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
                     dataSource={this.props.paginatedGroupList!.list}
                     renderItem={group => (
                         <List.Item>
-                            <GroupCard group={group} />
+                            <GroupCard group={group} classroomList={this.props.classroomList} />
                         </List.Item>
                     )}
                 />
