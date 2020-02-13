@@ -9,7 +9,7 @@ import { GroupsState } from '../store/group/state';
 import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber } from 'antd';
 import { Typography, Modal, TimePicker } from 'antd';
 import * as moment from 'moment'
-import Classroom from '../models/classroom';
+import Room from '../models/Room';
 import {startSession} from '../services/session';
 const { Title } = Typography;
 const { Option } = Select;
@@ -17,19 +17,12 @@ const { Option } = Select;
 
 interface Props {
     group: Group;
-    classroomList: Classroom[];
-}
-interface CurrentState {
-    modelOpen: boolean,
-    startTime: moment.Moment,
-    classroom: Classroom,
-    duration: number
+    roomList: Room[];
 }
 
 // At runtime, Redux will merge together...
 type GroupProps =
     Props
-    & CurrentState
     & GroupsState // ... state we've requested from the Redux store
     & typeof groupActionCreators // ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
@@ -40,7 +33,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
         modelOpen: false,
         startTime: moment(),
         duration: 30,
-        classroomName: "",
+        roomName: "",
         rtspString: "",
     };
 
@@ -55,11 +48,11 @@ class GroupCard extends React.PureComponent<GroupProps> {
         this.setState({
             modelOpen: false,
         })
-        const {startTime, duration, classroomName, rtspString} = {...this.state};
+        const {startTime, duration, roomName, rtspString} = {...this.state};
         const groupId = this.props.group.id;
         let startTimeString = startTime.format('YYYY-MM-DD HH:mm');
-        console.log({startTime: startTimeString, duration, rtspString, classroomName, groupId});
-        startSession({startTime: startTimeString, duration, rtspString, classroomName, groupId});
+        console.log({startTime: startTimeString, duration, rtspString, roomName, groupId});
+        startSession({startTime: startTimeString, duration, rtspString, roomName, groupId});
     }
 
     private handleModelCancel = () => {
@@ -87,19 +80,19 @@ class GroupCard extends React.PureComponent<GroupProps> {
         }
     }
     private onChange = (value: any) => {
-        let currentClassroom = this.props.classroomList.filter(c => c.id == value)[0];
+        let currentRoom = this.props.roomList.filter(c => c.id == value)[0];
         this.setState({
-            classroomName: currentClassroom.name,
-            rtspString: currentClassroom.rtspString
+            roomName: currentRoom.name,
+            rtspString: currentRoom.rtspString
         })
     }
-    private renderClassroomOptions = () => {
-        const { classroomList } = this.props;
-        console.log(classroomList);
-        const classroomOptions = classroomList.map(classroom => {
-            return <Option key={classroom.id} value={classroom.id}>{classroom.name}</Option>
+    private renderRoomOptions = () => {
+        const { roomList } = this.props;
+        console.log(roomList);
+        const roomOptions = roomList.map(room => {
+            return <Option key={room.id} value={room.id}>{room.name}</Option>
         })
-        return classroomOptions;
+        return roomOptions;
     }
     public render() {
         var group = this.props.group;
@@ -166,15 +159,15 @@ class GroupCard extends React.PureComponent<GroupProps> {
                                 <Col span={7}>
                                     <Select
                                         showSearch
-                                        style={{ width: 200 }}
-                                        placeholder="Select a person"
+                                        style={{ width: 130 }}
+                                        placeholder="Select room"
                                         optionFilterProp="children"
                                         onChange={this.onChange}
                                         filterOption={(input: any, option: any) =>
                                             option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                         }
                                     >
-                                        {this.renderClassroomOptions()}
+                                        {this.renderRoomOptions()}
                                     </Select>,
                                 </Col>
                             </Row>

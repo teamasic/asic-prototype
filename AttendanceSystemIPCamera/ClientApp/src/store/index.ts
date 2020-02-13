@@ -1,13 +1,13 @@
 import { GroupsState } from './group/state';
 import GroupsReducer from './group/reducers';
-import ClassroomsReducer from './classroom/reducers';
+import RoomsReducer from './room/reducers';
 import { AnyAction } from 'redux';
-import { ClassroomsState } from './classroom/state';
+import { RoomsState } from './room/state';
 
 // The top-level state object
 export interface ApplicationState {
     groups: GroupsState | undefined;
-    classrooms: ClassroomsState | undefined;
+    rooms: RoomsState | undefined;
 }
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
@@ -15,7 +15,7 @@ export interface ApplicationState {
 // acts on the corresponding ApplicationState property type.
 export const reducers = {
     groups: GroupsReducer,
-    classrooms: ClassroomsReducer,
+    rooms: RoomsReducer,
 };
 
 // This type can be used as a hint on action creators so that its 'dispatch' and 'getState' params are

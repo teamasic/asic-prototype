@@ -2,8 +2,8 @@
 import PaginatedList from "../../models/PaginatedList";
 import GroupSearch from "../../models/GroupSearch";
 import Session from "../../models/Session";
-import Classroom from "../../models/classroom";
+import Room from "../../models/Room";
 
-export interface ClassroomsState {
-    classroomList: Classroom[];
+export interface RoomsState {
+    roomList: Room[];
 }

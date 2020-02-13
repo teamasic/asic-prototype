@@ -15,7 +15,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
         public DbSet<Group> Groups { get; set; }
         public DbSet<Record> Records { get; set; }
         public DbSet<Session> Sessions { get; set; }
-        public DbSet<Classroom> Classrooms { get; set; }
+        public DbSet<Room> Rooms { get; set; }
 
         public MainDbContext(DbContextOptions<MainDbContext> options): base(options)
         { }

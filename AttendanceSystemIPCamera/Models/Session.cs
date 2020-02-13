@@ -16,7 +16,7 @@ namespace AttendanceSystemIPCamera.Models
         public int Duration { get; set; }
         public bool Active { get; set; }
         public string RtspString { get; set; }
-        public string ClassroomName { get; set; }
+        public string RoomName { get; set; }
         public Group Group { get; set; }
     }
 }

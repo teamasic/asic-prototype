@@ -2,7 +2,7 @@
 import Attendee from "./Attendee";
 import Record from "./Record";
 
-export default interface Classroom {
+export default interface Room {
     id: number;
     name: string;
     rtspString: string;

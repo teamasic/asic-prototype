@@ -13,17 +13,17 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace AttendanceSystemIPCamera.Repositories
 {
-    public interface IClassroomRepository : IRepository<Classroom>
+    public interface IRoomRepository : IRepository<Room>
     {
-        public Task<Classroom> GetClassroomByName(string name);
+        public Task<Room> GetRoomByName(string name);
     }
-    public class ClassroomRepository : Repository<Classroom>, IClassroomRepository
+    public class RoomRepository : Repository<Room>, IRoomRepository
     {
-        public ClassroomRepository(DbContext context) : base(context)
+        public RoomRepository(DbContext context) : base(context)
         {
         }
 
-        public async Task<Classroom> GetClassroomByName(string name)
+        public async Task<Room> GetRoomByName(string name)
         {
             return await dbSet.FirstOrDefaultAsync(c => c.Name.Equals(name));
         }

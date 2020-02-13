@@ -1,14 +1,14 @@
 ﻿import { Reducer, Action, AnyAction } from "redux";
-import { ClassroomsState } from "./state";
+import { RoomsState } from "./state";
 import { ACTIONS } from "./actionCreators";
 
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
-const unloadedState: ClassroomsState = {
-    classroomList: [],
+const unloadedState: RoomsState = {
+    roomList: [],
 };
 
-const reducers: Reducer<ClassroomsState> = (state: ClassroomsState | undefined, incomingAction: AnyAction): ClassroomsState => {
+const reducers: Reducer<RoomsState> = (state: RoomsState | undefined, incomingAction: AnyAction): RoomsState => {
     debugger;
     if (state === undefined) {
         return unloadedState;
@@ -18,7 +18,7 @@ const reducers: Reducer<ClassroomsState> = (state: ClassroomsState | undefined, 
         case ACTIONS.RECEIVE_CLASSROOMS_DATA:
             return {
                 ... state,
-                classroomList: action.classroomList
+                roomList: action.roomList
             };
     }
 

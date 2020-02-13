@@ -12,40 +12,40 @@ using AttendanceSystemIPCamera.Services.GroupService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
-using AttendanceSystemIPCamera.Services.ClassroomService;
+using AttendanceSystemIPCamera.Services.RoomService;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ClassroomController : BaseController
+    public class RoomController : BaseController
     {
-        private readonly IClassroomService classroomService;
+        private readonly IRoomService roomService;
         private readonly IMapper mapper;
-        public ClassroomController(IClassroomService classroomService, IMapper mapper)
+        public RoomController(IRoomService roomService, IMapper mapper)
         {
-            this.classroomService = classroomService;
+            this.roomService = roomService;
             this.mapper = mapper;
         }
 
         [HttpGet]
-        public Task<BaseResponse<IEnumerable<ClassroomViewModel>>> GetAllClassroom()
+        public Task<BaseResponse<IEnumerable<RoomViewModel>>> GetAllRoom()
         {
             return ExecuteInMonitoring(async () =>
             {
-                var classrooms = await classroomService.GetAll();
-                var classroomViewmodels = mapper.ProjectTo<Classroom, ClassroomViewModel>(classrooms);
-                return classroomViewmodels;
+                var rooms = await roomService.GetAll();
+                var roomViewmodels = mapper.ProjectTo<Room, RoomViewModel>(rooms);
+                return roomViewmodels;
             });
         }
 
         [HttpGet("search")]
-        public Task<BaseResponse<ClassroomViewModel>> GetByName([FromQuery] string name)
+        public Task<BaseResponse<RoomViewModel>> GetByName([FromQuery] string name)
         {
             return ExecuteInMonitoring(async () =>
             {
-                var classroom = await classroomService.GetClassroomByName(name);
-                return mapper.Map<ClassroomViewModel>(classroom);
+                var room = await roomService.GetRoomByName(name);
+                return mapper.Map<RoomViewModel>(room);
             });
         }
     }

@@ -22,7 +22,7 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
         private ISessionRepository sessionRepository;
         private IRecordRepository recordRepository;
         private IAttendeeRepository attendeeRepository;
-        private IClassroomRepository classroomRepository;
+        private IRoomRepository roomRepository;
 
         public IGroupRepository GroupRepository
         {
@@ -68,15 +68,15 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
                 return attendeeRepository;
             }
         }
-        public IClassroomRepository ClassroomRepository
+        public IRoomRepository RoomRepository
         {
             get
             {
-                if (classroomRepository == null)
+                if (roomRepository == null)
                 {
-                    classroomRepository = new ClassroomRepository(DbContext);
+                    roomRepository = new RoomRepository(DbContext);
                 }
-                return classroomRepository;
+                return roomRepository;
             }
         }
     }

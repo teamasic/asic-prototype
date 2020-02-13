@@ -12,7 +12,6 @@ using AttendanceSystemIPCamera.Services.GroupService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
-using AttendanceSystemIPCamera.Services.ClassroomService;
 using AttendanceSystemIPCamera.Services.SessionService;
 
 namespace AttendanceSystemIPCamera.Controllers

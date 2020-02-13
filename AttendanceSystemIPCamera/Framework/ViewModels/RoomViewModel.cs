@@ -1,15 +1,13 @@
-﻿using System;
+﻿using AttendanceSystemIPCamera.Models;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AttendanceSystemIPCamera.Models
+namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
-    public class Classroom: BaseEntity
+    public class RoomViewModel : BaseViewModel<Room>
     {
-        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
         public string RtspString { get; set; }

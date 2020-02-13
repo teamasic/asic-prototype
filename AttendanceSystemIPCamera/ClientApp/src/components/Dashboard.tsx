@@ -12,8 +12,8 @@ import { Input } from 'antd';
 import classNames from 'classnames';
 import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
-import { classroomActionCreators, requestClassrooms } from '../store/classroom/actionCreators';
-import { ClassroomsState } from '../store/classroom/state';
+import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
+import { RoomsState } from '../store/room/state';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -21,9 +21,9 @@ const { Title } = Typography;
 // At runtime, Redux will merge together...
 type GroupProps =
     GroupsState
-    & ClassroomsState// ... state we've requested from the Redux store
+    & RoomsState// ... state we've requested from the Redux store
     & typeof groupActionCreators
-    & typeof classroomActionCreators// ... plus action creators we've requested
+    & typeof roomActionCreators// ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
 
@@ -111,7 +111,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
 
     private ensureDataFetched() {
         this.props.requestGroups(this.props.groupSearch);
-        this.props.requestClassrooms();
+        this.props.requestRooms();
     }
 
     private hasGroups(): boolean {
@@ -141,7 +141,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
                     dataSource={this.props.paginatedGroupList!.list}
                     renderItem={group => (
                         <List.Item>
-                            <GroupCard group={group} classroomList={this.props.classroomList} />
+                            <GroupCard group={group} roomList={this.props.roomList} />
                         </List.Item>
                     )}
                 />
@@ -153,9 +153,9 @@ class Dashboard extends React.PureComponent<GroupProps> {
         );
     }
 }
-const mapStateToProps = (state: ApplicationState) => ({ ...state.groups, ...state.classrooms })
+const mapStateToProps = (state: ApplicationState) => ({ ...state.groups, ...state.rooms })
 const mapDispatchToProps = (dispatch: any) => {
-    return bindActionCreators({ ...classroomActionCreators, ...groupActionCreators }, dispatch);
+    return bindActionCreators({ ...roomActionCreators, ...groupActionCreators }, dispatch);
 }
 export default connect(
     mapStateToProps, // Selects which state properties are merged into the component's props
