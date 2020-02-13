@@ -15,11 +15,17 @@ namespace AttendanceSystemIPCamera.Repositories
 {
     public interface ISessionRepository: IRepository<Session>
     {
+        List<Session> GetSessionsWithRecords(List<int> groups);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
         public SessionRepository(DbContext context) : base(context)
         {
+        }
+
+        public List<Session> GetSessionsWithRecords(List<int> groups)
+        {
+            return Get(s => groups.Contains(s.GroupId), null, includeProperties: "Records,Group").ToList();
         }
     }
 }

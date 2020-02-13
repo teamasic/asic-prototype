@@ -10,7 +10,7 @@ namespace AttendanceSystemIPCamera
     {
         public static void main()
         {
-            SupervisorNetworkService service = new SupervisorNetworkService();
+            //SupervisorNetworkService service = new SupervisorNetworkService();
             //Thread tServer = new Thread(new ThreadStart(s.Start));
             //tServer.Start();
             //AttendeeNetworkService a = new AttendeeNetworkService();
@@ -18,7 +18,7 @@ namespace AttendanceSystemIPCamera
 
             //var service = new AttendeeNetworkService();
 
-            service.Start();
+            //service.StartService();
 
             Console.Read();
         }

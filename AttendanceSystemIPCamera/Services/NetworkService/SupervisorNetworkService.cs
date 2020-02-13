@@ -1,26 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using AttendanceSystemIPCamera.Framework.ViewModels;
+using AttendanceSystemIPCamera.Models;
+using AttendanceSystemIPCamera.Repositories.UnitOfWork;
+using AttendanceSystemIPCamera.Services.AttendeeService;
+using AttendanceSystemIPCamera.Services.SessionService;
 using AttendanceSystemIPCamera.Utils;
+using AutoMapper;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 
 namespace AttendanceSystemIPCamera.Services.NetworkService
 {
+
     public class SupervisorNetworkService
     {
         protected UdpClient localServer;
         protected IPEndPoint remoteHostEP;
 
-        public SupervisorNetworkService()
-        {
+        private ISessionService sessionService;
+        private IAttendeeService attendeeService;
+        private IMapper mapper;
 
-        }
-
-        public SupervisorNetworkService(UdpClient localServer, IPEndPoint remoteHostEP)
+        public SupervisorNetworkService(ISessionService sessionService, IAttendeeService attendeeService, IMapper mapper)
         {
-            this.localServer = localServer;
-            this.remoteHostEP = remoteHostEP;
+            this.sessionService = sessionService;
+            this.attendeeService = attendeeService;
+            this.mapper = mapper;
         }
 
         public void Start()
@@ -33,20 +45,57 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             while (true)
             {
                 var remoteHostEP = new IPEndPoint(IPAddress.Any, 0);
-                if(this.remoteHostEP != null)
+                if (this.remoteHostEP != null)
                 {
                     remoteHostEP = this.remoteHostEP;
                 }
                 Communicator communicator = new Communicator(localServer, ref remoteHostEP);
-                
+
                 //receive
                 var msg = communicator.Receive();
-                Console.WriteLine("Server: " + msg);
+                //Console.WriteLine("Server: " + msg);
+                var attendanceData = ProcessRequest(msg);
 
                 //send
-                communicator.Send(Encoding.ASCII.GetBytes("Received"));
+                var repsonse = JsonConvert.SerializeObject(attendanceData);
+                communicator.Send(Encoding.UTF8.GetBytes(repsonse));
             }
         }
 
+        public AttendanceViewModel ProcessRequest(object msg)
+        {
+            (bool success, Attendee attendee) = ValidateMessage(msg.ToString());
+            var attendanceData = new AttendanceViewModel()
+            {
+                Success = success
+            };
+            if (success)
+            {
+                attendanceData.AttendeeCode = attendee.Code;
+                attendanceData.AttendeeName = attendee.Name;
+                var groupIds = attendee.AttendeeGroups.Select(ag => ag.GroupId).ToList();
+                attendanceData.Groups = GetGroupSessionViewModels(groupIds);
+            }
+            return attendanceData;
+        }
+
+        private (bool success, Attendee attendee) ValidateMessage(string message)
+        {
+            try
+            {
+                var networkData = JsonConvert.DeserializeObject<NetworkMessageViewModel>(message.ToString());
+                string attendeeCode = networkData.Message;
+                var attendee = attendeeService.GetByAttendeeCode(attendeeCode);
+                if (attendee != null)
+                    return (true, attendee);
+            }
+            catch { }
+            return (false, null);
+        }
+
+        private List<GroupSessionViewModel> GetGroupSessionViewModels(List<int> groupIds)
+        {
+            return sessionService.GetSessionsWithRecordsByGroupIDs(groupIds);
+        }
     }
 }

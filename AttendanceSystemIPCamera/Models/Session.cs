@@ -7,13 +7,15 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Models
 {
-    public class Session: BaseEntity
+    public class Session : BaseEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public DateTime StartTime { get; set; }
         public int Duration { get; set; }
+        public int GroupId { get; set; }
         public Group Group { get; set; }
+        public List<Record> Records { get; set; }
     }
 }

@@ -29,7 +29,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
 
         public object Start(ref IPEndPoint remoteHostIP)
         {
-            var encodedMessage = Encoding.ASCII.GetString(Receive(ref remoteHostIP) as byte[]);
+            var encodedMessage = Encoding.UTF8.GetString(Receive(ref remoteHostIP) as byte[]);
             var decodedMessage = Decode(encodedMessage);
             if (Authenticate(decodedMessage))
             {

@@ -12,6 +12,7 @@ namespace AttendanceSystemIPCamera.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        public string Code { get; set; }
         public String Name { get; set; }
         public DateTime DateTimeCreated { get; set; }
         public virtual ICollection<AttendeeGroup> AttendeeGroups { get; set; } = new List<AttendeeGroup>();
