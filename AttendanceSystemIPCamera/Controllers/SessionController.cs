@@ -28,8 +28,18 @@ namespace AttendanceSystemIPCamera.Controllers
             this.mapper = mapper;
         }
 
-        [HttpGet("{id}/detail")]
-        public Task<BaseResponse<IEnumerable<AttendeeRecordPairViewModel>>> GetByIdWithDetails(int id)
+        [HttpGet("{id}")]
+        public Task<BaseResponse<SessionViewModel>> GetById(int id)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var session = await service.GetById(id);
+                return mapper.Map<SessionViewModel>(session);
+            });
+        }
+
+        [HttpGet("{id}/attendee-records")]
+        public Task<BaseResponse<IEnumerable<AttendeeRecordPairViewModel>>> GetAttendeeRecords(int id)
         {
             return ExecuteInMonitoring(async () =>
             {

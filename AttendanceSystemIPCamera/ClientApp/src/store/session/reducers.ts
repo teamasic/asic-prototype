@@ -1,63 +1,76 @@
-﻿import { Reducer, Action, AnyAction } from "redux";
-import { GroupsState } from "./state";
-import { ACTIONS } from "./actionCreators";
+﻿import { Reducer, Action, AnyAction } from 'redux';
+import { SessionState } from './state';
+import { ACTIONS } from './actionCreators';
 
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
-const unloadedState: GroupsState = {
-    isLoading: false,
-    successfullyLoaded: false,
-    groupSearch: {
-        nameContains: '',
-        orderBy: 'Name',
-        page: 1,
-        pageSize: 15
-    },
-    activeSession: { // temporary, might be restructured
-        id: 1,
-        startTime: new Date(),
-        attendees: [{
-            id: 1,
-            code: 'SE63147',
-            name: 'Strawberry'
-        }, {
-            id: 2,
-            code: 'SE63147',
-            name: 'Blackberry'
-        }]
-    }
+const unloadedState: SessionState = {
+	isLoadingSession: false,
+	successfullyLoadedSession: false,
+	activeSession: undefined,
+	isLoadingAttendeeRecords: false,
+	successfullyLoadedAttendeeRecords: false,
+	attendeeRecords: []
 };
 
-const reducers: Reducer<GroupsState> = (state: GroupsState | undefined, incomingAction: AnyAction): GroupsState => {
-    if (state === undefined) {
-        return unloadedState;
-    }
+const reducers: Reducer<SessionState> = (
+	state: SessionState | undefined,
+	incomingAction: AnyAction
+): SessionState => {
+	if (state === undefined) {
+		return unloadedState;
+	}
 
-    const action = incomingAction;
-    switch (action.type) {
-        case ACTIONS.START_REQUEST_GROUPS:
-            return {
-                ... state,
-                isLoading: true,
-                successfullyLoaded: false,
-                groupSearch: action.groupSearch
-            };
-        case ACTIONS.STOP_REQUEST_GROUPS_WITH_ERRORS:
-            return {
-                ...state,
-                isLoading: false,
-                successfullyLoaded: false
-            };
-        case ACTIONS.RECEIVE_GROUPS_DATA:
-            return {
-                ...state,
-                paginatedGroupList: action.paginatedGroupList,
-                isLoading: false,
-                successfullyLoaded: true
-            };
-    }
+	const action = incomingAction;
+	console.log(action);
+	switch (action.type) {
+		case ACTIONS.START_REQUEST_SESSION:
+			return {
+				...state,
+				isLoadingSession: true,
+				successfullyLoadedSession: false,
+				activeSession: undefined,
+				isLoadingAttendeeRecords: false,
+				successfullyLoadedAttendeeRecords: false,
+				attendeeRecords: []
+			};
+		case ACTIONS.STOP_REQUEST_SESSION_WITH_ERRORS:
+			return {
+				...state,
+				isLoadingSession: false,
+				successfullyLoadedSession: false
+			};
+		case ACTIONS.RECEIVE_SESSION_DATA:
+			return {
+				...state,
+				isLoadingSession: false,
+				successfullyLoadedSession: true,
+				activeSession: action.session
+			};
+		case ACTIONS.START_REQUEST_ATTENDEE_RECORDS:
+			return {
+				...state,
+				isLoadingAttendeeRecords: true,
+				successfullyLoadedAttendeeRecords: false,
+				attendeeRecords: []
+			};
+		case ACTIONS.STOP_REQUEST_ATTENDEE_RECORDS_WITH_ERRORS:
+			return {
+				...state,
+				isLoadingAttendeeRecords: false,
+				successfullyLoadedAttendeeRecords: false,
+				attendeeRecords: []
+			};
+		case ACTIONS.RECEIVE_ATTENDEE_RECORDS_DATA:
+			return {
+				...state,
+				isLoadingAttendeeRecords: false,
+				successfullyLoadedAttendeeRecords: true,
+				attendeeRecords: action.attendeeRecords
+			};
+	}
 
-    return state;
+	return state;
 };
 
 export default reducers;
