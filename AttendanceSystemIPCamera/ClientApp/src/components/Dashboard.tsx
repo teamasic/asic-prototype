@@ -1,4 +1,4 @@
-import * as React from 'react';
+﻿import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators } from 'redux';
@@ -8,10 +8,12 @@ import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination } from 'antd';
 import { Typography } from 'antd';
-import { Input } from 'antd';
+import { Input, Modal, Upload, Table } from 'antd';
 import classNames from 'classnames';
 import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
+import { log } from 'util';
+import { parse } from 'papaparse';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -22,8 +24,24 @@ type GroupProps =
     & typeof groupActionCreators // ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
+interface DashboardComponentState {
+    modalVisible: boolean,
+    modalLoading: boolean,
+    importAttendees: any, 
+    groupCode: string,
+    groupName: string
+}
 
-class Dashboard extends React.PureComponent<GroupProps> {
+class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState> {
+
+    state = {
+        modalVisible: false,
+        modalLoading: false,
+        importAttendees: [],
+        groupCode: "",
+        groupName: ""
+    }
+
     // This method is called when the component is first added to the document
     public componentDidMount() {
         this.ensureDataFetched();
@@ -56,8 +74,77 @@ class Dashboard extends React.PureComponent<GroupProps> {
         }
     }
 
+    public showModal = () => {
+        this.setState({
+            modalVisible: true
+        });
+    }
+
+    public handleOk = (value: any) => {
+        var group = "Code: " + this.state.groupCode + " Name: " + this.state.groupName;
+        //console.log(group);
+        var newGroup = new Group();
+        newGroup.name = this.state.groupName;
+        newGroup.code = this.state.groupCode;
+        newGroup.attendees = this.state.importAttendees;
+        //newGroup.attendees.pop();
+        console.log(newGroup);
+        this.props.postGroup(newGroup);
+    }
+
+    public handleCancel = () => {
+        this.setState({
+            modalVisible: false,
+            importAttendees: []
+        });
+    }
+
+    public onGroupCodeChange = (e: any) => {
+        this.setState({
+            groupCode: e.target.value
+        });
+    } 
+
+    public onGroupNameChange = (e: any) => {
+        this.setState({
+            groupName: e.target.value
+        });
+    }
+
+    public parseFile = (file: File) => {
+        var thisState = this;
+        parse(file, {
+            header: true,
+            complete: function (results: any, file: File) {
+                console.log(results.data);
+                thisState.setState({
+                    importAttendees: results.data
+                });
+            }
+        });
+        return true;
+    }
+
     public render() {
         var hasGroups = this.hasGroups();
+        const columns = [
+            {
+                title: 'No.',
+                key: 'No',
+                dataIndex: 'No'
+            },
+            {
+                title: 'Code',
+                key: 'Code',
+                dataIndex: 'Code'
+            },
+            {
+                title: 'Name',
+                key: 'Name',
+                dataIndex: 'Name'
+            }
+        ];
+
         return (
             <React.Fragment>
                 <div className="breadcrumb-container">
@@ -73,9 +160,51 @@ class Dashboard extends React.PureComponent<GroupProps> {
                 </div>
                 <div className="title-container">
                     <Title className="title" level={3}>Your groups</Title>
-                    <Button className="new-button" type="primary" icon="plus">
+                    <Button className="new-button" type="primary" icon="plus" onClick={this.showModal}>
                         New group
                     </Button>
+                    <Modal
+                        visible={this.state.modalVisible}
+                        title="Create New Group"
+                        onOk={this.handleOk}
+                        onCancel={this.handleCancel}
+                        footer={[
+                            <Button key="back" onClick={this.handleCancel}>
+                                Cancel
+                            </Button>,
+                            <Button key="submit" type="primary" loading={this.state.modalLoading} onClick={this.handleOk}>
+                                            Save
+                            </Button>,
+                        ]}
+                    >
+                        <Row gutter={[16, 0]}>
+                            <Col span={8}>
+                                <Input placeholder="Enter group ID" ref="txtGroupID" onChange={this.onGroupCodeChange} />
+                            </Col>
+                        </Row>
+                        <Row gutter={[16, 0]}>
+                            <Col span={8}>
+                                <Input placeholder="Enter group name" onChange={this.onGroupNameChange} />
+                            </Col>
+                        </Row>
+                        <Row gutter={[16, 0]}>
+                            <Col span={8} offset={16}>
+                                <Upload
+                                    multiple={false}
+                                    accept=".csv"
+                                    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                                    beforeUpload={this.parseFile}
+                                >
+                                    <Button>
+                                        <Icon type="upload" /> Upload CSV File
+                                    </Button>
+                                </Upload>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Table dataSource={this.state.importAttendees} columns={columns} rowKey="code" />;
+                        </Row>
+                    </Modal>
                 </div>
                 <Row className="filter-container">
                     <Col span={8}>
@@ -97,7 +226,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
                 })}>
                     {
                         this.props.isLoading ? <Spin /> :
-                        (hasGroups ? this.renderGroupsTable() : this.renderEmpty())
+                            (hasGroups ? this.renderGroupsTable() : this.renderEmpty())
                     }
                 </div>
             </React.Fragment>

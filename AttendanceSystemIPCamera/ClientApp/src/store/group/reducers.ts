@@ -55,6 +55,10 @@ const reducers: Reducer<GroupsState> = (state: GroupsState | undefined, incoming
                 isLoading: false,
                 successfullyLoaded: true
             };
+        case ACTIONS.CREATE_NEW_GROUP:
+            return {
+                ...state
+            }
     }
 
     return state;

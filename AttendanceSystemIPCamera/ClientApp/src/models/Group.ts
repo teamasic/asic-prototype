@@ -4,6 +4,7 @@ import Attendee from "./Attendee";
 export default class Group {
     id: number = 0;
     name: string = "";
+    code: string = "";
     sessions: Session[] = [];
     attendees: Attendee[] = [];
     get lastSessionTime(): Date | undefined {
