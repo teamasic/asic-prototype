@@ -5,7 +5,10 @@ import {
 	getSessionAttendeeRecordList
 } from '../../services/session';
 import Session from '../../models/Session';
+import Record from '../../models/Record';
 import AttendeeRecordPair from '../../models/AttendeeRecordPair';
+import UpdateRecord from '../../models/UpdateRecord';
+import { updateRecord } from '../../services/record';
 
 export const ACTIONS = {
 	START_REQUEST_SESSION: 'START_REQUEST_SESSION',
@@ -14,7 +17,9 @@ export const ACTIONS = {
 	START_REQUEST_ATTENDEE_RECORDS: 'START_REQUEST_ATTENDEE_RECORDS',
 	STOP_REQUEST_ATTENDEE_RECORDS_WITH_ERRORS:
 		'STOP_REQUEST_ATTENDEE_RECORDS_WITH_ERRORS',
-	RECEIVE_ATTENDEE_RECORDS_DATA: 'RECEIVE_ATTENDEE_RECORDS_DATA'
+	RECEIVE_ATTENDEE_RECORDS_DATA: 'RECEIVE_ATTENDEE_RECORDS_DATA',
+	UPDATE_ATTENDEE_RECORD_SEARCH: 'UPDATE_ATTENDEE_RECORD_SEARCH',
+	UPDATE_ATTENDEE_RECORD: 'UPDATE_ATTENDEE_RECORD'
 };
 
 function startRequestSession(sessionId: number) {
@@ -87,8 +92,29 @@ const requestSession = (
 	} else {
 		dispatch(stopRequestGroupsWithError(apiResponse.errors));
 	}
+	};
+
+function updateAttendeeRecord(updateInfo: UpdateRecord, updatedRecord: Record) {
+	return {
+		type: ACTIONS.UPDATE_ATTENDEE_RECORD,
+		updateInfo,
+		updatedRecord
+	};
+}
+
+const createOrUpdateRecord = (
+	updateInfo: UpdateRecord
+): AppThunkAction => async dispatch => {
+	const apiResponse: ApiResponse = await updateRecord(updateInfo);
+
+	if (apiResponse.success) {
+		dispatch(updateAttendeeRecord(updateInfo, apiResponse.data));
+	} else {
+		// TODO: show error here
+	}
 };
 
 export const sessionActionCreators = {
-	requestSession
+	requestSession,
+	createOrUpdateRecord
 };

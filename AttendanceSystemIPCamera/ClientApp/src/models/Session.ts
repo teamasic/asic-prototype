@@ -8,4 +8,5 @@ export default interface Session {
     group?: Group;
     attendees?: Attendee[];
     records?: Record[];
+    active: boolean;
 }

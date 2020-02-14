@@ -16,7 +16,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
 {
     public interface IRecordService : IBaseService<Record>
     {
-        public Task Set(SetRecordViewModel createRecordViewModel);
+        public Task<(Record record, bool isActiveSession)> Set(SetRecordViewModel createRecordViewModel);
     }
 
     public class RecordService: BaseService<Record>, IRecordService
@@ -30,23 +30,26 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             sessionRepository = unitOfWork.SessionRepository;
             attendeeRepository = unitOfWork.AttendeeRepository;
         }
-        public async Task Set(SetRecordViewModel viewModel)
+        public async Task<(Record record, bool isActiveSession)> Set(SetRecordViewModel viewModel)
         {
             var record = recordRepository.GetRecordBySessionAndAttendee(viewModel.SessionId, viewModel.AttendeeId);
+            var session = await sessionRepository.GetById(viewModel.SessionId);
             if (record == null)
             {
-                var session = await sessionRepository.GetById(viewModel.SessionId);
                 var attendee = await attendeeRepository.GetById(viewModel.AttendeeId);
-                await recordRepository.Add(new Record {
+                record = new Record
+                {
                     Session = session,
                     Attendee = attendee,
                     Present = viewModel.Present
-                });
+                };
+                await recordRepository.Add(record);
             } else
             {
                 record.Present = viewModel.Present;
             }
             unitOfWork.Commit();
+            return (record, session.Active);
         }
     }
 }

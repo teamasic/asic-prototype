@@ -96,7 +96,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
                     'empty': !hasGroups
                 })}>
                     {
-                        this.props.isLoading ? <Spin /> :
+                        this.props.isLoading ? <Spin size="large" /> :
                         (hasGroups ? this.renderGroupsTable() : this.renderEmpty())
                     }
                 </div>

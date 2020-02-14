@@ -25,7 +25,13 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public Record GetRecordBySessionAndAttendee(int sessionId, int attendeeId)
         {
-            return dbSet.Where(record => record.Session.Id == sessionId && record.Attendee.Id == attendeeId).FirstOrDefault();
+            if (sessionId != -1) // no session id was sent
+            {
+                return dbSet.Where(record => record.Session.Id == sessionId && record.Attendee.Id == attendeeId).FirstOrDefault();
+            } else
+            {
+                return dbSet.Where(record => record.Session.Active && record.Attendee.Id == attendeeId).FirstOrDefault();
+            }
         }
     }
 }

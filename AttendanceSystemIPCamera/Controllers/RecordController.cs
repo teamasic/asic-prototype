@@ -20,21 +20,27 @@ namespace AttendanceSystemIPCamera.Controllers
     [Route("api/[controller]")]
     public class RecordController : BaseController
     {
-        private readonly IRecordService service;
+        private readonly IRecordService recordService;
+        private readonly IRealTimeService realTimeService;
         private readonly IMapper mapper;
-        public RecordController(IRecordService service, IMapper mapper)
+        public RecordController(IRecordService recordService, IRealTimeService realTimeService, IMapper mapper)
         {
-            this.service = service;
+            this.recordService = recordService;
+            this.realTimeService = realTimeService;
             this.mapper = mapper;
         }
 
         [HttpPost]
-        public Task<BaseResponse<SetRecordViewModel>> Create([FromBody] SetRecordViewModel viewModel)
+        public Task<BaseResponse<RecordViewModel>> Create([FromBody] SetRecordViewModel viewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
-                await service.Set(viewModel);
-                return viewModel;
+                var (record, isActiveSession) = await recordService.Set(viewModel);
+                if (isActiveSession)
+                {
+                    await realTimeService.MarkAttendeeAsPresent(viewModel.AttendeeId);
+                }
+                return mapper.Map<RecordViewModel>(record);
             });
         }
     }

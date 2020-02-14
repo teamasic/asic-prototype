@@ -68,8 +68,16 @@ const reducers: Reducer<SessionState> = (
 				successfullyLoadedAttendeeRecords: true,
 				attendeeRecords: action.attendeeRecords
 			};
+		case ACTIONS.UPDATE_ATTENDEE_RECORD:
+			return {
+				...state,
+				attendeeRecords: state.attendeeRecords.map(ar =>
+					ar.attendee.id === action.updateInfo.attendeeId ? ({
+						attendee: ar.attendee,
+						record: action.updatedRecord
+					}) : ar)
+			};
 	}
-
 	return state;
 };
 
