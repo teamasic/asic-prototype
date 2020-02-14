@@ -42,6 +42,8 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\components\GroupCard.tsx" />
+    <None Remove="ClientApp\src\middlewares\SignalRConnection.ts" />
+    <None Remove="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
     <None Remove="ClientApp\src\models\Attendee.ts" />
     <None Remove="ClientApp\src\models\Group - Copy.ts" />
@@ -68,6 +70,8 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="ClientApp\src\components\GroupCard.tsx" />
+    <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRConnection.ts" />
+    <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\Record.ts">
       <SubType>Code</SubType>

@@ -19,7 +19,8 @@ export const ACTIONS = {
 		'STOP_REQUEST_ATTENDEE_RECORDS_WITH_ERRORS',
 	RECEIVE_ATTENDEE_RECORDS_DATA: 'RECEIVE_ATTENDEE_RECORDS_DATA',
 	UPDATE_ATTENDEE_RECORD_SEARCH: 'UPDATE_ATTENDEE_RECORD_SEARCH',
-	UPDATE_ATTENDEE_RECORD: 'UPDATE_ATTENDEE_RECORD'
+	UPDATE_ATTENDEE_RECORD: 'UPDATE_ATTENDEE_RECORD',
+	UPDATE_ATTENDEE_RECORD_REAL_TIME: 'UPDATE_ATTENDEE_RECORD_REAL_TIME'
 };
 
 function startRequestSession(sessionId: number) {
@@ -112,9 +113,17 @@ const createOrUpdateRecord = (
 	} else {
 		// TODO: show error here
 	}
-};
+	};
+
+function updateAttendeeRecordRealTime(attendeeId: number) {
+	return {
+		type: ACTIONS.UPDATE_ATTENDEE_RECORD_REAL_TIME,
+		attendeeId
+	};
+}
 
 export const sessionActionCreators = {
 	requestSession,
-	createOrUpdateRecord
+	createOrUpdateRecord,
+	updateAttendeeRecordRealTime
 };

@@ -1,6 +1,7 @@
 ﻿import { Reducer, Action, AnyAction } from 'redux';
 import { SessionState } from './state';
 import { ACTIONS } from './actionCreators';
+import Record from '../../models/Record';
 
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
@@ -22,7 +23,10 @@ const reducers: Reducer<SessionState> = (
 	}
 
 	const action = incomingAction;
+	/*
+	console.log('wehehe');
 	console.log(action);
+	*/
 	switch (action.type) {
 		case ACTIONS.START_REQUEST_SESSION:
 			return {
@@ -75,6 +79,27 @@ const reducers: Reducer<SessionState> = (
 					ar.attendee.id === action.updateInfo.attendeeId ? ({
 						attendee: ar.attendee,
 						record: action.updatedRecord
+					}) : ar)
+			};
+		case ACTIONS.UPDATE_ATTENDEE_RECORD_REAL_TIME:
+			let updatedRecord: Record | undefined;
+			const updatedAttendeeRecord = state.attendeeRecords.find(ar => ar.attendee.id === action.attendeeId);
+			if (updatedAttendeeRecord) {
+				updatedRecord = updatedAttendeeRecord.record;
+				updatedRecord.present = true;
+			} else {
+				updatedRecord = {
+					id: -1,
+					attendee: updatedAttendeeRecord.attendee,
+					present: true
+				};
+			}
+			return {
+				...state,
+				attendeeRecords: state.attendeeRecords.map(ar =>
+					ar.attendee.id === action.attendeeId ? ({
+						attendee: ar.attendee,
+						record: updatedRecord
 					}) : ar)
 			};
 	}

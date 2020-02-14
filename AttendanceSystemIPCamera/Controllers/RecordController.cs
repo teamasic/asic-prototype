@@ -36,7 +36,7 @@ namespace AttendanceSystemIPCamera.Controllers
             return ExecuteInMonitoring(async () =>
             {
                 var (record, isActiveSession) = await recordService.Set(viewModel);
-                if (isActiveSession)
+                if (isActiveSession && viewModel.Present)
                 {
                     await realTimeService.MarkAttendeeAsPresent(viewModel.AttendeeId);
                 }

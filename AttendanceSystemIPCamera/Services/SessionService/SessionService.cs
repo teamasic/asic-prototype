@@ -42,12 +42,15 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             {
                 if (!attendeeRecordMap.ContainsKey(attendee))
                 {
-                    attendeeRecordMap[attendee] = null;
+                    attendeeRecordMap.Add(attendee, null);
                 }
             }
             foreach (var record in attendeeRecordMap.Values)
             {
-                record.Attendee = null;
+                if (record != null)
+                {
+                    record.Attendee = null;
+                }
             }
             return attendeeRecordMap.Select(ar => new AttendeeRecordPair
             {

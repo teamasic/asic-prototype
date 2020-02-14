@@ -76,6 +76,7 @@ namespace AttendanceSystemIPCamera
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
+                endpoints.MapHub<RealTimeService>("/hub");
             });
 
             app.UseSpa(spa =>

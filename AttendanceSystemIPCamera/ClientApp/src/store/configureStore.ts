@@ -3,11 +3,14 @@ import thunk from 'redux-thunk';
 import { connectRouter, routerMiddleware } from 'connected-react-router';
 import { History } from 'history';
 import { ApplicationState, reducers } from './';
+import createSignalRMiddleware from '../middlewares/SignalRMiddleware';
+
 
 export default function configureStore(history: History, initialState?: ApplicationState) {
     const middleware = [
         thunk,
-        routerMiddleware(history)
+        routerMiddleware(history),
+        createSignalRMiddleware()
     ];
 
     const rootReducer = combineReducers({

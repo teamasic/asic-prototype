@@ -33,7 +33,14 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public async Task<(Record record, bool isActiveSession)> Set(SetRecordViewModel viewModel)
         {
             var record = recordRepository.GetRecordBySessionAndAttendee(viewModel.SessionId, viewModel.AttendeeId);
-            var session = await sessionRepository.GetById(viewModel.SessionId);
+            Session session;
+            if (viewModel.SessionId != -1)
+            {
+                session = await sessionRepository.GetById(viewModel.SessionId);
+            } else
+            {
+                session = await sessionRepository.GetActiveSession();
+            }
             if (record == null)
             {
                 var attendee = await attendeeRepository.GetById(viewModel.AttendeeId);
