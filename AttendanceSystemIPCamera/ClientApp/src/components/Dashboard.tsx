@@ -8,7 +8,7 @@ import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination } from 'antd';
 import { Typography } from 'antd';
-import { Input, Modal, Upload, Table } from 'antd';
+import { Input, Modal, Upload, Table, Divider } from 'antd';
 import classNames from 'classnames';
 import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
@@ -17,6 +17,7 @@ import { parse } from 'papaparse';
 
 const { Search } = Input;
 const { Title } = Typography;
+const { Text } = Typography;
 
 // At runtime, Redux will merge together...
 type GroupProps =
@@ -81,8 +82,6 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     }
 
     public handleOk = (value: any) => {
-        var group = "Code: " + this.state.groupCode + " Name: " + this.state.groupName;
-        //console.log(group);
         var newGroup = new Group();
         newGroup.name = this.state.groupName;
         newGroup.code = this.state.groupCode;
@@ -90,6 +89,19 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         //newGroup.attendees.pop();
         console.log(newGroup);
         this.props.postGroup(newGroup);
+    }
+
+    public parseFileToTable = (file: File) => {
+        var thisState = this;
+        parse(file, {
+            header: true,
+            complete: function (results: any, file: File) {
+                console.log(results.data);
+                thisState.setState({
+                    importAttendees: results.data
+                });
+            }
+        });
     }
 
     public handleCancel = () => {
@@ -111,17 +123,10 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         });
     }
 
-    public parseFile = (file: File) => {
-        var thisState = this;
-        parse(file, {
-            header: true,
-            complete: function (results: any, file: File) {
-                console.log(results.data);
-                thisState.setState({
-                    importAttendees: results.data
-                });
-            }
-        });
+    public validateBeforeUpload = (file: File) => {
+        if (file.type !== "application/vnd.ms-excel") {
+            return false;
+        }
         return true;
     }
 
@@ -168,6 +173,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                         title="Create New Group"
                         onOk={this.handleOk}
                         onCancel={this.handleCancel}
+                        style={{ top: 20 }}
+                        width={900}
                         footer={[
                             <Button key="back" onClick={this.handleCancel}>
                                 Cancel
@@ -177,23 +184,28 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                             </Button>,
                         ]}
                     >
-                        <Row gutter={[16, 0]}>
-                            <Col span={8}>
-                                <Input placeholder="Enter group ID" ref="txtGroupID" onChange={this.onGroupCodeChange} />
-                            </Col>
+                        <Row>
+                            <Col span={8}><Text strong>Group Code:</Text></Col>
+                            <Col span={4} offset={2}><Text strong>Group Name:</Text></Col>
                         </Row>
-                        <Row gutter={[16, 0]}>
+                        <Row>
                             <Col span={8}>
+                                <Input placeholder="Enter group code" onChange={this.onGroupCodeChange} />
+                            </Col>
+                            <Col span={12} offset={2}>
                                 <Input placeholder="Enter group name" onChange={this.onGroupNameChange} />
                             </Col>
                         </Row>
-                        <Row gutter={[16, 0]}>
-                            <Col span={8} offset={16}>
+                        <Divider orientation="left">List Attendees</Divider>
+                        <Row gutter={[0, 32]}>
+                            <Col span={8}>
                                 <Upload
                                     multiple={false}
                                     accept=".csv"
                                     action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                                    beforeUpload={this.parseFile}
+                                    showUploadList={false}
+                                    beforeUpload={this.validateBeforeUpload}
+                                    data={this.parseFileToTable}
                                 >
                                     <Button>
                                         <Icon type="upload" /> Upload CSV File
@@ -202,7 +214,9 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                             </Col>
                         </Row>
                         <Row>
-                            <Table dataSource={this.state.importAttendees} columns={columns} rowKey="code" />;
+                            <Table dataSource={this.state.importAttendees} columns={columns} rowKey="No"
+                                pagination={{ pageSize: 5 }}
+                            />;
                         </Row>
                     </Modal>
                 </div>
