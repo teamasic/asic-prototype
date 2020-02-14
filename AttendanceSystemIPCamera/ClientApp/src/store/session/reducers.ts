@@ -85,23 +85,27 @@ const reducers: Reducer<SessionState> = (
 			let updatedRecord: Record | undefined;
 			const updatedAttendeeRecord = state.attendeeRecords.find(ar => ar.attendee.id === action.attendeeId);
 			if (updatedAttendeeRecord) {
-				updatedRecord = updatedAttendeeRecord.record;
-				updatedRecord.present = true;
-			} else {
-				updatedRecord = {
-					id: -1,
-					attendee: updatedAttendeeRecord.attendee,
-					present: true
+				if (updatedAttendeeRecord.record != null) {
+					updatedRecord = {
+						...updatedAttendeeRecord.record,
+						present: true
+					};
+				} else {
+					updatedRecord = {
+						id: -1,
+						attendee: updatedAttendeeRecord.attendee,
+						present: true
+					};
+				}
+				return {
+					...state,
+					attendeeRecords: state.attendeeRecords.map(ar =>
+						ar.attendee.id === action.attendeeId ? ({
+							attendee: ar.attendee,
+							record: updatedRecord
+						}) : ar)
 				};
 			}
-			return {
-				...state,
-				attendeeRecords: state.attendeeRecords.map(ar =>
-					ar.attendee.id === action.attendeeId ? ({
-						attendee: ar.attendee,
-						record: updatedRecord
-					}) : ar)
-			};
 	}
 	return state;
 };
