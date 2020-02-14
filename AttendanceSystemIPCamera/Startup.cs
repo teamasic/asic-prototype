@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using AttendanceSystemIPCamera.Services.AttendeeService;
+using AttendanceSystemIPCamera.Services.AttendeeGroupService;
 
 namespace AttendanceSystemIPCamera
 {
@@ -125,6 +126,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<ISessionService, SessionService>();
             services.AddScoped<IRecordService, RecordService>();
             services.AddScoped<IAttendeeService, AttendeeService>();
+            services.AddScoped<IAttendeeGroupService, AttendeeGroupService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
@@ -132,6 +134,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<IRecordRepository, RecordRepository>();
             services.AddScoped<IAttendeeRepository, AttendeeRepository>();
+            services.AddScoped<IAttendeeGroupRepository, AttendeeGroupRepository>();
         }
 
         private void SetupBackgroundService(IServiceCollection services)
