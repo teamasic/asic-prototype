@@ -202,7 +202,6 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                 <Upload
                                     multiple={false}
                                     accept=".csv"
-                                    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
                                     showUploadList={false}
                                     beforeUpload={this.validateBeforeUpload}
                                     data={this.parseFileToTable}
