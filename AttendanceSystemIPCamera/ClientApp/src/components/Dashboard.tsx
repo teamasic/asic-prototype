@@ -14,6 +14,7 @@ import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
 import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
 import { RoomsState } from '../store/room/state';
+import { sessionActionCreator } from '../store/session/actionCreators';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -23,7 +24,8 @@ type GroupProps =
     GroupsState
     & RoomsState// ... state we've requested from the Redux store
     & typeof groupActionCreators
-    & typeof roomActionCreators// ... plus action creators we've requested
+    & typeof roomActionCreators
+    & typeof sessionActionCreator// ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
 
@@ -112,6 +114,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
     private ensureDataFetched() {
         this.props.requestGroups(this.props.groupSearch);
         this.props.requestRooms();
+        this.props.requestActiveSession();
     }
 
     private hasGroups(): boolean {
@@ -154,8 +157,8 @@ class Dashboard extends React.PureComponent<GroupProps> {
     }
 }
 const mapStateToProps = (state: ApplicationState) => ({ ...state.groups, ...state.rooms })
-const mapDispatchToProps = (dispatch: any) => {
-    return bindActionCreators({ ...roomActionCreators, ...groupActionCreators }, dispatch);
+const mapDispatchToProps = {
+ ...roomActionCreators, ...groupActionCreators, ...sessionActionCreator
 }
 export default connect(
     mapStateToProps, // Selects which state properties are merged into the component's props

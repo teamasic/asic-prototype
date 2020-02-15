@@ -16,11 +16,20 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface ISessionRepository : IRepository<Session>
     {
         bool isSessionRunning();
+        Task<Session> GetActiveSession();
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
         public SessionRepository(DbContext context) : base(context)
         {
+        }
+
+        public async Task<Session> GetActiveSession()
+        {
+            return await dbSet
+                .Include(s => s.Group)
+                .ThenInclude(g => g.AttendeeGroups)
+                .FirstOrDefaultAsync(s => s.Active == true);
         }
 
         public bool isSessionRunning()

@@ -7,7 +7,6 @@ export const ACTIONS = {
     RECEIVE_CLASSROOMS_DATA: 'RECEIVE_CLASSROOMS_DATA'
 }
 function receiveRoomsData(roomList: Room[]) {
-    debugger;
     return {
         type: ACTIONS.RECEIVE_CLASSROOMS_DATA,
         roomList

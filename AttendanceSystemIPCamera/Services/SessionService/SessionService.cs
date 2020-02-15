@@ -17,6 +17,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
     public interface ISessionService : IBaseService<Session>
     {
         bool isSessionRunning();
+        Task<Session> getActiveSession();
     }
 
     public class SessionService: BaseService<Session>, ISessionService
@@ -39,6 +40,11 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             });
             groupRepository.Update(group);
             unitOfWork.Commit();
+        }
+
+        public async Task<Session> getActiveSession()
+        {
+            return await sessionRepository.GetActiveSession();
         }
 
         public bool isSessionRunning()

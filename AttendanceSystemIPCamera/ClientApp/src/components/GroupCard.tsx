@@ -10,7 +10,7 @@ import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber } fro
 import { Typography, Modal, TimePicker } from 'antd';
 import * as moment from 'moment'
 import Room from '../models/Room';
-import {startSession} from '../services/session';
+import { startSession } from '../services/session';
 const { Title } = Typography;
 const { Option } = Select;
 
@@ -48,11 +48,11 @@ class GroupCard extends React.PureComponent<GroupProps> {
         this.setState({
             modelOpen: false,
         })
-        const {startTime, duration, roomName, rtspString} = {...this.state};
+        const { startTime, duration, roomName, rtspString } = { ...this.state };
         const groupId = this.props.group.id;
         let startTimeString = startTime.format('YYYY-MM-DD HH:mm');
-        console.log({startTime: startTimeString, duration, rtspString, roomName, groupId});
-        startSession({startTime: startTimeString, duration, rtspString, roomName, groupId});
+        console.log({ startTime: startTimeString, duration, rtspString, roomName, groupId });
+        startSession({ startTime: startTimeString, duration, rtspString, roomName, groupId });
     }
 
     private handleModelCancel = () => {
@@ -61,7 +61,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
         })
     }
 
-    private handleChangeStartTime = (time: any, timeString: any) => {
+    private handleChangeStartTime = (time: moment.Moment, timeString: any) => {
         this.setState({
             startTime: time,
         })
@@ -93,6 +93,25 @@ class GroupCard extends React.PureComponent<GroupProps> {
             return <Option key={room.id} value={room.id}>{room.name}</Option>
         })
         return roomOptions;
+    }
+    private getDisableHours = () => {
+        let hours = [];
+        for (var i = 0; i < moment().hour(); i++) {
+            hours.push(i);
+        }
+        return hours;
+    }
+    private getDisableMinutes = () => {
+        let minutes = []
+        let currentHour = moment().hour();
+        let startTimeHour = this.state.startTime.hour();
+        if (currentHour == startTimeHour){
+            let currentMinute = moment().minute();
+            for (let i = 0; i < currentMinute; i++){
+                minutes.push(i);
+            }
+        }
+        return minutes;
     }
     public render() {
         var group = this.props.group;
@@ -144,7 +163,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                         <div>
                             <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
                                 <Col span={4}>Start time</Col>
-                                <Col span={7}><TimePicker onChange={this.handleChangeStartTime} value={startTime} format={'HH:mm'} /></Col>
+                                <Col span={7}><TimePicker disabledMinutes={this.getDisableMinutes} disabledHours={this.getDisableHours} onChange={this.handleChangeStartTime} value={startTime} format={'HH:mm'} /></Col>
                             </Row>
                             <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
                                 <Col span={4}>Duration</Col>

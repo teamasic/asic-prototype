@@ -10,5 +10,9 @@ export const getGroups = async (): Promise<ApiResponse> => {
 };
 
 export const startSession = (data: any) => {
-    const response = axios.post(baseRoute, data)
+     axios.post(baseRoute, data)
+}
+export const getActiveSession = async (): Promise<ApiResponse> => {
+    const response = await fetch(apify("active"));
+    return await response.json();
 }

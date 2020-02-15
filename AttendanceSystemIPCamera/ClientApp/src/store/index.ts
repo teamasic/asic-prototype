@@ -1,6 +1,7 @@
 import { GroupsState } from './group/state';
 import GroupsReducer from './group/reducers';
 import RoomsReducer from './room/reducers';
+import SessionsReducer from './session/reducers';
 import { AnyAction } from 'redux';
 import { RoomsState } from './room/state';
 
@@ -16,6 +17,7 @@ export interface ApplicationState {
 export const reducers = {
     groups: GroupsReducer,
     rooms: RoomsReducer,
+    sessions: SessionsReducer
 };
 
 // This type can be used as a hint on action creators so that its 'dispatch' and 'getState' params are

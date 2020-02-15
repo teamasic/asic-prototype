@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
 using AttendanceSystemIPCamera.Services.SessionService;
+using AttendanceSystemIPCamera.Framework.ExeptionHandler;
+using System.Net;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -38,7 +40,7 @@ namespace AttendanceSystemIPCamera.Controllers
                 var sessionAlreadyRunning = sessionService.isSessionRunning();
                 if (sessionAlreadyRunning)
                 {
-                    return null;
+                    throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
                 }
                 else
                 {
@@ -48,6 +50,16 @@ namespace AttendanceSystemIPCamera.Controllers
                     var sessionAdded = await sessionService.Add(session);
                     return mapper.Map<SessionViewModel>(sessionAdded);
                 }
+            });
+        }
+
+        [HttpGet("active")]
+        public Task<BaseResponse<SessionViewModel>> GetActiveSession()
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var activeSession = await sessionService.getActiveSession();
+                return mapper.Map<SessionViewModel>(activeSession);
             });
         }
     }

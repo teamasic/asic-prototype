@@ -6,11 +6,7 @@ using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using AttendanceSystemIPCamera.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
-using AttendanceSystemIPCamera.Services.GroupService;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using AutoMapper;
 using AttendanceSystemIPCamera.Services.RecordService;
 
@@ -28,13 +24,31 @@ namespace AttendanceSystemIPCamera.Controllers
             this.mapper = mapper;
         }
 
+        //[HttpPost]
+        //public Task<BaseResponse<SetRecordViewModel>> Create([FromBody] SetRecordViewModel viewModel)
+        //{
+        //    return ExecuteInMonitoring(async () =>
+        //    {
+        //        await service.Set(viewModel);
+        //        return viewModel;
+        //    });
+        //}
         [HttpPost]
-        public Task<BaseResponse<SetRecordViewModel>> Create([FromBody] SetRecordViewModel viewModel)
+        public Task<BaseResponse<SetRecordViewModel>> RecordAttendance([FromBody] AttendeeViewModel viewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
-                await service.Set(viewModel);
-                return viewModel;
+                var record = await service.RecordAttendanceByCode(viewModel.Code);
+                return mapper.Map<SetRecordViewModel>(record);
+            });
+        }
+        [HttpPut("endSession")]
+        public Task<BaseResponse<IEnumerable<SetRecordViewModel>>> UpdateRecordsAfterEndSession()
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var records =  await service.UpdateRecordsAfterEndSession();
+                return mapper.ProjectTo<Record, SetRecordViewModel>(records);
             });
         }
     }
