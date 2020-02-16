@@ -23,10 +23,6 @@ const reducers: Reducer<SessionState> = (
 	}
 
 	const action = incomingAction;
-	/*
-	console.log('wehehe');
-	console.log(action);
-	*/
 	switch (action.type) {
 		case ACTIONS.START_REQUEST_SESSION:
 			return {
