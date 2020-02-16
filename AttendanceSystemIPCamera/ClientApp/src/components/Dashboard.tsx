@@ -8,7 +8,7 @@ import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination } from 'antd';
 import { Typography } from 'antd';
-import { Input, Modal, Upload, Table, Divider } from 'antd';
+import { Input, Modal, Upload, Table, Divider, message } from 'antd';
 import classNames from 'classnames';
 import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
@@ -125,6 +125,15 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
     public validateBeforeUpload = (file: File) => {
         if (file.type !== "application/vnd.ms-excel") {
+            message.error("Only accept CSV file!", 3);//Show error in 5 second
+            return false;
+        }
+        this.parseFileToTable(file);
+        if (this.state.importAttendees.length == 0) {
+            message.error("You upload a csv file with wrong format. Please try again!", 3);
+            this.setState({
+                importAttendees: []
+            })
             return false;
         }
         return true;
@@ -204,7 +213,6 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                     accept=".csv"
                                     showUploadList={false}
                                     beforeUpload={this.validateBeforeUpload}
-                                    data={this.parseFileToTable}
                                 >
                                     <Button>
                                         <Icon type="upload" /> Upload CSV File
