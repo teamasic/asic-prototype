@@ -37,7 +37,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var sessionAlreadyRunning = sessionService.isSessionRunning();
+                var sessionAlreadyRunning = sessionService.IsSessionRunning();
                 if (sessionAlreadyRunning)
                 {
                     throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
@@ -48,6 +48,7 @@ namespace AttendanceSystemIPCamera.Controllers
                     session.Active = true;
                     session.Group = await groupService.GetById(sessionStarterViewModel.GroupId);
                     var sessionAdded = await sessionService.Add(session);
+                    await sessionService.CallRecognizationService(sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
                     return mapper.Map<SessionViewModel>(sessionAdded);
                 }
             });
@@ -58,9 +59,14 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var activeSession = await sessionService.getActiveSession();
+                var activeSession = await sessionService.GetActiveSession();
                 return mapper.Map<SessionViewModel>(activeSession);
             });
+        }
+        [HttpPost("takeAttendance")]
+        public void StartTakeAttendane()
+        {
+            sessionService.CallRecognizationService(30, "123");
         }
     }
 }

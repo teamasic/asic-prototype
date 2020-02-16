@@ -167,7 +167,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                             </Row>
                             <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
                                 <Col span={4}>Duration</Col>
-                                <Col><InputNumber min={5} max={90} value={duration} onChange={this.handleChangeDuration} /></Col>
+                                <Col><InputNumber min={1} max={90} value={duration} onChange={this.handleChangeDuration} /></Col>
                             </Row>
                             <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
                                 <Col span={4}>End time</Col>

@@ -57,6 +57,7 @@
 
   <ItemGroup>
     <Folder Include="Framework\Helpers\" />
+    <Folder Include="Recognization\" />
   </ItemGroup>
 
   <ItemGroup>

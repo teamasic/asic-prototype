@@ -20,6 +20,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using AttendanceSystemIPCamera.Services.AttendeeService;
 using AttendanceSystemIPCamera.Services.RoomService;
+using System;
+using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 
 namespace AttendanceSystemIPCamera
 {
@@ -49,7 +51,13 @@ namespace AttendanceSystemIPCamera
             SetupDatabaseContext(services);
             SetupAutoMapper(services);
             SetupDependencyInjection(services);
+            SetupMyConfiguration(services);
             SetupBackgroundService(services);
+        }
+
+        private void SetupMyConfiguration(IServiceCollection services)
+        {
+            services.AddSingleton(Configuration.GetSection("MyConfiguration").Get<MyConfiguration>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
