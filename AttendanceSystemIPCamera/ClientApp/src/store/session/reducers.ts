@@ -24,6 +24,11 @@ const reducers: Reducer<SessionState> = (
 
 	const action = incomingAction;
 	switch (action.type) {
+        case ACTIONS.RECEIVE_ACTIVE_SESSION:
+            return {
+                ... state,
+                activeSession: action.activeSession
+            };        
 		case ACTIONS.START_REQUEST_SESSION:
 			return {
 				...state,

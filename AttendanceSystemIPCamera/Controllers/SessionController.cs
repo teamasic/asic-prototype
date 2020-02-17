@@ -47,5 +47,29 @@ namespace AttendanceSystemIPCamera.Controllers
                 return mapper.ProjectTo<AttendeeRecordPair, AttendeeRecordPairViewModel>(attendeeRecordPairs);
             });
         }
+        
+        [HttpPost]
+        public Task<BaseResponse<SessionViewModel>> StartSession([FromBody] SessionStarterViewModel sessionStarterViewModel)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                return await sessionService.StartNewSession(sessionStarterViewModel);
+            });
+        }
+
+        [HttpGet("active")]
+        public Task<BaseResponse<SessionViewModel>> GetActiveSession()
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                return await sessionService.GetActiveSession();
+            });
+        }
+        [HttpPost("takeAttendance")]
+        public async Task StartTakeAttendane()
+        {
+            await sessionService.CallRecognizationService(30, "123");
+        }
     }
 }
+

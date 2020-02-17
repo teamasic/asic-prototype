@@ -19,6 +19,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using AttendanceSystemIPCamera.Services.AttendeeService;
+using AttendanceSystemIPCamera.Services.RoomService;
+using System;
+using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 
 namespace AttendanceSystemIPCamera
 {
@@ -48,7 +51,13 @@ namespace AttendanceSystemIPCamera
             SetupDatabaseContext(services);
             SetupAutoMapper(services);
             SetupDependencyInjection(services);
+            SetupMyConfiguration(services);
             SetupBackgroundService(services);
+        }
+
+        private void SetupMyConfiguration(IServiceCollection services)
+        {
+            services.AddSingleton(Configuration.GetSection("MyConfiguration").Get<MyConfiguration>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,15 +88,15 @@ namespace AttendanceSystemIPCamera
                 endpoints.MapHub<RealTimeService>("/hub");
             });
 
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
+            //app.UseSpa(spa =>
+            //{
+            //    spa.Options.SourcePath = "ClientApp";
 
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
-            });
+            //    if (env.IsDevelopment())
+            //    {
+            //        spa.UseReactDevelopmentServer(npmScript: "start");
+            //    }
+            //});
         }
 
         private void SetupDatabaseContext(IServiceCollection services)
@@ -128,6 +137,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<IRecordService, RecordService>();
             services.AddScoped<IAttendeeService, AttendeeService>();
             services.AddScoped<IRealTimeService, RealTimeService>();
+            services.AddScoped<IRoomService, RoomService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
@@ -135,6 +145,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<IRecordRepository, RecordRepository>();
             services.AddScoped<IAttendeeRepository, AttendeeRepository>();
+            services.AddScoped<IRoomRepository, RoomRepository>();
         }
 
         private void SetupBackgroundService(IServiceCollection services)

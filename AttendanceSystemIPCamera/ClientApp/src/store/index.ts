@@ -2,20 +2,24 @@ import { GroupsState } from './group/state';
 import { SessionState } from './session/state';
 import GroupsReducer from './group/reducers';
 import SessionsReducer from './session/reducers';
+import RoomsReducer from './room/reducers';
 import { AnyAction } from 'redux';
+import { RoomsState } from './room/state';
 
 // The top-level state object
 export interface ApplicationState {
 	groups: GroupsState | undefined;
 	sessions: SessionState | undefined;
+    rooms: RoomsState | undefined;
 }
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
 // the reducer with the matching name. It's important that the names match exactly, and that the reducer
 // acts on the corresponding ApplicationState property type.
 export const reducers = {
-	groups: GroupsReducer,
 	sessions: SessionsReducer
+    rooms: RoomsReducer,
+    groups: GroupsReducer,
 };
 
 // This type can be used as a hint on action creators so that its 'dispatch' and 'getState' params are

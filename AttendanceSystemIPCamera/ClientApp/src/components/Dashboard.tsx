@@ -12,14 +12,20 @@ import { Input } from 'antd';
 import classNames from 'classnames';
 import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
+import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
+import { RoomsState } from '../store/room/state';
+import { sessionActionCreator } from '../store/session/actionCreators';
 
 const { Search } = Input;
 const { Title } = Typography;
 
 // At runtime, Redux will merge together...
 type GroupProps =
-    GroupsState // ... state we've requested from the Redux store
-    & typeof groupActionCreators // ... plus action creators we've requested
+    GroupsState
+    & RoomsState// ... state we've requested from the Redux store
+    & typeof groupActionCreators
+    & typeof roomActionCreators
+    & typeof sessionActionCreator// ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
 
@@ -58,6 +64,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
 
     public render() {
         var hasGroups = this.hasGroups();
+        console.log("props", this.props);
         return (
             <React.Fragment>
                 <div className="breadcrumb-container">
@@ -106,6 +113,8 @@ class Dashboard extends React.PureComponent<GroupProps> {
 
     private ensureDataFetched() {
         this.props.requestGroups(this.props.groupSearch);
+        this.props.requestRooms();
+        this.props.requestActiveSession();
     }
 
     private hasGroups(): boolean {
@@ -135,7 +144,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
                     dataSource={this.props.paginatedGroupList!.list}
                     renderItem={group => (
                         <List.Item>
-                            <GroupCard group={group} />
+                            <GroupCard group={group} roomList={this.props.roomList} />
                         </List.Item>
                     )}
                 />
@@ -147,8 +156,11 @@ class Dashboard extends React.PureComponent<GroupProps> {
         );
     }
 }
-
+const mapStateToProps = (state: ApplicationState) => ({ ...state.groups, ...state.rooms })
+const mapDispatchToProps = {
+ ...roomActionCreators, ...groupActionCreators, ...sessionActionCreator
+}
 export default connect(
-    (state: ApplicationState) => state.groups, // Selects which state properties are merged into the component's props
-    dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
+    mapStateToProps, // Selects which state properties are merged into the component's props
+    mapDispatchToProps // Selects which action creators are merged into the component's props
 )(Dashboard as any);

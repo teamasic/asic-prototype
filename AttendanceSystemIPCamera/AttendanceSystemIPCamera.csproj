@@ -23,6 +23,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="2.9.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 
@@ -54,6 +58,9 @@
     <None Remove="ClientApp\src\services\group.ts" />
     <None Remove="ClientApp\src\services\record.ts" />
     <None Remove="ClientApp\src\services\session.ts" />
+    <None Remove="ClientApp\src\store\classroom\actionCreators.ts" />
+    <None Remove="ClientApp\src\store\classroom\reducers.ts" />
+    <None Remove="ClientApp\src\store\classroom\state.ts" />
     <None Remove="ClientApp\src\store\group\actionCreators.ts" />
     <None Remove="ClientApp\src\store\group\reducers.ts" />
     <None Remove="ClientApp\src\store\group\state.ts" />
@@ -62,6 +69,7 @@
 
   <ItemGroup>
     <Folder Include="Framework\Helpers\" />
+    <Folder Include="Recognization\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -91,6 +99,13 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\group.ts" />
+    <TypeScriptCompile Include="ClientApp\src\store\classroom\actionCreators.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\store\classroom\reducers.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\store\classroom\state.ts" />
     <TypeScriptCompile Include="ClientApp\src\store\group\actionCreators.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

@@ -13,13 +13,19 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace AttendanceSystemIPCamera.Repositories
 {
-    public interface IAttendeeRepository: IRepository<Attendee>
+    public interface IAttendeeRepository : IRepository<Attendee>
     {
+        Task<Attendee> GetByAttendeeCode(string attendeeCode);
     }
     public class AttendeeRepository : Repository<Attendee>, IAttendeeRepository
     {
         public AttendeeRepository(DbContext context) : base(context)
         {
+        }
+
+        public async Task<Attendee> GetByAttendeeCode(string attendeeCode)
+        {
+            return await dbSet.FirstOrDefaultAsync(a => a.Code.Equals(attendeeCode));
         }
     }
 }

@@ -2,7 +2,8 @@
 import { AppThunkAction } from '..';
 import {
 	getSession,
-	getSessionAttendeeRecordList
+	getSessionAttendeeRecordList,
+    getActiveSession
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -11,6 +12,7 @@ import UpdateRecord from '../../models/UpdateRecord';
 import { updateRecord } from '../../services/record';
 
 export const ACTIONS = {
+    RECEIVE_ACTIVE_SESSION: 'RECEIVE_ACTIVE_SESSION',
 	START_REQUEST_SESSION: 'START_REQUEST_SESSION',
 	STOP_REQUEST_SESSION_WITH_ERRORS: 'STOP_REQUEST_SESSION_WITH_ERRORS',
 	RECEIVE_SESSION_DATA: 'RECEIVE_SESSION_DATA',
@@ -122,8 +124,22 @@ function updateAttendeeRecordRealTime(attendeeId: number) {
 	};
 }
 
+
+function receiveActiveSession(activeSession: any) {
+    return {
+        type: ACTIONS.RECEIVE_ACTIVE_SESSION,
+        activeSession
+    };
+}
+
+export const requestActiveSession = (): AppThunkAction => async (dispatch, getState) => {
+    const apiResponse: ApiResponse = await getActiveSession();
+    dispatch(receiveActiveSession(apiResponse.data));
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
-	updateAttendeeRecordRealTime
+	updateAttendeeRecordRealTime,
+    requestActiveSession
 };

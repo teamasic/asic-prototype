@@ -1,4 +1,3 @@
-﻿import ApiResponse from '../models/ApiResponse';
 import axios from 'axios';
 
 const baseRoute = 'api/session';
@@ -15,3 +14,11 @@ export const getSessionAttendeeRecordList = async (
 	const response = await axios(apify(`${id.toString()}/attendee-records`));
 	return await response.data;
 };
+
+export const startSession = (data: any) => {
+     axios.post(baseRoute, data)
+}
+export const getActiveSession = async (): Promise<ApiResponse> => {
+    const response = await fetch(apify("active"));
+    return await response.json();
+}

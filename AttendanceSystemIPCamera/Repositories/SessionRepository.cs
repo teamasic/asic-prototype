@@ -13,14 +13,19 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace AttendanceSystemIPCamera.Repositories
 {
-    public interface ISessionRepository: IRepository<Session>
+    public interface ISessionRepository : IRepository<Session>
     {
         public Task<Session> GetActiveSession();
+        bool isSessionRunning();
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
         public SessionRepository(DbContext context) : base(context)
         {
+        }
+        public bool isSessionRunning()
+        {
+            return dbSet.Any(s => s.Active == true);
         }
 
         public async Task<Session> GetActiveSession()
