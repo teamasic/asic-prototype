@@ -10,6 +10,9 @@ namespace AttendanceSystemIPCamera.Framework
         public class Constant
         {
             public const int GROUP_NAME_MAX_LENGTH = 100;
+            public const string LOGIN_BY_USERNAME_PASSWORD = "1";
+            public const string LOGIN_BY_FACE = "2";
+            public const string GET_DATA_BY_ATTENDEE_CODE = "3";
         }
 
         public class ErrorMessage

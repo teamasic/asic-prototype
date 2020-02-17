@@ -15,6 +15,7 @@ using AttendanceSystemIPCamera.Utils;
 using AutoMapper;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using static AttendanceSystemIPCamera.Framework.Constants;
 
 namespace AttendanceSystemIPCamera.Services.NetworkService
 {
@@ -84,12 +85,24 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             try
             {
                 var networkData = JsonConvert.DeserializeObject<NetworkMessageViewModel>(message.ToString());
-                string attendeeCode = networkData.Message;
-                var attendee = attendeeService.GetByAttendeeCode(attendeeCode);
+                var loginViewModel = networkData.Message;
+                Attendee attendee = null;
+                switch (loginViewModel.LoginMethod)
+                {
+                    case Constant.LOGIN_BY_USERNAME_PASSWORD:
+                        break;
+                    case Constant.LOGIN_BY_FACE:
+                        break;
+                    case Constant.GET_DATA_BY_ATTENDEE_CODE:
+                        attendee = attendeeService.GetByAttendeeCode(loginViewModel.AttendeeCode);
+                        break;
+                }
                 if (attendee != null)
                     return (true, attendee);
             }
-            catch { }
+            catch (Exception e)
+            {
+            }
             return (false, null);
         }
 
