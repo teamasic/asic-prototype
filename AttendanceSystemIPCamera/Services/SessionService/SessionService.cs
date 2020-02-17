@@ -17,14 +17,16 @@ using System.Timers;
 using AttendanceSystemIPCamera.Services.RecordService;
 using System.Configuration;
 using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
+using AttendanceSystemIPCamera.Framework.ExeptionHandler;
+using System.Net;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
     public interface ISessionService : IBaseService<Session>
     {
         bool IsSessionRunning();
-        Task<Session> GetActiveSession();
-
+        Task<SessionViewModel> GetActiveSession();
+        Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
         public Task CallRecognizationService(int duration, string rtspString);
     }
 
@@ -34,12 +36,15 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private readonly IGroupRepository groupRepository;
         private readonly IRecordService recordService;
         private readonly MyConfiguration myConfiguration;
-        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, MyConfiguration myConfiguration) : base(unitOfWork)
+        private readonly IMapper mapper;
+
+        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, MyConfiguration myConfiguration, IMapper mapper) : base(unitOfWork)
         {
             sessionRepository = unitOfWork.SessionRepository;
             groupRepository = unitOfWork.GroupRepository;
             this.recordService = recordService;
             this.myConfiguration = myConfiguration;
+            this.mapper = mapper;
         }
         public async Task Add(TakeAttendanceViewModel viewModel)
         {
@@ -57,7 +62,6 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         public async Task CallRecognizationService(int duration, string rtspString)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            //startInfo.FileName = @"C:\Users\thanh\AppData\Local\Programs\Python\Python38\python.exe";
             var pythonFullPath = myConfiguration.PythonExeFullPath;
             var currentDirectory = Environment.CurrentDirectory;
 
@@ -80,29 +84,34 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 await recordService.UpdateRecordsAfterEndSession();
                 myProcess.Kill();
             });
-
-
         }
-
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        public async Task<SessionViewModel> GetActiveSession()
         {
-            Console.WriteLine(e.SignalTime);
-        }
-
-        void GetOutputFromStream(object sender, DataReceivedEventArgs e)
-        {
-            Console.WriteLine(e.Data);
-            Debug.Write(e.Data);
-        }
-
-        public async Task<Session> GetActiveSession()
-        {
-            return await sessionRepository.GetActiveSession();
+            var session = await sessionRepository.GetActiveSession();
+            return mapper.Map<SessionViewModel>(session);
         }
 
         public bool IsSessionRunning()
         {
             return sessionRepository.isSessionRunning();
+        }
+
+        public async Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel)
+        {
+            var sessionAlreadyRunning = IsSessionRunning();
+            if (sessionAlreadyRunning)
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
+            }
+            else
+            {
+                var session = mapper.Map<Session>(sessionStarterViewModel);
+                session.Active = true;
+                session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
+                var sessionAdded = await Add(session);
+                await CallRecognizationService(sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
+                return mapper.Map<SessionViewModel>(sessionAdded);
+            }
         }
     }
 }

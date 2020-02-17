@@ -16,19 +16,30 @@ namespace AttendanceSystemIPCamera.Services.RoomService
 {
     public interface IRoomService : IBaseService<Room>
     {
-        public Task<Room> GetRoomByName(string name);
+        public Task<RoomViewModel> GetRoomByName(string name);
+        public Task<IEnumerable<RoomViewModel>> GetAllRoom();
     }
 
     public class RoomService: BaseService<Room>, IRoomService
     {
         private readonly IRoomRepository roomRepository;
-        public RoomService(MyUnitOfWork unitOfWork) : base(unitOfWork)
+        private readonly IMapper mapper;
+        public RoomService(MyUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork)
         {
             roomRepository = unitOfWork.RoomRepository;
+            this.mapper = mapper;
         }
-        public async Task<Room> GetRoomByName(string name)
+
+        public async Task<IEnumerable<RoomViewModel>> GetAllRoom()
         {
-            return await roomRepository.GetRoomByName(name);
+            var rooms = await GetAll();
+            return mapper.ProjectTo<RoomViewModel>(rooms.AsQueryable()).ToList();
+        }
+
+        public async Task<RoomViewModel> GetRoomByName(string name)
+        {
+            var room = await roomRepository.GetRoomByName(name);
+            return mapper.Map<RoomViewModel>(room);
         }
     }
 }

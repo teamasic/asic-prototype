@@ -21,11 +21,9 @@ namespace AttendanceSystemIPCamera.Controllers
     public class RoomController : BaseController
     {
         private readonly IRoomService roomService;
-        private readonly IMapper mapper;
-        public RoomController(IRoomService roomService, IMapper mapper)
+        public RoomController(IRoomService roomService)
         {
             this.roomService = roomService;
-            this.mapper = mapper;
         }
 
         [HttpGet]
@@ -33,9 +31,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var rooms = await roomService.GetAll();
-                var roomViewmodels = mapper.ProjectTo<Room, RoomViewModel>(rooms);
-                return roomViewmodels;
+                return await roomService.GetAllRoom();
             });
         }
 
@@ -44,8 +40,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var room = await roomService.GetRoomByName(name);
-                return mapper.Map<RoomViewModel>(room);
+                return await roomService.GetRoomByName(name);
             });
         }
     }

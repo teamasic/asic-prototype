@@ -17,29 +17,26 @@ namespace AttendanceSystemIPCamera.Controllers
     public class RecordController : BaseController
     {
         private readonly IRecordService service;
-        private readonly IMapper mapper;
-        public RecordController(IRecordService service, IMapper mapper)
+        public RecordController(IRecordService service)
         {
             this.service = service;
-            this.mapper = mapper;
         }
 
-        //[HttpPost]
-        //public Task<BaseResponse<SetRecordViewModel>> Create([FromBody] SetRecordViewModel viewModel)
-        //{
-        //    return ExecuteInMonitoring(async () =>
-        //    {
-        //        await service.Set(viewModel);
-        //        return viewModel;
-        //    });
-        //}
+        [HttpPost("manually")]
+        public Task<BaseResponse<SetRecordViewModel>> Create([FromBody] SetRecordViewModel viewModel)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                await service.Set(viewModel);
+                return viewModel;
+            });
+        }
         [HttpPost]
         public Task<BaseResponse<SetRecordViewModel>> RecordAttendance([FromBody] AttendeeViewModel viewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
-                var record = await service.RecordAttendanceByCode(viewModel.Code);
-                return mapper.Map<SetRecordViewModel>(record);
+                return await service.RecordAttendance(viewModel);
             });
         }
         [HttpPut("endSession")]
@@ -47,8 +44,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var records =  await service.UpdateRecordsAfterEndSession();
-                return mapper.ProjectTo<Record, SetRecordViewModel>(records);
+                return await service.UpdateRecordsAfterEndSession();
             });
         }
     }

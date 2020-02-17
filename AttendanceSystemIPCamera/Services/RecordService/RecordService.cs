@@ -19,8 +19,8 @@ namespace AttendanceSystemIPCamera.Services.RecordService
     public interface IRecordService : IBaseService<Record>
     {
         public Task Set(SetRecordViewModel createRecordViewModel);
-        public Task<IEnumerable<Record>> UpdateRecordsAfterEndSession();
-        public Task<Record> RecordAttendanceByCode(string attendeeCode);
+        public Task<IEnumerable<SetRecordViewModel>> UpdateRecordsAfterEndSession();
+        public Task<SetRecordViewModel> RecordAttendance(AttendeeViewModel viewModel);
     }
 
     public class RecordService: BaseService<Record>, IRecordService
@@ -29,15 +29,17 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         private readonly ISessionRepository sessionRepository;
         private readonly IAttendeeRepository attendeeRepository;
         private readonly IGroupRepository groupRepository;
-        public RecordService(MyUnitOfWork unitOfWork) : base(unitOfWork)
+        private readonly IMapper mapper;
+        public RecordService(MyUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork)
         {
             recordRepository = unitOfWork.RecordRepository;
             sessionRepository = unitOfWork.SessionRepository;
             attendeeRepository = unitOfWork.AttendeeRepository;
             groupRepository = unitOfWork.GroupRepository;
+            this.mapper = mapper;
         }
         
-        public async Task<Record> RecordAttendanceByCode(string attendeeCode)
+        public async Task<SetRecordViewModel> RecordAttendance(AttendeeViewModel viewModel)
         {
             // check not exist active session
             var activeSession = await sessionRepository.GetActiveSession();
@@ -47,19 +49,19 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             }
 
             // check record not exist in session and attendee belongs to group
-            var record = await recordRepository.GetRecordBySessionAndAttendeeCode(activeSession.Id, attendeeCode);
-            var isAttendeeInGroup = await groupRepository.CheckAttendeeExistedInGroup(activeSession.Group.Id, attendeeCode);
+            var record = await recordRepository.GetRecordBySessionAndAttendeeCode(activeSession.Id, viewModel.Code);
+            var isAttendeeInGroup = await groupRepository.CheckAttendeeExistedInGroup(activeSession.Group.Id, viewModel.Code);
 
             if (record != null)
             {
-                return record;
+                return mapper.Map<SetRecordViewModel>(record);
             }
             else if (!isAttendeeInGroup)
             {
-                throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_ATTENDEE_WITH_CODE, attendeeCode);
+                throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_ATTENDEE_WITH_CODE, viewModel.Code);
             }
             else {
-                var attendee = await attendeeRepository.GetByAttendeeCode(attendeeCode);
+                var attendee = await attendeeRepository.GetByAttendeeCode(viewModel.Code);
                 var newRecord = new Record
                 {
                     Session = activeSession,
@@ -68,7 +70,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 };
                 await recordRepository.Add(newRecord);
                 unitOfWork.Commit();
-                return newRecord;
+                return mapper.Map<SetRecordViewModel>(newRecord);
             }
         }
 
@@ -91,7 +93,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             unitOfWork.Commit();
         }
 
-        public async Task<IEnumerable<Record>> UpdateRecordsAfterEndSession()
+        public async Task<IEnumerable<SetRecordViewModel>> UpdateRecordsAfterEndSession()
         {
             // update all remain attendees to NOT present
             var activeSession = await sessionRepository.GetActiveSession();
@@ -114,9 +116,13 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 sessionRepository.Update(activeSession);
 
                 unitOfWork.Commit();
-                return await recordRepository.GetRecordsBySessionId(activeSession.Id);
+                var newRecordList = await recordRepository.GetRecordsBySessionId(activeSession.Id);
+                return mapper.ProjectTo<SetRecordViewModel>(newRecordList.AsQueryable()).ToList();
             }
-            throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.NO_ACTIVE_SESSION);
+            else
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.NO_ACTIVE_SESSION);
+            }
         }
     }
 }

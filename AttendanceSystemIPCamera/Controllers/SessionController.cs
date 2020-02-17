@@ -23,13 +23,9 @@ namespace AttendanceSystemIPCamera.Controllers
     public class SessionController : BaseController
     {
         private readonly ISessionService sessionService;
-        private readonly IGroupService groupService;
-        private readonly IMapper mapper;
-        public SessionController(ISessionService sessionService, IGroupService groupService, IMapper mapper)
+        public SessionController(ISessionService sessionService)
         {
             this.sessionService = sessionService;
-            this.groupService = groupService;
-            this.mapper = mapper;
         }
 
         [HttpPost]
@@ -37,20 +33,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var sessionAlreadyRunning = sessionService.IsSessionRunning();
-                if (sessionAlreadyRunning)
-                {
-                    throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
-                }
-                else
-                {
-                    var session = mapper.Map<Session>(sessionStarterViewModel);
-                    session.Active = true;
-                    session.Group = await groupService.GetById(sessionStarterViewModel.GroupId);
-                    var sessionAdded = await sessionService.Add(session);
-                    await sessionService.CallRecognizationService(sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
-                    return mapper.Map<SessionViewModel>(sessionAdded);
-                }
+                return await sessionService.StartNewSession(sessionStarterViewModel);
             });
         }
 
@@ -59,14 +42,13 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var activeSession = await sessionService.GetActiveSession();
-                return mapper.Map<SessionViewModel>(activeSession);
+                return await sessionService.GetActiveSession();
             });
         }
         [HttpPost("takeAttendance")]
-        public void StartTakeAttendane()
+        public async Task StartTakeAttendane()
         {
-            sessionService.CallRecognizationService(30, "123");
+            await sessionService.CallRecognizationService(30, "123");
         }
     }
 }
