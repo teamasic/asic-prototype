@@ -34,17 +34,30 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200214112808_Update1.cs" />
+    <Compile Remove="Migrations\20200214112808_Update1.Designer.cs" />
+    <Compile Remove="Migrations\20200214113108_Update1.cs" />
+    <Compile Remove="Migrations\20200214113108_Update1.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="ClientApp\src\components\GroupCard.tsx" />
+    <None Remove="ClientApp\src\middlewares\SignalRConnection.ts" />
+    <None Remove="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
     <None Remove="ClientApp\src\models\Attendee.ts" />
     <None Remove="ClientApp\src\models\Group - Copy.ts" />
     <None Remove="ClientApp\src\models\Group.ts" />
+    <None Remove="ClientApp\src\models\Record.ts" />
     <None Remove="ClientApp\src\models\Session.ts" />
+    <None Remove="ClientApp\src\models\UpdateRecord.ts" />
     <None Remove="ClientApp\src\services\group.ts" />
+    <None Remove="ClientApp\src\services\record.ts" />
     <None Remove="ClientApp\src\services\session.ts" />
     <None Remove="ClientApp\src\store\group\actionCreators.ts" />
     <None Remove="ClientApp\src\store\group\reducers.ts" />
     <None Remove="ClientApp\src\store\group\state.ts" />
+    <None Remove="ClientApp\src\utils\utils.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,7 +70,12 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="ClientApp\src\components\GroupCard.tsx" />
+    <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRConnection.ts" />
+    <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\Record.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\Attendee.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -65,6 +83,10 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\Group.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\UpdateRecord.ts" />
+    <TypeScriptCompile Include="ClientApp\src\services\record.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\session.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -76,9 +98,16 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\store\group\state.ts" />
+    <TypeScriptCompile Include="ClientApp\src\utils\utils.ts" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="ClientApp\src\models\Attendee - Copy.js">
+      <DependentUpon>Attendee.ts</DependentUpon>
+    </None>
+    <None Update="ClientApp\src\models\Attendee - Copy.js.map">
+      <DependentUpon>Attendee.js</DependentUpon>
+    </None>
     <None Update="ClientApp\src\models\Attendee.js">
       <DependentUpon>Attendee.ts</DependentUpon>
     </None>

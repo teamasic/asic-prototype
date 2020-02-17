@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
-    public class AttendeeViewModel: BaseViewModel<Attendee>
+    public class RecordViewModel: BaseViewModel<Attendee>
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Code { get; set; }
+        public AttendeeViewModel Attendee { get; set; }
+        public bool Present { get; set; }
     }
 }

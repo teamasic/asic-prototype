@@ -15,11 +15,34 @@ namespace AttendanceSystemIPCamera.Repositories
 {
     public interface ISessionRepository: IRepository<Session>
     {
+        public Task<Session> GetActiveSession();
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
         public SessionRepository(DbContext context) : base(context)
         {
+        }
+
+        public async Task<Session> GetActiveSession()
+        {
+            return await dbSet
+                .Include(s => s.Records)
+                    .ThenInclude(r => r.Attendee)
+                .Include(s => s.Group)
+                    .ThenInclude(g => g.AttendeeGroups)
+                        .ThenInclude(ag => ag.Attendee)
+                .FirstOrDefaultAsync(x => x.Active);
+        }
+
+        public new async Task<Session> GetById(object id)
+        {
+            return dbSet
+                .Include(s => s.Records)
+                    .ThenInclude(r => r.Attendee)
+                .Include(s => s.Group)
+                    .ThenInclude(g => g.AttendeeGroups)
+                        .ThenInclude(ag => ag.Attendee)
+                .FirstOrDefault(x => (int) id == x.Id);
         }
     }
 }

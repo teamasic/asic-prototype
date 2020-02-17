@@ -58,3 +58,8 @@
 .group .actions .button {
     margin-left: 5px;
 }
+
+.pagination-container {
+    text-align: right;
+    margin-top: 10px;
+}

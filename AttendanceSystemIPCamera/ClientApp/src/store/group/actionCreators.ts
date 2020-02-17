@@ -27,14 +27,15 @@ function stopRequestGroupsWithError(errors: any[]) {
     };
 }
 
+// normal action creator // can't use async, call API
 function receiveGroupsData(paginatedGroupList: PaginatedList<Group>) {
-    console.log(paginatedGroupList);
     return {
         type: ACTIONS.RECEIVE_GROUPS_DATA,
         paginatedGroupList
     };
 }
 
+// thunk: calls multiple normal action creators
 const requestGroups = (groupSearch: GroupSearch): AppThunkAction => async (dispatch, getState) => {
     dispatch(startRequestGroups(groupSearch));
 
