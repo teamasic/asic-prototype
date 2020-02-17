@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using AttendanceSystemIPCamera.Repositories;
 using AttendanceSystemIPCamera.Framework.ExeptionHandler;
 using System.Net;
+using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 
 namespace AttendanceSystemIPCamera.Services.RecordService
 {
@@ -114,10 +115,9 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 // Update session status
                 activeSession.Active = false;
                 sessionRepository.Update(activeSession);
-
                 unitOfWork.Commit();
                 var newRecordList = await recordRepository.GetRecordsBySessionId(activeSession.Id);
-                return mapper.ProjectTo<SetRecordViewModel>(newRecordList.AsQueryable()).ToList();
+                return mapper.ProjectTo<Record, SetRecordViewModel>(newRecordList);
             }
             else
             {

@@ -11,6 +11,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using AttendanceSystemIPCamera.Repositories;
+using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 
 namespace AttendanceSystemIPCamera.Services.RoomService
 {
@@ -33,7 +34,7 @@ namespace AttendanceSystemIPCamera.Services.RoomService
         public async Task<IEnumerable<RoomViewModel>> GetAllRoom()
         {
             var rooms = await GetAll();
-            return mapper.ProjectTo<RoomViewModel>(rooms.AsQueryable()).ToList();
+            return mapper.ProjectTo<Room, RoomViewModel>(rooms);
         }
 
         public async Task<RoomViewModel> GetRoomByName(string name)
