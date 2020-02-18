@@ -109,7 +109,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 session.Active = true;
                 session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
                 var sessionAdded = await Add(session);
-                await CallRecognizationService(sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
+                CallRecognizationService(sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
                 return mapper.Map<SessionViewModel>(sessionAdded);
             }
         }
