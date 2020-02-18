@@ -24,6 +24,7 @@ using AttendanceSystemIPCamera.Services.RoomService;
 using System;
 using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Services.NetworkService;
+using AttendanceSystemIPCamera.Services.RecognitionService;
 
 namespace AttendanceSystemIPCamera
 {
@@ -157,6 +158,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<IAttendeeGroupService, AttendeeGroupService>();
             services.AddScoped<SupervisorNetworkService>();
+            services.AddScoped<RecognitionService, RecognitionService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
