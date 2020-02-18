@@ -53,8 +53,11 @@ class GroupCard extends React.PureComponent<GroupProps> {
         const groupId = this.props.group.id;
         let startTimeString = startTime.format('YYYY-MM-DD HH:mm');
         const data = await startSession({ startTime: startTimeString, duration, rtspString, roomName, groupId });
-        if (data.id != null) {
-            this.props.redirect(`session/${data.id}`);
+        if (data != null && data.data != null) {
+            const sessionId = data.data.id;
+            if (sessionId != null) {
+                this.props.redirect(`session/${sessionId}`);
+            }
         }
     }
 
