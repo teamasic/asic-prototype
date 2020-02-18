@@ -40,3 +40,15 @@
 .inner-layout.with-sidebar-collapsed {
 	margin-left: 80px;
 }
+
+.link-container {
+	display: inline-block;
+}
+
+.link-container a {
+	color: rgba(255, 255, 255, 0.85);
+}
+
+.link-container a:hover {
+	color:rgba(255, 255, 255, 1) ;
+}
