@@ -12,5 +12,7 @@ namespace AttendanceSystemIPCamera.Framework.ExeptionHandler
         public static string SESSION_ALREADY_RUNNING = "Session already running";
 
         public static string NOT_FOUND_ATTENDEE_WITH_CODE = "Not found attendee with code {0}";
+
+        public static string WRONG_SESSION_START_TIME = "Session start time is not suitable";
     }
 }

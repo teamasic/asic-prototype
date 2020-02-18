@@ -20,6 +20,7 @@ using System.Configuration;
 using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Framework.ExeptionHandler;
 using System.Net;
+using System.Threading;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -29,7 +30,6 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         bool IsSessionRunning();
         Task<SessionViewModel> GetActiveSession();
         Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
-        public Task CallRecognizationService(int duration, string rtspString);
     }
 
     public class SessionService: BaseService<Session>, ISessionService
@@ -77,33 +77,30 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 Record = ar.Value
             }).ToList();
         }
+        //public async Task CallReconitionService2(int duration, string rtspString)
+        //{
+        //    try
+        //    {
+        //        var engine = Python.CreateEngine();
+        //        var currentDirectory = Environment.CurrentDirectory;
+        //        var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognizerProgramPath);
+        //        var source = engine.CreateScriptSourceFromFile(cmd);
 
-        public async Task CallRecognizationService(int duration, string rtspString)
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            var pythonFullPath = myConfiguration.PythonExeFullPath;
-            var currentDirectory = Environment.CurrentDirectory;
+        //        var argv = new List<string>();
+        //        argv.Add(string.Format(@"--recognizer {0}\{1}", currentDirectory, myConfiguration.RecognizerPath));
+        //        argv.Add(string.Format(@" --le {0}\{1}", currentDirectory, myConfiguration.LePath));
 
-            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognizerProgramPath);
-            var args = "";
-            args += string.Format(@"--recognizer {0}\{1}", currentDirectory, myConfiguration.RecognizerPath);
-            args += string.Format(@" --le {0}\{1}", currentDirectory, myConfiguration.LePath);
+        //        var searchPath = new List<string>();
 
-            startInfo.FileName = pythonFullPath;
-            startInfo.Arguments = string.Format("{0} {1}", cmd, args);
-            startInfo.UseShellExecute = true;
-            startInfo.RedirectStandardOutput = false;
-            startInfo.RedirectStandardError = false;
-            Process myProcess = new Process();
-            myProcess.StartInfo = startInfo;
-            myProcess.Start();
-            await Task.Factory.StartNew( async ()  =>
-            {
-                System.Threading.Thread.Sleep(1000 * 60 * duration);
-                await recordService.UpdateRecordsAfterEndSession();
-                myProcess.Kill();
-            });
-        }
+        //        engine.GetSysModule().SetVariable("argv", argv);
+        //        var scope = engine.CreateScope();
+        //        source.Execute(scope);
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        Debug.WriteLine(ex.Message);
+        //    }
+        //}
         public async Task<SessionViewModel> GetActiveSession()
         {
             var session = await sessionRepository.GetActiveSession();
@@ -124,13 +121,49 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
             else
             {
+                var currentTime = DateTime.Now;
+                var timeDifferenceMilliseconds = sessionStarterViewModel.StartTime.Subtract(currentTime).TotalMilliseconds;
+                if (timeDifferenceMilliseconds <= -60 * 1000)
+                {
+                    throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
+                }
+                else if (timeDifferenceMilliseconds > -60 * 1000 & timeDifferenceMilliseconds < 0)
+                {
+                    timeDifferenceMilliseconds = 0;
+                }
                 var session = mapper.Map<Session>(sessionStarterViewModel);
                 session.Active = true;
                 session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
                 var sessionAdded = await Add(session);
-                await CallRecognizationService(sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
+                CallRecognitionService(timeDifferenceMilliseconds, sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
                 return mapper.Map<SessionViewModel>(sessionAdded);
             }
         }
+
+
+        #region Support methods
+        private async Task CallRecognitionService(double timeDifferenceMilliseconds, int durationMinutes, string rtspString)
+        {
+            Thread.Sleep(Convert.ToInt32(timeDifferenceMilliseconds));
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            var pythonFullPath = myConfiguration.PythonExeFullPath;
+            var currentDirectory = Environment.CurrentDirectory;
+            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognizerProgramPath);
+            var args = "";
+            args += string.Format(@"--recognizer {0}\{1}", currentDirectory, myConfiguration.RecognizerPath);
+            args += string.Format(@" --le {0}\{1}", currentDirectory, myConfiguration.LePath);
+            startInfo.FileName = pythonFullPath;
+            startInfo.Arguments = string.Format("{0} {1}", cmd, args);
+            startInfo.UseShellExecute = true;
+            startInfo.RedirectStandardOutput = false;
+            startInfo.RedirectStandardError = false;
+            Process myProcess = new Process();
+            myProcess.StartInfo = startInfo;
+            myProcess.Start();
+            Thread.Sleep(1000 * 60 * durationMinutes);
+            await recordService.UpdateRecordsAfterEndSession();
+            myProcess.Kill();
+        }
+        #endregion
     }
 }
