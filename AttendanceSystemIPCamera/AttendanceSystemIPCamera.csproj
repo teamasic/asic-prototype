@@ -7,6 +7,7 @@
     <IsPackable>false</IsPackable>
     <SpaRoot>ClientApp\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +24,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0" />
     <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -32,8 +34,12 @@
 
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
+    <Compile Remove="GPUCache\**" />
     <Content Remove="$(SpaRoot)**" />
+    <Content Remove="GPUCache\**" />
+    <EmbeddedResource Remove="GPUCache\**" />
     <None Remove="$(SpaRoot)**" />
+    <None Remove="GPUCache\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
 
@@ -42,6 +48,10 @@
     <Compile Remove="Migrations\20200214112808_Update1.Designer.cs" />
     <Compile Remove="Migrations\20200214113108_Update1.cs" />
     <Compile Remove="Migrations\20200214113108_Update1.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Services\NetworkService\AttendeeNetworkService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,10 +75,12 @@
     <None Remove="ClientApp\src\store\group\reducers.ts" />
     <None Remove="ClientApp\src\store\group\state.ts" />
     <None Remove="ClientApp\src\utils\utils.ts" />
+    <None Remove="debug.log" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Framework\Helpers\" />
+    <Folder Include="Services\NetworkService\" />
   </ItemGroup>
 
   <ItemGroup>

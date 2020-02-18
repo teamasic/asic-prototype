@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Models
 {
-    public class Session: BaseEntity
+    public class Session : BaseEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -17,6 +17,7 @@ namespace AttendanceSystemIPCamera.Models
         public bool Active { get; set; }
         public string RtspString { get; set; }
         public string RoomName { get; set; }
+        public int GroupId { get; set; }
         public Group Group { get; set; }
         public virtual ICollection<Record> Records { get; set; } = new List<Record>();
     }

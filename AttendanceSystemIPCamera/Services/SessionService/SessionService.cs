@@ -21,18 +21,21 @@ using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Framework.ExeptionHandler;
 using System.Net;
 using System.Threading;
+using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
     public interface ISessionService : IBaseService<Session>
     {
+        Task Add(TakeAttendanceViewModel viewModel);
+        List<GroupSessionViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds);
         public Task<ICollection<AttendeeRecordPair>> GetSessionAttendeeRecordMap(int sessionId);
         bool IsSessionRunning();
         Task<SessionViewModel> GetActiveSession();
         Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
     }
 
-    public class SessionService: BaseService<Session>, ISessionService
+    public class SessionService : BaseService<Session>, ISessionService
     {
         private readonly ISessionRepository sessionRepository;
         private readonly IGroupRepository groupRepository;
@@ -165,5 +168,32 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             myProcess.Kill();
         }
         #endregion
+
+        public List<GroupSessionViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds)
+        {
+            var sessions = sessionRepository.GetSessionsWithRecords(groupIds);
+            var groupSessions = new List<GroupSessionViewModel>();
+            foreach (var groupId in groupIds)
+            {
+                var sessionsInGroupId = sessions.Where(s => s.GroupId == groupId).ToList();
+                var group = sessionsInGroupId.FirstOrDefault().Group;
+                var sessionViewModels = sessionsInGroupId.Select(s =>
+                {
+                    var svm = mapper.Map<Session, SessionViewModel>(s);
+                    svm.Record = mapper.Map<Record, RecordViewModel>(s.Records.LastOrDefault());
+                    return svm;
+                });
+
+                var groupSession = new GroupSessionViewModel()
+                {
+                    GroupCode = group.Code,
+                    Name = group.Name,
+                    Sessions = sessionViewModels.ToList()
+                };
+                groupSessions.Add(groupSession);
+            }
+            return groupSessions;
+        }
+
     }
 }

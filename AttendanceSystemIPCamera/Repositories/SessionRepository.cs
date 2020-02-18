@@ -17,6 +17,7 @@ namespace AttendanceSystemIPCamera.Repositories
     {
         public Task<Session> GetActiveSession();
         bool isSessionRunning();
+        List<Session> GetSessionsWithRecords(List<int> groups);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
@@ -48,6 +49,11 @@ namespace AttendanceSystemIPCamera.Repositories
                     .ThenInclude(g => g.AttendeeGroups)
                         .ThenInclude(ag => ag.Attendee)
                 .FirstOrDefaultAsync(x => (int) id == x.Id);
+        }
+
+        public List<Session> GetSessionsWithRecords(List<int> groups)
+        {
+            return Get(s => groups.Contains(s.GroupId), null, includeProperties: "Records,Group").ToList();
         }
     }
 }

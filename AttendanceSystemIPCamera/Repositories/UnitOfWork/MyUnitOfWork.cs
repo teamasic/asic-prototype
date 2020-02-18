@@ -1,5 +1,7 @@
 ﻿using AttendanceSystemIPCamera.Models;
 using AttendanceSystemIPCamera.Services.GroupService;
+using AttendanceSystemIPCamera.Services.SessionService;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,6 +20,7 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
             return new Repository<T>(DbContext);
         }
 
+        #region Repository
         private IGroupRepository groupRepository;
         private ISessionRepository sessionRepository;
         private IRecordRepository recordRepository;
@@ -92,5 +95,7 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
                 return attendeeGroupRepository;
             }
         }
+        #endregion
+
     }
 }
