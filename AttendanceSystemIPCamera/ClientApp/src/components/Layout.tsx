@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Container } from 'reactstrap';
 import NavMenu from './NavMenu';
 import { Layout, Menu, Breadcrumb, Icon } from 'antd';
+import classNames from 'classnames';
 import '../styles/Layout.css';
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -41,7 +42,10 @@ class PageLayout extends React.Component<
 						</Menu.Item>
 					</Menu>
 				</Sider>
-				<Layout>
+				<Layout className={classNames({
+					'inner-layout': true,
+					'with-sidebar-collapsed': this.state.collapsed
+				})}>
 					<Content className="content">
 						{this.props.children}
 					</Content>

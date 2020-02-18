@@ -1,7 +1,7 @@
 .sider {
 	overflow: auto;
 	height: 100vh;
-	position: fixed;
+	position: fixed !important;
 	left: 0;
 }
 
@@ -31,4 +31,12 @@
 .menu-item {
 	margin-top: 0 !important;
 	margin-bottom: 12px !important;
+}
+
+.inner-layout {
+	margin-left: 200px;
+}
+
+.inner-layout.with-sidebar-collapsed {
+	margin-left: 80px;
 }
