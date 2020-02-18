@@ -20,13 +20,14 @@ import requests
 # initialize the video stream, then allow the camera sensor to warm up
 print("[INFO] starting video stream...")
 
-codes = ["SE12345", "SE12348", "SE12347"]
+codes = ["SB12345", "SB12348", "SB12347"]
 headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
+time.sleep(20)
 for code in codes:
 	payload = {"code": code}
 	r = requests.post("https://localhost:44359/api/record", json=payload, verify=False, headers=headers)
-	time.sleep(3)
+	time.sleep(5)
 
 # do a bit of cleanup
 cv2.destroyAllWindows()

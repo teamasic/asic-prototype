@@ -77,7 +77,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             {
                 Attendee = ar.Key,
                 Record = ar.Value
-            }).ToList();
+            }).OrderBy(ar => ar.Attendee.Code).ToList();
         }
         //public async Task CallReconitionService2(int duration, string rtspString)
         //{
