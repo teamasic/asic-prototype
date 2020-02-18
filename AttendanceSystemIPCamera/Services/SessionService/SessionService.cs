@@ -27,7 +27,6 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 {
     public interface ISessionService : IBaseService<Session>
     {
-        Task Add(TakeAttendanceViewModel viewModel);
         List<GroupSessionViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds);
         public Task<ICollection<AttendeeRecordPair>> GetSessionAttendeeRecordMap(int sessionId);
         bool IsSessionRunning();

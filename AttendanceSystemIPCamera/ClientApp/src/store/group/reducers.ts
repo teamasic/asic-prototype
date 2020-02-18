@@ -9,7 +9,7 @@ const unloadedState: GroupsState = {
 	successfullyLoaded: false,
 	groupSearch: {
 		nameContains: '',
-		orderBy: 'Name',
+		orderBy: 'DateCreated',
 		page: 1,
 		pageSize: 15
 	}
