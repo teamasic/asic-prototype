@@ -45,10 +45,5 @@ namespace AttendanceSystemIPCamera.Controllers
                 return await sessionService.GetActiveSession();
             });
         }
-        [HttpPost("takeAttendance")]
-        public async Task StartTakeAttendane()
-        {
-            await sessionService.CallRecognizationService(30, "123");
-        }
     }
 }
