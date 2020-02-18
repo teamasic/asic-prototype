@@ -20,6 +20,8 @@ using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Framework.ExeptionHandler;
 using System.Net;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
+using AttendanceSystemIPCamera.Services.RecognitionService;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -36,14 +38,16 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private readonly IGroupRepository groupRepository;
         private readonly IRecordService recordService;
         private readonly MyConfiguration myConfiguration;
+        private readonly RecognitionService.RecognitionService recognitionService;
         private readonly IMapper mapper;
 
-        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, MyConfiguration myConfiguration, IMapper mapper) : base(unitOfWork)
+        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, MyConfiguration myConfiguration, IMapper mapper, RecognitionService.RecognitionService recognitionService) : base(unitOfWork)
         {
             sessionRepository = unitOfWork.SessionRepository;
             groupRepository = unitOfWork.GroupRepository;
             this.recordService = recordService;
             this.myConfiguration = myConfiguration;
+            this.recognitionService = recognitionService;
             this.mapper = mapper;
         }
         public async Task Add(TakeAttendanceViewModel viewModel)
@@ -116,7 +120,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 session.Active = true;
                 session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
                 var sessionAdded = await Add(session);
-                CallRecognitionService(timeDifferenceMilliseconds, sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
+                recognitionService.StartRecognition(timeDifferenceMilliseconds, sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
                 return mapper.Map<SessionViewModel>(sessionAdded);
             }
         }
