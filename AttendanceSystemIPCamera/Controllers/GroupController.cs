@@ -12,6 +12,8 @@ using AttendanceSystemIPCamera.Services.GroupService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
+using AttendanceSystemIPCamera.Services.AttendeeService;
+using AttendanceSystemIPCamera.Services.AttendeeGroupService;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -20,10 +22,16 @@ namespace AttendanceSystemIPCamera.Controllers
     public class GroupController : BaseController
     {
         private readonly IGroupService service;
+        private readonly IAttendeeService attendeeService;
+        private readonly IAttendeeGroupService attendeeGroupService;
         private readonly IMapper mapper;
-        public GroupController(IGroupService service, IMapper mapper)
+        public GroupController
+            (IGroupService service, IAttendeeService attendeeService,
+             IAttendeeGroupService attendeeGroupService, IMapper mapper)
         {
             this.service = service;
+            this.attendeeService = attendeeService;
+            this.attendeeGroupService = attendeeGroupService;
             this.mapper = mapper;
         }
 
@@ -60,7 +68,24 @@ namespace AttendanceSystemIPCamera.Controllers
             return ExecuteInMonitoring(async () =>
             {
                 var group = mapper.Map<Group>(groupViewModel);
+                
                 var addedGroup = await service.Add(group);
+
+                var attendeeGroups = new List<AttendeeGroup>();
+                foreach (var item in groupViewModel.Attendees)
+                {
+                    var attendee = mapper.Map<Attendee>(item);
+                    var addedAttendee = attendeeService.Add(attendee);
+                    var attendeeGroup = new AttendeeGroup()
+                    {
+                        AttendeeId = addedAttendee.Result.Id,
+                        GroupId = addedGroup.Id
+                    };
+                    attendeeGroups.Add(attendeeGroup);
+                }
+
+                var test = attendeeGroupService.AddAsync(attendeeGroups);
+
                 return mapper.Map<GroupViewModel>(addedGroup);
             });
         }

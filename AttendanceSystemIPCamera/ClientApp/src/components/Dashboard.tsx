@@ -1,4 +1,4 @@
-import * as React from 'react';
+﻿import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators } from 'redux';
@@ -8,16 +8,19 @@ import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination } from 'antd';
 import { Typography } from 'antd';
-import { Input } from 'antd';
+import { Input, Modal, Upload, Table, Divider, message } from 'antd';
 import classNames from 'classnames';
 import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
 import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
 import { RoomsState } from '../store/room/state';
 import { sessionActionCreators } from '../store/session/actionCreators';
+import { log } from 'util';
+import { parse } from 'papaparse';
 
 const { Search } = Input;
 const { Title } = Typography;
+const { Text } = Typography;
 
 // At runtime, Redux will merge together...
 type GroupProps =
@@ -28,8 +31,24 @@ type GroupProps =
     & typeof sessionActionCreators// ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
+interface DashboardComponentState {
+    modalVisible: boolean,
+    modalLoading: boolean,
+    importAttendees: any, 
+    groupCode: string,
+    groupName: string
+}
 
-class Dashboard extends React.PureComponent<GroupProps> {
+class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState> {
+
+    state = {
+        modalVisible: false,
+        modalLoading: false,
+        importAttendees: [],
+        groupCode: "",
+        groupName: ""
+    }
+
     // This method is called when the component is first added to the document
     public componentDidMount() {
         this.ensureDataFetched();
@@ -62,9 +81,91 @@ class Dashboard extends React.PureComponent<GroupProps> {
         }
     }
 
+    public showModal = () => {
+        this.setState({
+            modalVisible: true
+        });
+    }
+
+    public handleOk = (value: any) => {
+        var newGroup = new Group();
+        newGroup.name = this.state.groupName;
+        newGroup.code = this.state.groupCode;
+        newGroup.attendees = this.state.importAttendees;
+        //newGroup.attendees.pop();
+        console.log(newGroup);
+        this.props.postGroup(newGroup);
+    }
+
+    public parseFileToTable = (file: File) => {
+        var thisState = this;
+        parse(file, {
+            header: true,
+            complete: function (results: any, file: File) {
+                console.log(results.data);
+                thisState.setState({
+                    importAttendees: results.data
+                });
+            }
+        });
+    }
+
+    public handleCancel = () => {
+        this.setState({
+            modalVisible: false,
+            importAttendees: []
+        });
+    }
+
+    public onGroupCodeChange = (e: any) => {
+        this.setState({
+            groupCode: e.target.value
+        });
+    } 
+
+    public onGroupNameChange = (e: any) => {
+        this.setState({
+            groupName: e.target.value
+        });
+    }
+
+    public validateBeforeUpload = (file: File) => {
+        if (file.type !== "application/vnd.ms-excel") {
+            message.error("Only accept CSV file!", 3);//Show error in 5 second
+            return false;
+        }
+        this.parseFileToTable(file);
+        if (this.state.importAttendees.length == 0) {
+            message.error("You upload a csv file with wrong format. Please try again!", 3);
+            this.setState({
+                importAttendees: []
+            })
+            return false;
+        }
+        return true;
+    }
+
     public render() {
         console.log(this.props);
         var hasGroups = this.hasGroups();
+        const columns = [
+            {
+                title: 'No.',
+                key: 'No',
+                dataIndex: 'No'
+            },
+            {
+                title: 'Code',
+                key: 'Code',
+                dataIndex: 'Code'
+            },
+            {
+                title: 'Name',
+                key: 'Name',
+                dataIndex: 'Name'
+            }
+        ];
+
         return (
             <React.Fragment>
                 <div className="breadcrumb-container">
@@ -80,9 +181,58 @@ class Dashboard extends React.PureComponent<GroupProps> {
                 </div>
                 <div className="title-container">
                     <Title className="title" level={3}>Your groups</Title>
-                    <Button className="new-button" type="primary" icon="plus">
+                    <Button className="new-button" type="primary" icon="plus" onClick={this.showModal}>
                         New group
                     </Button>
+                    <Modal
+                        visible={this.state.modalVisible}
+                        title="Create New Group"
+                        onOk={this.handleOk}
+                        onCancel={this.handleCancel}
+                        style={{ top: 20 }}
+                        width={900}
+                        footer={[
+                            <Button key="back" onClick={this.handleCancel}>
+                                Cancel
+                            </Button>,
+                            <Button key="submit" type="primary" loading={this.state.modalLoading} onClick={this.handleOk}>
+                                            Save
+                            </Button>,
+                        ]}
+                    >
+                        <Row>
+                            <Col span={8}><Text strong>Group Code:</Text></Col>
+                            <Col span={4} offset={2}><Text strong>Group Name:</Text></Col>
+                        </Row>
+                        <Row>
+                            <Col span={8}>
+                                <Input placeholder="Enter group code" onChange={this.onGroupCodeChange} />
+                            </Col>
+                            <Col span={12} offset={2}>
+                                <Input placeholder="Enter group name" onChange={this.onGroupNameChange} />
+                            </Col>
+                        </Row>
+                        <Divider orientation="left">List Attendees</Divider>
+                        <Row gutter={[0, 32]}>
+                            <Col span={8}>
+                                <Upload
+                                    multiple={false}
+                                    accept=".csv"
+                                    showUploadList={false}
+                                    beforeUpload={this.validateBeforeUpload}
+                                >
+                                    <Button>
+                                        <Icon type="upload" /> Upload CSV File
+                                    </Button>
+                                </Upload>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Table dataSource={this.state.importAttendees} columns={columns} rowKey="No"
+                                pagination={{ pageSize: 5 }}
+                            />;
+                        </Row>
+                    </Modal>
                 </div>
                 <Row className="filter-container">
                     <Col span={8}>
