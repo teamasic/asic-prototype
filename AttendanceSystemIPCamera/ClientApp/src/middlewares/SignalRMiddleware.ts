@@ -19,9 +19,8 @@ function createSignalRMiddleware() {
 export function signalRStart(store: any) {
     let connection = signalRConnection;
 
-    connection.on("attendeePresented", (message) => {
-        const attendeeId = parseInt(message);
-        store.dispatch(sessionActionCreators.updateAttendeeRecordRealTime(attendeeId));
+    connection.on("attendeePresented", attendeeCode => {
+        store.dispatch(sessionActionCreators.updateAttendeeRecordRealTime(attendeeCode));
     });
 
     connection.start();

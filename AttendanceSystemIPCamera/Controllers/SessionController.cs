@@ -20,11 +20,11 @@ namespace AttendanceSystemIPCamera.Controllers
     [Route("api/[controller]")]
     public class SessionController : BaseController
     {
-        private readonly ISessionService service;
+        private readonly ISessionService sessionService;
         private readonly IMapper mapper;
-        public SessionController(ISessionService service, IMapper mapper)
+        public SessionController(ISessionService sessionService, IMapper mapper)
         {
-            this.service = service;
+            this.sessionService = sessionService;
             this.mapper = mapper;
         }
 
@@ -33,7 +33,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var session = await service.GetById(id);
+                var session = await sessionService.GetById(id);
                 return mapper.Map<SessionViewModel>(session);
             });
         }
@@ -43,7 +43,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var attendeeRecordPairs = await service.GetSessionAttendeeRecordMap(id);
+                var attendeeRecordPairs = await sessionService.GetSessionAttendeeRecordMap(id);
                 return mapper.ProjectTo<AttendeeRecordPair, AttendeeRecordPairViewModel>(attendeeRecordPairs);
             });
         }

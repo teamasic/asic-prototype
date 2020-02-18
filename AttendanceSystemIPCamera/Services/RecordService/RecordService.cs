@@ -20,7 +20,6 @@ namespace AttendanceSystemIPCamera.Services.RecordService
     public interface IRecordService : IBaseService<Record>
     {
         public Task<(Record record, bool isActiveSession)> Set(SetRecordViewModel createRecordViewModel);
-        public Task Set(SetRecordViewModel createRecordViewModel);
         public Task<IEnumerable<SetRecordViewModel>> UpdateRecordsAfterEndSession();
         public Task<SetRecordViewModel> RecordAttendance(AttendeeViewModel viewModel);
     }

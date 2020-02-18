@@ -14,7 +14,7 @@ import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
 import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
 import { RoomsState } from '../store/room/state';
-import { sessionActionCreator } from '../store/session/actionCreators';
+import { sessionActionCreators } from '../store/session/actionCreators';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -25,7 +25,7 @@ type GroupProps =
     & RoomsState// ... state we've requested from the Redux store
     & typeof groupActionCreators
     & typeof roomActionCreators
-    & typeof sessionActionCreator// ... plus action creators we've requested
+    & typeof sessionActionCreators// ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
 
@@ -63,8 +63,8 @@ class Dashboard extends React.PureComponent<GroupProps> {
     }
 
     public render() {
+        console.log(this.props);
         var hasGroups = this.hasGroups();
-        console.log("props", this.props);
         return (
             <React.Fragment>
                 <div className="breadcrumb-container">
@@ -100,7 +100,8 @@ class Dashboard extends React.PureComponent<GroupProps> {
                     </Col>
                 </Row>
                 <div className={classNames('group-container', {
-                    'empty': !hasGroups
+                    'empty': !hasGroups,
+                    'loading': this.props.isLoading
                 })}>
                     {
                         this.props.isLoading ? <Spin size="large" /> :
@@ -144,7 +145,7 @@ class Dashboard extends React.PureComponent<GroupProps> {
                     dataSource={this.props.paginatedGroupList!.list}
                     renderItem={group => (
                         <List.Item>
-                            <GroupCard group={group} roomList={this.props.roomList} />
+                            <GroupCard redirect={url => this.redirect(url)} group={group} roomList={this.props.roomList} />
                         </List.Item>
                     )}
                 />
@@ -155,10 +156,14 @@ class Dashboard extends React.PureComponent<GroupProps> {
             </div>
         );
     }
+
+    private redirect(url: string) {
+        this.props.history.push(url);
+    }
 }
 const mapStateToProps = (state: ApplicationState) => ({ ...state.groups, ...state.rooms })
 const mapDispatchToProps = {
- ...roomActionCreators, ...groupActionCreators, ...sessionActionCreator
+ ...roomActionCreators, ...groupActionCreators, ...sessionActionCreators
 }
 export default connect(
     mapStateToProps, // Selects which state properties are merged into the component's props

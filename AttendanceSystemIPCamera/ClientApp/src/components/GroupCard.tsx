@@ -19,7 +19,8 @@ const { Option } = Select;
 
 interface Props {
     roomList: Room[];
-	group: Group;
+    group: Group;
+    redirect: (url: string) => void;
 }
 
 // At runtime, Redux will merge together...
@@ -44,15 +45,17 @@ class GroupCard extends React.PureComponent<GroupProps> {
         })
     };
 
-    private handleModelOk = () => {
+    private handleModelOk = async () => {
         this.setState({
             modelOpen: false,
         })
         const { startTime, duration, roomName, rtspString } = { ...this.state };
         const groupId = this.props.group.id;
         let startTimeString = startTime.format('YYYY-MM-DD HH:mm');
-        console.log({ startTime: startTimeString, duration, rtspString, roomName, groupId });
-        startSession({ startTime: startTimeString, duration, rtspString, roomName, groupId });
+        const data = await startSession({ startTime: startTimeString, duration, rtspString, roomName, groupId });
+        if (data.id != null) {
+            this.props.redirect(`session/${data.id}`);
+        }
     }
 
     private handleModelCancel = () => {
@@ -88,7 +91,6 @@ class GroupCard extends React.PureComponent<GroupProps> {
     }
     private renderRoomOptions = () => {
         const { roomList } = this.props;
-        console.log(roomList);
         const roomOptions = roomList.map(room => {
             return <Option key={room.id} value={room.id}>{room.name}</Option>
         })

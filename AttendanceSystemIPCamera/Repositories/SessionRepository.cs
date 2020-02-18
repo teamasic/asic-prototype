@@ -41,13 +41,13 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public new async Task<Session> GetById(object id)
         {
-            return dbSet
+            return await dbSet
                 .Include(s => s.Records)
                     .ThenInclude(r => r.Attendee)
                 .Include(s => s.Group)
                     .ThenInclude(g => g.AttendeeGroups)
                         .ThenInclude(ag => ag.Attendee)
-                .FirstOrDefault(x => (int) id == x.Id);
+                .FirstOrDefaultAsync(x => (int) id == x.Id);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
 {
     public interface IRealTimeService
     {
-        public Task MarkAttendeeAsPresent(int attendeeId);
+        public Task MarkAttendeeAsPresent(string attendeeCode);
     }
 
     public class HubMethods
@@ -32,9 +32,9 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         {
             this.hubContext = hubContext;
         }
-        public async Task MarkAttendeeAsPresent(int attendeeId)
+        public async Task MarkAttendeeAsPresent(string attendeeCode)
         {
-            await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_PRESENTED, attendeeId);
+            await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_PRESENTED, attendeeCode);
         }
     }
 }

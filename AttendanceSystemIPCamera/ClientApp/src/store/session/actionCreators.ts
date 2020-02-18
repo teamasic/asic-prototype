@@ -117,10 +117,10 @@ const createOrUpdateRecord = (
 	}
 	};
 
-function updateAttendeeRecordRealTime(attendeeId: number) {
+function updateAttendeeRecordRealTime(attendeeCode: string) {
 	return {
 		type: ACTIONS.UPDATE_ATTENDEE_RECORD_REAL_TIME,
-		attendeeId
+		attendeeCode
 	};
 }
 
@@ -133,9 +133,9 @@ function receiveActiveSession(activeSession: any) {
 }
 
 export const requestActiveSession = (): AppThunkAction => async (dispatch, getState) => {
-    const apiResponse: ApiResponse = await getActiveSession();
-    dispatch(receiveActiveSession(apiResponse.data));
-}
+	const apiResponse: ApiResponse = await getActiveSession();
+	dispatch(receiveActiveSession(apiResponse.data));
+};
 
 export const sessionActionCreators = {
 	requestSession,

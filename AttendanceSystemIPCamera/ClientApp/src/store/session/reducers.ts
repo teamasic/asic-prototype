@@ -84,7 +84,7 @@ const reducers: Reducer<SessionState> = (
 			};
 		case ACTIONS.UPDATE_ATTENDEE_RECORD_REAL_TIME:
 			let updatedRecord: Record | undefined;
-			const updatedAttendeeRecord = state.attendeeRecords.find(ar => ar.attendee.id === action.attendeeId);
+			const updatedAttendeeRecord = state.attendeeRecords.find(ar => ar.attendee.code === action.attendeeCode);
 			if (updatedAttendeeRecord) {
 				if (updatedAttendeeRecord.record != null) {
 					updatedRecord = {
@@ -101,7 +101,7 @@ const reducers: Reducer<SessionState> = (
 				return {
 					...state,
 					attendeeRecords: state.attendeeRecords.map(ar =>
-						ar.attendee.id === action.attendeeId ? ({
+						ar.attendee.code === action.attendeeCode ? ({
 							attendee: ar.attendee,
 							record: updatedRecord
 						}) : ar)

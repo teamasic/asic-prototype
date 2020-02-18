@@ -27,24 +27,22 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPost("manually")]
-        public Task<BaseResponse<SetRecordViewModel>> Create([FromBody] SetRecordViewModel viewModel)
+        public Task<BaseResponse<RecordViewModel>> RecordAttendanceManually([FromBody] SetRecordViewModel viewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
                 var (record, isActiveSession) = await recordService.Set(viewModel);
-                if (isActiveSession && viewModel.Present)
-                {
-                    await realTimeService.MarkAttendeeAsPresent(viewModel.AttendeeId);
-                }
                 return mapper.Map<RecordViewModel>(record);
             });
         }
         [HttpPost]
-        public Task<BaseResponse<SetRecordViewModel>> RecordAttendance([FromBody] AttendeeViewModel viewModel)
+        public Task<BaseResponse<SetRecordViewModel>> RecordAttendanceAutomatically([FromBody] AttendeeViewModel viewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
-                return await recordService.RecordAttendance(viewModel);
+                var setRecordViewModel = await recordService.RecordAttendance(viewModel);
+                await realTimeService.MarkAttendeeAsPresent(viewModel.Code);
+                return setRecordViewModel;
             });
         }
         [HttpPut("endSession")]
