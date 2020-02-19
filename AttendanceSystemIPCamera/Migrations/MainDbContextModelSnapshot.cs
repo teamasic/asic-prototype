@@ -22,6 +22,9 @@ namespace AttendanceSystemIPCamera.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Code")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
@@ -50,6 +53,9 @@ namespace AttendanceSystemIPCamera.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateTimeCreated")
                         .HasColumnType("TEXT");
@@ -95,6 +101,9 @@ namespace AttendanceSystemIPCamera.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("Active")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Duration")
                         .HasColumnType("INTEGER");
 
@@ -133,7 +142,7 @@ namespace AttendanceSystemIPCamera.Migrations
                         .HasForeignKey("AttendeeId");
 
                     b.HasOne("AttendanceSystemIPCamera.Models.Session", "Session")
-                        .WithMany()
+                        .WithMany("Records")
                         .HasForeignKey("SessionId");
                 });
 

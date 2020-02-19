@@ -4,10 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Framework.ViewModels;
+using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using AttendanceSystemIPCamera.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using AttendanceSystemIPCamera.Services.GroupService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using AutoMapper;
+using AttendanceSystemIPCamera.Services.AttendeeService;
+using AttendanceSystemIPCamera.Services.AttendeeGroupService;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -16,17 +22,33 @@ namespace AttendanceSystemIPCamera.Controllers
     public class GroupController : BaseController
     {
         private readonly IGroupService service;
-        public GroupController(IGroupService service)
+        private readonly IAttendeeService attendeeService;
+        private readonly IAttendeeGroupService attendeeGroupService;
+        private readonly IMapper mapper;
+        public GroupController
+            (IGroupService service, IAttendeeService attendeeService,
+             IAttendeeGroupService attendeeGroupService, IMapper mapper)
         {
             this.service = service;
+            this.attendeeService = attendeeService;
+            this.attendeeGroupService = attendeeGroupService;
+            this.mapper = mapper;
         }
 
         [HttpGet]
-        public BaseResponse<IEnumerable<GroupViewModel>> Get()
+        public Task<BaseResponse<PaginatedListViewModel<GroupViewModel>>> Get([FromQuery] GroupSearchViewModel groupSearchViewModel)
         {
-            return ExecuteInMonitoring(() =>
+            return ExecuteInMonitoring(async () =>
             {
-                return service.GetAll().AsEnumerable();
+                var groups = await service.GetAll(groupSearchViewModel);
+                var groupViewModels = mapper.ProjectTo<Group, GroupViewModel>(groups);
+                return new PaginatedListViewModel<GroupViewModel>
+                {
+                    List = groupViewModels,
+                    Page = groups.Page,
+                    TotalPage = groups.TotalPage,
+                    Total = groups.Total,
+                };
             });
         }
 
@@ -35,7 +57,8 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                return await service.FindByIdAsync(id);
+                var group = await service.GetById(id);
+                return mapper.Map<GroupViewModel>(group);
             });
         }
 
@@ -44,7 +67,26 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                return await service.CreateAsync(groupViewModel);
+                var group = mapper.Map<Group>(groupViewModel);
+                
+                var addedGroup = await service.Add(group);
+
+                var attendeeGroups = new List<AttendeeGroup>();
+                foreach (var item in groupViewModel.Attendees)
+                {
+                    var attendee = mapper.Map<Attendee>(item);
+                    var addedAttendee = attendeeService.Add(attendee);
+                    var attendeeGroup = new AttendeeGroup()
+                    {
+                        AttendeeId = addedAttendee.Result.Id,
+                        GroupId = addedGroup.Id
+                    };
+                    attendeeGroups.Add(attendeeGroup);
+                }
+
+                var test = attendeeGroupService.AddAsync(attendeeGroups);
+
+                return mapper.Map<GroupViewModel>(addedGroup);
             });
         }
     }

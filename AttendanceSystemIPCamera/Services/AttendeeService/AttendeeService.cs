@@ -1,0 +1,36 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AttendanceSystemIPCamera.Framework.ViewModels;
+using AttendanceSystemIPCamera.Models;
+using Microsoft.EntityFrameworkCore;
+using AttendanceSystemIPCamera.Repositories.UnitOfWork;
+using AttendanceSystemIPCamera.Services.BaseService;
+using AutoMapper;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using AttendanceSystemIPCamera.Repositories;
+
+namespace AttendanceSystemIPCamera.Services.AttendeeService
+{
+    public interface IAttendeeService : IBaseService<Attendee>
+    {
+        Attendee GetByAttendeeCode(string code);
+    }
+
+    public class AttendeeService : BaseService<Attendee>, IAttendeeService
+    {
+        private readonly IAttendeeRepository attendeeRepository;
+
+        public AttendeeService(MyUnitOfWork unitOfWork) : base(unitOfWork)
+        {
+            attendeeRepository = unitOfWork.AttendeeRepository;
+        }
+
+        public Attendee GetByAttendeeCode(string code)
+        {
+            return attendeeRepository.GetByCodeWithAttendeeGroups(code);
+        }
+    }
+}

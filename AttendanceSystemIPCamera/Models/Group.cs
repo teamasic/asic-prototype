@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Models
 {
-    public class Group: BaseEntity, IDeletable, IHasDateTimeCreated
+    public class Group : BaseEntity, IDeletable, IHasDateTimeCreated
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        public string Code { get; set; }
         public String Name { get; set; }
         public DateTime DateTimeCreated { get; set; }
         public virtual ICollection<AttendeeGroup> AttendeeGroups { get; set; } = new List<AttendeeGroup>();
