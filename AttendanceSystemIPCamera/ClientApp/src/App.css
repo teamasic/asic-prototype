@@ -18,3 +18,8 @@ code {
 	box-shadow: 0 10px 6px -6px #ddd;
 }
 
+.is-loading {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
