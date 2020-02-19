@@ -23,6 +23,10 @@ export function signalRStart(store: any) {
         store.dispatch(sessionActionCreators.updateAttendeeRecordRealTime(attendeeCode));
     });
 
+    connection.on("sessionEnded", sessionId => {
+        store.dispatch(sessionActionCreators.requestSession(sessionId));
+    });
+
     connection.start();
 }
 

@@ -30,13 +30,15 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         private readonly ISessionRepository sessionRepository;
         private readonly IAttendeeRepository attendeeRepository;
         private readonly IGroupRepository groupRepository;
+        private readonly IRealTimeService realTimeService;
         private readonly IMapper mapper;
-        public RecordService(MyUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork)
+        public RecordService(MyUnitOfWork unitOfWork, IRealTimeService realTimeService, IMapper mapper) : base(unitOfWork)
         {
             recordRepository = unitOfWork.RecordRepository;
             sessionRepository = unitOfWork.SessionRepository;
             attendeeRepository = unitOfWork.AttendeeRepository;
             groupRepository = unitOfWork.GroupRepository;
+            this.realTimeService = realTimeService;
             this.mapper = mapper;
         }
         
@@ -115,10 +117,12 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 var notRecordIds = allAttendeeIds.Where(id => !attendedAttendeeIds.Contains(id)).ToList();
                 notRecordIds.ForEach(async (attendeeId) =>
                 {
-                    Record record = new Record();
-                    record.Session = activeSession;
-                    record.Attendee = await attendeeRepository.GetById(attendeeId);
-                    record.Present = false;
+                    Record record = new Record
+                    {
+                        Session = activeSession,
+                        Attendee = await attendeeRepository.GetById(attendeeId),
+                        Present = false
+                    };
                     await recordRepository.Add(record);
                 });
 
@@ -127,6 +131,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 sessionRepository.Update(activeSession);
                 unitOfWork.Commit();
                 var newRecordList = await recordRepository.GetRecordsBySessionId(activeSession.Id);
+                await realTimeService.SessionEnded(activeSession.Id);
                 return mapper.ProjectTo<Record, SetRecordViewModel>(newRecordList);
             }
             else
