@@ -70,14 +70,14 @@ namespace AttendanceSystemIPCamera.Controllers
             return ExecuteInMonitoring(async () =>
             {
                 var group = mapper.Map<Group>(groupViewModel);
-                
-                var addedGroup = await service.Add(group);
+
+                var addedGroup = await service.AddIfNotInDb(group);
 
                 var attendeeGroups = new List<AttendeeGroup>();
                 foreach (var item in groupViewModel.Attendees)
                 {
                     var attendee = mapper.Map<Attendee>(item);
-                    var addedAttendee = attendeeService.Add(attendee);
+                    var addedAttendee = attendeeService.AddIfNotInDb(attendee);
                     var attendeeGroup = new AttendeeGroup()
                     {
                         AttendeeId = addedAttendee.Result.Id,
@@ -87,7 +87,7 @@ namespace AttendanceSystemIPCamera.Controllers
                     attendeeGroups.Add(attendeeGroup);
                 }
 
-                var test = attendeeGroupService.AddAsync(attendeeGroups);
+                await attendeeGroupService.AddAsync(attendeeGroups);
 
                 return mapper.Map<GroupViewModel>(addedGroup);
             });

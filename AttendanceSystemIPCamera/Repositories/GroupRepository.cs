@@ -17,6 +17,7 @@ namespace AttendanceSystemIPCamera.Repositories
     {
         public Task<PaginatedList<Group>> GetAll(GroupSearchViewModel groupSearchViewModel);
         Task<bool> CheckAttendeeExistedInGroup(int id, string attendeeCode);
+        Group GetByCode(string code);
     }
     public class GroupRepository : Repository<Group>, IGroupRepository
     {
@@ -55,6 +56,11 @@ namespace AttendanceSystemIPCamera.Repositories
             var group = await dbSet.Include(g => g.AttendeeGroups).ThenInclude(a => a.Attendee).FirstOrDefaultAsync(g => g.Id == id);
             return group.Attendees.Any(a => a.Code.Equals(attendeeCode));
                 
+        }
+
+        public Group GetByCode(string code)
+        {
+            return Get(g => g.Code == code).FirstOrDefault();
         }
     }
 }
