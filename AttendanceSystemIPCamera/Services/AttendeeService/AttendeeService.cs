@@ -16,14 +16,21 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
 {
     public interface IAttendeeService : IBaseService<Attendee>
     {
+        Attendee GetByAttendeeCode(string code);
     }
 
-    public class AttendeeService: BaseService<Attendee>, IAttendeeService
+    public class AttendeeService : BaseService<Attendee>, IAttendeeService
     {
         private readonly IAttendeeRepository attendeeRepository;
+
         public AttendeeService(MyUnitOfWork unitOfWork) : base(unitOfWork)
         {
             attendeeRepository = unitOfWork.AttendeeRepository;
+        }
+
+        public Attendee GetByAttendeeCode(string code)
+        {
+            return attendeeRepository.GetByCodeWithAttendeeGroups(code);
         }
     }
 }

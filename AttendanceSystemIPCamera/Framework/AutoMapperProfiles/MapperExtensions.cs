@@ -10,7 +10,7 @@ namespace AttendanceSystemIPCamera.Framework.AutoMapperProfiles
     {
         public static IEnumerable<TToModel> ProjectTo<TFromModel, TToModel>(this IMapper mapper, IEnumerable<TFromModel> entities)
         {
-            return mapper.ProjectTo<TToModel>(entities.AsQueryable()).ToList(); ;
+            return mapper.ProjectTo<TToModel>(entities.AsQueryable()).ToList();
         }
         public static TToModel Map<TToModel>(this IMapper mapper, object entity) where TToModel: class, new()
         {

@@ -6,11 +6,7 @@ using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using AttendanceSystemIPCamera.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
-using AttendanceSystemIPCamera.Services.GroupService;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using AutoMapper;
 using AttendanceSystemIPCamera.Services.RecordService;
 
@@ -20,21 +16,41 @@ namespace AttendanceSystemIPCamera.Controllers
     [Route("api/[controller]")]
     public class RecordController : BaseController
     {
-        private readonly IRecordService service;
+        private readonly IRecordService recordService;
+        private readonly IRealTimeService realTimeService;
         private readonly IMapper mapper;
-        public RecordController(IRecordService service, IMapper mapper)
+        public RecordController(IRecordService recordService, IRealTimeService realTimeService, IMapper mapper)
         {
-            this.service = service;
+            this.recordService = recordService;
             this.mapper = mapper;
+            this.realTimeService = realTimeService;
         }
 
-        [HttpPost]
-        public Task<BaseResponse<SetRecordViewModel>> Create([FromBody] SetRecordViewModel viewModel)
+        [HttpPost("manually")]
+        public Task<BaseResponse<RecordViewModel>> RecordAttendanceManually([FromBody] SetRecordViewModel viewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
-                await service.Set(viewModel);
-                return viewModel;
+                var (record, isActiveSession) = await recordService.Set(viewModel);
+                return mapper.Map<RecordViewModel>(record);
+            });
+        }
+        [HttpPost]
+        public Task<BaseResponse<SetRecordViewModel>> RecordAttendanceAutomatically([FromBody] AttendeeViewModel viewModel)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var setRecordViewModel = await recordService.RecordAttendance(viewModel);
+                await realTimeService.MarkAttendeeAsPresent(viewModel.Code);
+                return setRecordViewModel;
+            });
+        }
+        [HttpPut("endSession")]
+        public Task<BaseResponse<IEnumerable<SetRecordViewModel>>> UpdateRecordsAfterEndSession()
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                return await recordService.UpdateRecordsAfterEndSession();
             });
         }
     }

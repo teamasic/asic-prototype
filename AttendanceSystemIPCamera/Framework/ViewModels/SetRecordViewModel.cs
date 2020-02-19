@@ -9,7 +9,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
     public class SetRecordViewModel: BaseViewModel<Record>
     {
-        public int SessionId { get; set; }
+        public int SessionId { get; set; } = -1;
         public int AttendeeId { get; set; }
         public bool Present { get; set; } = true;
     }

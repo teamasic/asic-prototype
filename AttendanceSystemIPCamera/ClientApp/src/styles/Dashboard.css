@@ -30,7 +30,7 @@
     margin-top: 30px;
 }
 
-.group-container.empty {
+.group-container.empty, .group-container.loading {
     height: 50vh;
     display: flex;
     justify-content: center;

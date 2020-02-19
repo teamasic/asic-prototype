@@ -12,6 +12,9 @@ import { Input, Modal, Upload, Table, Divider, message } from 'antd';
 import classNames from 'classnames';
 import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
+import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
+import { RoomsState } from '../store/room/state';
+import { sessionActionCreators } from '../store/session/actionCreators';
 import { log } from 'util';
 import { parse } from 'papaparse';
 
@@ -21,8 +24,11 @@ const { Text } = Typography;
 
 // At runtime, Redux will merge together...
 type GroupProps =
-    GroupsState // ... state we've requested from the Redux store
-    & typeof groupActionCreators // ... plus action creators we've requested
+    GroupsState
+    & RoomsState// ... state we've requested from the Redux store
+    & typeof groupActionCreators
+    & typeof roomActionCreators
+    & typeof sessionActionCreators// ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
 interface DashboardComponentState {
@@ -149,6 +155,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     }
 
     public render() {
+        console.log(this.props);
         var hasGroups = this.hasGroups();
         const columns = [
             {
@@ -252,11 +259,12 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                     </Col>
                 </Row>
                 <div className={classNames('group-container', {
-                    'empty': !hasGroups
+                    'empty': !hasGroups,
+                    'loading': this.props.isLoading
                 })}>
                     {
-                        this.props.isLoading ? <Spin /> :
-                            (hasGroups ? this.renderGroupsTable() : this.renderEmpty())
+                        this.props.isLoading ? <Spin size="large" /> :
+                        (hasGroups ? this.renderGroupsTable() : this.renderEmpty())
                     }
                 </div>
             </React.Fragment>
@@ -265,6 +273,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
     private ensureDataFetched() {
         this.props.requestGroups(this.props.groupSearch);
+        this.props.requestRooms();
+        this.props.requestActiveSession();
     }
 
     private hasGroups(): boolean {
@@ -294,7 +304,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                     dataSource={this.props.paginatedGroupList!.list}
                     renderItem={group => (
                         <List.Item>
-                            <GroupCard group={group} viewDetail={this.viewDetail} />
+                            <GroupCard redirect={url => this.redirect(url)} group={group} roomList={this.props.roomList}
+                                viewDetail={this.viewDetail}/>
                         </List.Item>
                     )}
                 />
@@ -305,9 +316,16 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
             </div>
         );
     }
-}
 
+    private redirect(url: string) {
+        this.props.history.push(url);
+    }
+}
+const mapStateToProps = (state: ApplicationState) => ({ ...state.groups, ...state.rooms })
+const mapDispatchToProps = {
+ ...roomActionCreators, ...groupActionCreators, ...sessionActionCreators
+}
 export default connect(
-    (state: ApplicationState) => state.groups, // Selects which state properties are merged into the component's props
-    dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
+    mapStateToProps, // Selects which state properties are merged into the component's props
+    mapDispatchToProps // Selects which action creators are merged into the component's props
 )(Dashboard as any);

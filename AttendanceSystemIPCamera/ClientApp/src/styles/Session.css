@@ -1,60 +1,46 @@
 ﻿.breadcrumb-container span {
-    color: gray !important;
+	color: gray !important;
 }
 
 .title-container {
-    display: flex;
-    flex-direction: row;
-    margin: 20px 0;
+	display: flex;
+	flex-direction: row;
+	margin: 20px 0;
 }
 
 .title-container .title {
-    margin-right: 20px;
+	margin-right: 20px;
 }
 
 .filter-container {
-    display: flex;
-    flex-direction: row;
+	display: flex;
+	flex-direction: row;
 }
 
 .order-by-sub {
-    display: inline-block;
-    margin-right: 10px;
+	display: inline-block;
+	margin-right: 10px;
 }
 
 .order-by-select {
-    width: 160px;
+	width: 160px;
 }
 
-.group-container {
-    margin-top: 30px;
+.attendee-container {
+	margin-top: 30px;
 }
 
-.group-container.empty {
-    height: 50vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.attendee-container.empty {
+	height: 50vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
-.description-container {
-    padding-left: 20px;
+.present-button {
+	margin-right: 30px;
 }
 
-.description {
-    margin: 10px 0;
-}
-
-.description span {
-    display: inline-block;
-    margin-left: 10px;
-}
-
-.group .actions {
-    margin-top: 20px;
-    text-align: right;
-}
-
-.group .actions .button {
-    margin-left: 5px;
+.subtitle {
+	padding-top: 7px;
 }

@@ -342,3 +342,4 @@ healthchecksdb
 # .js and .js.map files
 AttendanceSystemIPCamera/ClientApp/src/**/*.js
 AttendanceSystemIPCamera/ClientApp/src/**/*.map
+/AttendanceSystemIPCamera/GPUCache

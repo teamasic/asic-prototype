@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
-    public class TakeAttendanceViewModel: BaseViewModel<Group>
+    public class TakeAttendanceViewModel : BaseViewModel<Group>
     {
         public int GroupId { get; set; }
         public int Duration { get; set; } // minutes

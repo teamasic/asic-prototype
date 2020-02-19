@@ -10,7 +10,7 @@ import './App.css';
 export default () => (
 	<Layout>
 		<Route exact path="/" component={Dashboard} />
-		<Route exact path="/session" component={Session} />
+		<Route exact path="/session/:id" component={Session} />
 		<Route exact path="/group" component={GroupDetail} />
 	</Layout>
 );

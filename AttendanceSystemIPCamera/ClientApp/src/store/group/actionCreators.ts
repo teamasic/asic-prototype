@@ -29,8 +29,8 @@ function stopRequestGroupsWithError(errors: any[]) {
     };
 }
 
+// normal action creator // can't use async, call API
 function receiveGroupsData(paginatedGroupList: PaginatedList<Group>) {
-    console.log(paginatedGroupList);
     return {
         type: ACTIONS.RECEIVE_GROUPS_DATA,
         paginatedGroupList
@@ -83,8 +83,8 @@ const postGroup = (newGroup: Group): AppThunkAction => async (dispatch, getState
 }
 
 export const groupActionCreators = {
-    startRequestGroups,
+    postGroup,
     requestGroups,
     requestGroupDetail,
-    postGroup
+    startRequestGroups
 };
