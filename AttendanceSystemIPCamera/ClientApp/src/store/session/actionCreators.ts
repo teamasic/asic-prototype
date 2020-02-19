@@ -124,7 +124,6 @@ function updateAttendeeRecordRealTime(attendeeCode: string) {
 	};
 }
 
-
 function receiveActiveSession(activeSession: any) {
     return {
         type: ACTIONS.RECEIVE_ACTIVE_SESSION,

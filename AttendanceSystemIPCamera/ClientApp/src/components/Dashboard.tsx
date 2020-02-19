@@ -96,16 +96,25 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         this.props.postGroup(newGroup);
     }
 
-    public parseFileToTable = (file: File) => {
-        var thisState = this;
-        parse(file, {
-            header: true,
-            complete: function (results: any, file: File) {
-                console.log(results.data);
-                thisState.setState({
-                    importAttendees: results.data
-                });
-            }
+    public parseFileToTable = (file: File): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            var thisState = this;
+            parse(file, {
+                header: true,
+                complete: function (results: any, file: File) {
+                    console.log(results.data);
+                    thisState.setState({
+                        importAttendees: results.data
+                    }, () => {
+                        resolve();
+                    });
+                }, error: function (errors: any, file: File) {
+                    message.error("You upload a csv file with wrong format. Please try again!", 3);
+                    thisState.setState({
+                        importAttendees: []
+                    }, () => { reject(); });
+                }
+            });
         });
     }
 
@@ -128,21 +137,13 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         });
     }
 
-    public validateBeforeUpload = (file: File) => {
+    public validateBeforeUpload = (file: File): boolean | Promise<void> => {
         if (file.type !== "application/vnd.ms-excel") {
             //Show error in 3 second
             message.error("Only accept CSV file!", 3);
             return false;
         }
-        this.parseFileToTable(file);
-        if (this.state.importAttendees.length == 0) {
-            message.error("You upload a csv file with wrong format. Please try again!", 3);
-            this.setState({
-                importAttendees: []
-            })
-            return false;
-        }
-        return true;
+        return this.parseFileToTable(file);
     }
 
     public viewDetail = (e: any) => {
@@ -155,7 +156,6 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     }
 
     public render() {
-        console.log(this.props);
         var hasGroups = this.hasGroups();
         const columns = [
             {
