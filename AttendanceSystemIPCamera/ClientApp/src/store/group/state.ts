@@ -9,4 +9,5 @@ export interface GroupsState {
     paginatedGroupList?: PaginatedList<Group>;
     groupSearch: GroupSearch;
     activeSession?: Session;
+    selectedGroup: Group
 }

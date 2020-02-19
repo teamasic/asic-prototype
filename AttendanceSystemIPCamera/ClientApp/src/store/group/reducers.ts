@@ -1,6 +1,7 @@
 ﻿import { Reducer, Action, AnyAction } from "redux";
 import { GroupsState } from "./state";
 import { ACTIONS } from "./actionCreators";
+import { Empty } from "antd";
 
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
@@ -24,6 +25,26 @@ const unloadedState: GroupsState = {
             id: 2,
             code: 'SE63147',
             name: 'Blackberry'
+        }]
+    },
+    selectedGroup: { // temporary, might be restructured
+        id: 1,
+        code: 'None',
+        name: 'None',
+        attendees: [],
+        lastSessionTime: undefined,
+        sessions: [{
+            id: 1,
+            startTime: new Date(),
+            attendees: [{
+                id: 1,
+                code: 'SE63147',
+                name: 'Strawberry'
+            }, {
+                id: 2,
+                code: 'SE63147',
+                name: 'Blackberry'
+            }]
         }]
     }
 };
@@ -58,6 +79,11 @@ const reducers: Reducer<GroupsState> = (state: GroupsState | undefined, incoming
         case ACTIONS.CREATE_NEW_GROUP:
             return {
                 ...state
+            }
+        case ACTIONS.RECEIVE_GROUP_DETAIL:
+            return {
+                ...state,
+                selectedGroup: action.groupDetail
             }
     }
 

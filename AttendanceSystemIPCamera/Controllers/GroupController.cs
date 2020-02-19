@@ -58,6 +58,8 @@ namespace AttendanceSystemIPCamera.Controllers
             return ExecuteInMonitoring(async () =>
             {
                 var group = await service.GetById(id);
+                var attendeeGroups = attendeeGroupService.GetByGroupId(group.Id);
+                group.AttendeeGroups = attendeeGroups.ToList();
                 return mapper.Map<GroupViewModel>(group);
             });
         }
@@ -79,6 +81,7 @@ namespace AttendanceSystemIPCamera.Controllers
                     var attendeeGroup = new AttendeeGroup()
                     {
                         AttendeeId = addedAttendee.Result.Id,
+                        Attendee = addedAttendee.Result,
                         GroupId = addedGroup.Id
                     };
                     attendeeGroups.Add(attendeeGroup);

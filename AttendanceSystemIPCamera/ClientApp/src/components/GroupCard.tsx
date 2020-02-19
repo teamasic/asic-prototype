@@ -9,12 +9,19 @@ import { GroupsState } from '../store/group/state';
 import { Card, Button, Dropdown, Icon, Menu, Row, Col } from 'antd';
 import { Typography } from 'antd';
 import classNames from 'classnames';
+import { createBrowserHistory } from 'history';
 
 const { Title } = Typography;
 
+// Create browser history to use in the Redux store
+const baseUrl = document
+    .getElementsByTagName('base')[0]
+    .getAttribute('href') as string;
+const history = createBrowserHistory({ basename: baseUrl });
 
 interface Props {
     group: Group;
+    viewDetail: any
 }
 
 // At runtime, Redux will merge together...
@@ -62,7 +69,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                     </div>
                 </div>
                 <div className="actions">
-                    <Button className="past-button" type="link">Past sessions</Button>
+                    <Button className="past-button" type="link" onClick={this.props.viewDetail} id={group.id.toString()}>View Detail</Button>
                     <Button className="take-attendance-button" type="primary">Take attendance</Button>
                 </div>
             </Card>

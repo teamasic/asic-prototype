@@ -1,6 +1,6 @@
 ﻿import Group from "../../models/Group";
 import ApiResponse from "../../models/ApiResponse";
-import { getGroups, createGroup } from "../../services/group";
+import { getGroups, createGroup, getGroupDetail } from "../../services/group";
 import { ThunkDispatch } from "redux-thunk";
 import { AppThunkAction } from "..";
 import { AnyAction } from "redux";
@@ -11,7 +11,8 @@ export const ACTIONS = {
     START_REQUEST_GROUPS: 'START_REQUEST_GROUPS',
     STOP_REQUEST_GROUPS_WITH_ERRORS: 'STOP_REQUEST_GROUPS_WITH_ERRORS',
     RECEIVE_GROUPS_DATA: 'RECEIVE_GROUPS_DATA',
-    CREATE_NEW_GROUP: 'CREATE_NEW_GROUP'
+    CREATE_NEW_GROUP: 'CREATE_NEW_GROUP',
+    RECEIVE_GROUP_DETAIL: 'RECEIVE_GROUP_DETAIL'
 }
 
 function startRequestGroups(groupSearch: GroupSearch) {
@@ -42,6 +43,13 @@ function startCreateNewGroup(newGroup: Group) {
     }
 }
 
+function receiveGroupDetail(groupDetail: Group) {
+    return {
+        type: ACTIONS.RECEIVE_GROUP_DETAIL,
+        groupDetail: groupDetail
+    }
+}
+
 const requestGroups = (groupSearch: GroupSearch): AppThunkAction => async (dispatch, getState) => {
     dispatch(startRequestGroups(groupSearch));
 
@@ -53,19 +61,30 @@ const requestGroups = (groupSearch: GroupSearch): AppThunkAction => async (dispa
     }
 }
 
+const requestGroupDetail = (id: number, renderDetailPage: Function): AppThunkAction => async (dispatch, getState) => {
+    const apiResponse: ApiResponse = await getGroupDetail(id);
+    if (apiResponse.success) {
+        dispatch(receiveGroupDetail(apiResponse.data));
+        renderDetailPage();
+    } else {
+        console.log("Get group detail error: " + apiResponse.errors);
+    }
+}
+
 const postGroup = (newGroup: Group): AppThunkAction => async (dispatch, getState) => {
     dispatch(startCreateNewGroup(newGroup));
 
     const apiResponse: ApiResponse = await createGroup(newGroup);
     if (apiResponse.success) {
-        //dispatch(receiveGroupsData(apiResponse.data));
+        
     } else {
-        //dispatch(stopRequestGroupsWithError(apiResponse.errors));
+        
     }
 }
 
 export const groupActionCreators = {
     startRequestGroups,
     requestGroups,
+    requestGroupDetail,
     postGroup
 };

@@ -7,6 +7,7 @@
     <IsPackable>false</IsPackable>
     <SpaRoot>ClientApp\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +36,9 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\components\GroupCard.tsx" />
+    <None Remove="ClientApp\src\components\GroupDetail.tsx" />
+    <None Remove="ClientApp\src\components\GroupInfo.tsx" />
+    <None Remove="ClientApp\src\components\PastSession.tsx" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
     <None Remove="ClientApp\src\models\Attendee.ts" />
     <None Remove="ClientApp\src\models\Group - Copy.ts" />
@@ -58,6 +62,9 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="ClientApp\src\components\GroupCard.tsx" />
+    <TypeScriptCompile Include="ClientApp\src\components\GroupDetail.tsx" />
+    <TypeScriptCompile Include="ClientApp\src\components\GroupInfo.tsx" />
+    <TypeScriptCompile Include="ClientApp\src\components\PastSession.tsx" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\Record.ts">
       <SubType>Code</SubType>

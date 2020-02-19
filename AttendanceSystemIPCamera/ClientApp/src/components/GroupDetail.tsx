@@ -18,13 +18,13 @@ const { Title } = Typography;
 const { TabPane } = Tabs;
 
 // At runtime, Redux will merge together...
-type SessionProps =
+type GroupDetailProps =
     GroupsState // ... state we've requested from the Redux store
     & typeof groupActionCreators // ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
 
-class Session extends React.PureComponent<SessionProps> {
+class GroupDetail extends React.PureComponent<GroupDetailProps> {
     // This method is called when the component is first added to the document
     public componentDidMount() {
         this.ensureDataFetched();
@@ -43,16 +43,16 @@ class Session extends React.PureComponent<SessionProps> {
                             <span>Group</span>
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>
-                            <span>SE1271 - C# Fundamential</span>
+                            <span>{this.props.selectedGroup.code} - {this.props.selectedGroup.name}</span>
                         </Breadcrumb.Item>
                     </Breadcrumb>
                 </div>
                 <div className="title-container">
-                    <Title className="title" level={3}>SE1271 - C# Fundamential</Title>
+                    <Title className="title" level={3}>{this.props.selectedGroup.code} - {this.props.selectedGroup.name}</Title>
                 </div>
                 <Tabs defaultActiveKey="1" type="card">
                     <TabPane tab="Group Information" key="1">
-                        <GroupInfo/>
+                        <GroupInfo attendees={this.props.selectedGroup.attendees} />
                     </TabPane>
                     <TabPane tab="Past Session" key="2">
                         <PastSession/>
@@ -63,7 +63,7 @@ class Session extends React.PureComponent<SessionProps> {
     }
 
     private ensureDataFetched() {
-        //this.props.requestGroups(this.props.groupSearch);
+        
     }
 
     private renderEmpty() {
@@ -72,7 +72,9 @@ class Session extends React.PureComponent<SessionProps> {
     }
 }
 
+//export default GroupDetail;
+
 export default connect(
     (state: ApplicationState) => state.groups, // Selects which state properties are merged into the component's props
     dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
-)(Session as any);
+)(GroupDetail as any);

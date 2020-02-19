@@ -1,59 +1,53 @@
 ﻿import * as React from 'react';
 import { Table } from 'antd'
+import { GroupsState } from '../store/group/state';
+import Group from '../models/Group';
+import { groupActionCreators } from '../store/group/actionCreators';
+import { RouteComponentProps } from 'react-router';
+import { connect } from 'react-redux';
+import { ApplicationState } from '../store';
+import { bindActionCreators } from 'redux';
+import Attendee from '../models/Attendee';
 
-class GroupInfo extends React.PureComponent {
+interface Props {
+    attendees?: Attendee[]
+}
+
+// At runtime, Redux will merge together...
+type GroupInfoProps =
+    Props 
+    & GroupsState // ... state we've requested from the Redux store
+    & typeof groupActionCreators // ... plus action creators we've requested
+    & RouteComponentProps<{}>; // ... plus incoming routing parameters
+
+class GroupInfo extends React.PureComponent<GroupInfoProps> {
     public render() {
+        console.log(this.props.attendees);
         const columns = [
             {
-                title: 'No.',
-                key: 'No',
-                dataIndex: 'No'
-            },
-            {
                 title: 'Code',
-                key: 'Code',
-                dataIndex: 'Code'
+                key: 'code',
+                dataIndex: 'code'
             },
             {
                 title: 'Name',
-                key: 'Name',
-                dataIndex: 'Name'
+                key: 'name',
+                dataIndex: 'name'
             }
         ];
 
-        const attendees = [
-            {
-                "No": "1",
-                "Code": "SE62823",
-                "Name": "Lê Phát Đạt"
-            },
-            {
-                "No": "2",
-                "Code": "SE62824",
-                "Name": "Lê Hả Hê"
-            },
-            {
-                "No": "3",
-                "Code": "SE62825",
-                "Name": "Lê Hề Hước"
-            },
-            {
-                "No": "4",
-                "Code": "SE62826",
-                "Name": "Lê Công Chúa"
-            },
-            {
-                "No": "5",
-                "Code": "SE62827",
-                "Name": "Lê Tập Gym Cơ Bắp To"
-            }
-        ]
         return (
-            <Table dataSource={attendees} columns={columns} rowKey="No"
+            <Table dataSource={this.props.attendees} columns={columns} rowKey="$id"
                 pagination={{ pageSize: 5 }}
             />
             );
     }
 }
 
-export default GroupInfo;
+export default connect(
+    (state: ApplicationState, ownProps: Props) => ({
+        ...state.groups,
+        ...ownProps
+    }), // Selects which state properties are merged into the component's props
+    dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
+)(GroupInfo as any);

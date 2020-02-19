@@ -86,7 +86,6 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         newGroup.name = this.state.groupName;
         newGroup.code = this.state.groupCode;
         newGroup.attendees = this.state.importAttendees;
-        //newGroup.attendees.pop();
         console.log(newGroup);
         this.props.postGroup(newGroup);
     }
@@ -125,7 +124,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
     public validateBeforeUpload = (file: File) => {
         if (file.type !== "application/vnd.ms-excel") {
-            message.error("Only accept CSV file!", 3);//Show error in 5 second
+            //Show error in 3 second
+            message.error("Only accept CSV file!", 3);
             return false;
         }
         this.parseFileToTable(file);
@@ -137,6 +137,15 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
             return false;
         }
         return true;
+    }
+
+    public viewDetail = (e: any) => {
+        var id = e.target.id;
+        this.props.requestGroupDetail(id, this.renderGroupDetail);
+    }
+
+    public renderGroupDetail = () => {
+        this.props.history.push("/group");
     }
 
     public render() {
@@ -285,7 +294,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                     dataSource={this.props.paginatedGroupList!.list}
                     renderItem={group => (
                         <List.Item>
-                            <GroupCard group={group} />
+                            <GroupCard group={group} viewDetail={this.viewDetail} />
                         </List.Item>
                     )}
                 />
