@@ -12,6 +12,7 @@ export const ACTIONS = {
     STOP_REQUEST_GROUPS_WITH_ERRORS: 'STOP_REQUEST_GROUPS_WITH_ERRORS',
     RECEIVE_GROUPS_DATA: 'RECEIVE_GROUPS_DATA',
     CREATE_NEW_GROUP: 'CREATE_NEW_GROUP',
+    CREATE_NEW_GROUP_SUCCESS: 'CREATE_NEW_GROUP_SUCCESS',
     RECEIVE_GROUP_DETAIL: 'RECEIVE_GROUP_DETAIL'
 }
 
@@ -50,6 +51,13 @@ function receiveGroupDetail(groupDetail: Group) {
     }
 }
 
+function createGroupSuccess(newGroup: Group) {
+    return {
+        type: ACTIONS.CREATE_NEW_GROUP_SUCCESS,
+        newGroup: newGroup
+    }
+}
+
 const requestGroups = (groupSearch: GroupSearch): AppThunkAction => async (dispatch, getState) => {
     dispatch(startRequestGroups(groupSearch));
 
@@ -71,14 +79,14 @@ const requestGroupDetail = (id: number, renderDetailPage: Function): AppThunkAct
     }
 }
 
-const postGroup = (newGroup: Group): AppThunkAction => async (dispatch, getState) => {
+const postGroup = (newGroup: Group, renderDetailPage: Function): AppThunkAction => async (dispatch, getState) => {
     dispatch(startCreateNewGroup(newGroup));
-
     const apiResponse: ApiResponse = await createGroup(newGroup);
     if (apiResponse.success) {
-        
+        dispatch(createGroupSuccess(apiResponse.data));
+        renderDetailPage();
     } else {
-        
+        console.log("Create group error: " + apiResponse.errors);
     }
 }
 

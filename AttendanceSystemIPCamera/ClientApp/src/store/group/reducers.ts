@@ -69,6 +69,11 @@ const reducers: Reducer<GroupsState> = (
             return {
                 ...state
             }
+        case ACTIONS.CREATE_NEW_GROUP_SUCCESS:
+            return {
+                ...state,
+                selectedGroup: action.newGroup
+            }
         case ACTIONS.RECEIVE_GROUP_DETAIL:
             return {
                 ...state,

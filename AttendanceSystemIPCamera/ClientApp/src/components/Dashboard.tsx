@@ -15,7 +15,7 @@ import GroupCard from './GroupCard';
 import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
 import { RoomsState } from '../store/room/state';
 import { sessionActionCreators } from '../store/session/actionCreators';
-import { log } from 'util';
+import { log, isNullOrUndefined } from 'util';
 import { parse } from 'papaparse';
 
 const { Search } = Input;
@@ -93,7 +93,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         newGroup.code = this.state.groupCode;
         newGroup.attendees = this.state.importAttendees;
         console.log(newGroup);
-        this.props.postGroup(newGroup);
+        this.props.postGroup(newGroup, this.renderGroupDetail);
     }
 
     public parseFileToTable = (file: File): Promise<void> => {
@@ -102,20 +102,40 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
             parse(file, {
                 header: true,
                 complete: function (results: any, file: File) {
-                    console.log(results.data);
-                    thisState.setState({
-                        importAttendees: results.data
-                    }, () => {
-                        resolve();
-                    });
+                    if (thisState.checkValidFileFormat(results.data)) {
+                        thisState.setState({
+                            importAttendees: results.data
+                        }, () => {
+                            resolve();
+                        });
+                    } else {
+                        message.error("You upload a csv file with wrong format. Please try again!", 3);
+                        thisState.setState({
+                            importAttendees: []
+                        }, () => { reject(); });
+                    }
                 }, error: function (errors: any, file: File) {
-                    message.error("You upload a csv file with wrong format. Please try again!", 3);
+                    message.error("Upload error: " + errors, 3);
                     thisState.setState({
                         importAttendees: []
                     }, () => { reject(); });
                 }
             });
         });
+    }
+
+    public checkValidFileFormat = (attendees: []) => {
+        let temp: { No: number, Code: string, Name: string }[] = attendees;
+        if (temp.length > 0) {
+            if (!isNullOrUndefined(temp[0].No)
+                && !isNullOrUndefined(temp[0].Code)
+                && !isNullOrUndefined(temp[0].Name)) {
+                console.log('true');
+                return true;
+            }
+        }
+        console.log('false');
+        return false;
     }
 
     public handleCancel = () => {
