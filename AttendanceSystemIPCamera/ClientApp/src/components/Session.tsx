@@ -214,7 +214,9 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 						</Breadcrumb.Item>
 					</Breadcrumb>
 				</div>
-				<div className="session-container">
+				<div className={classNames('session-container', {
+					'is-loading': this.props.isLoadingSession
+				})}>
 					{this.props.isLoadingSession ? (
 						<Spin size="large" />
 					) : this.props.activeSession ? (
@@ -300,19 +302,20 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				<div
 					className={classNames({
 						'attendee-container': true,
-						empty: this.props.isLoadingAttendeeRecords
+						'is-loading': this.props.isLoadingAttendeeRecords
 					})}
-				></div>
-				{this.props.isLoadingAttendeeRecords ? (
-					<Spin size="large" />
-				) : (
-					<Table
-						columns={columns}
-						dataSource={processedList}
-						pagination={false}
-						rowKey="attendee"
-					/>
-				)}
+				>
+					{this.props.isLoadingAttendeeRecords ? (
+						<Spin size="large" />
+					) : (
+							<Table
+								columns={columns}
+								dataSource={processedList}
+								pagination={false}
+								rowKey="attendee"
+							/>
+						)}
+				</div>
 			</div>
 		);
 	}

@@ -2,6 +2,10 @@
 	color: gray !important;
 }
 
+.inner-layout {
+	min-height: 100vh !important;
+}
+
 .title-container {
 	display: flex;
 	flex-direction: row;
@@ -30,11 +34,12 @@
 	margin-top: 30px;
 }
 
-.attendee-container.empty {
-	height: 50vh;
-	display: flex;
-	justify-content: center;
-	align-items: center;
+.attendee-container.is-loading {
+	height: 60vh;
+}
+
+.session-container.is-loading {
+	height: calc(100vh - 120px);
 }
 
 .present-button {
