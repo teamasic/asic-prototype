@@ -17,6 +17,7 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
     public interface IAttendeeService : IBaseService<Attendee>
     {
         Attendee GetByAttendeeCode(string code);
+        Task<Attendee> AddIfNotInDb(Attendee attendee);
     }
 
     public class AttendeeService : BaseService<Attendee>, IAttendeeService
@@ -26,6 +27,16 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
         public AttendeeService(MyUnitOfWork unitOfWork) : base(unitOfWork)
         {
             attendeeRepository = unitOfWork.AttendeeRepository;
+        }
+
+        public async Task<Attendee> AddIfNotInDb(Attendee attendee)
+        {
+            Attendee attendeeInDb = GetByAttendeeCode(attendee.Code);
+            if(attendeeInDb == null)
+            {
+                return await Add(attendee);
+            }
+            return attendeeInDb;
         }
 
         public Attendee GetByAttendeeCode(string code)

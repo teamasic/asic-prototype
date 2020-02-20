@@ -5,14 +5,34 @@ import { ACTIONS } from './actionCreators';
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
 const unloadedState: GroupsState = {
-	isLoading: false,
-	successfullyLoaded: false,
-	groupSearch: {
-		nameContains: '',
-		orderBy: 'DateCreated',
-		page: 1,
-		pageSize: 15
-	}
+    isLoading: false,
+    successfullyLoaded: false,
+    groupSearch: {
+        nameContains: '',
+        orderBy: 'DateCreated',
+        page: 1,
+        pageSize: 15
+    },
+    selectedGroup: { // temporary, might be restructured
+        id: 1,
+        code: 'None',
+        name: 'None',
+        attendees: [],
+        sessions: [{
+            id: 1,
+            active: false,
+            startTime: new Date(),
+            attendees: [{
+                id: 1,
+                code: 'SE63147',
+                name: 'Strawberry'
+            }, {
+                id: 2,
+                code: 'SE63147',
+                name: 'Blackberry'
+            }]
+        }]
+    }
 };
 
 const reducers: Reducer<GroupsState> = (
@@ -48,6 +68,17 @@ const reducers: Reducer<GroupsState> = (
         case ACTIONS.CREATE_NEW_GROUP:
             return {
                 ...state
+            }
+        case ACTIONS.CREATE_NEW_GROUP_SUCCESS:
+            return {
+                ...state,
+                selectedGroup: action.newGroup
+            }
+        case ACTIONS.RECEIVE_GROUP_DETAIL:
+            return {
+                ...state,
+                selectedGroup: action.groupDetail
+
             };
 	}
 

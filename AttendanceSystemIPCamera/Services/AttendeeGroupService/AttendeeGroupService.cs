@@ -1,6 +1,7 @@
 ﻿using AttendanceSystemIPCamera.Models;
 using AttendanceSystemIPCamera.Repositories;
 using AttendanceSystemIPCamera.Repositories.UnitOfWork;
+using AttendanceSystemIPCamera.Services.AttendeeService;
 using AttendanceSystemIPCamera.Services.BaseService;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -14,17 +15,20 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
     {
         Task AddAsync(AttendeeGroup attendeeGroup);
         Task AddAsync(IEnumerable<AttendeeGroup> attendeeGroups);
+        IEnumerable<AttendeeGroup> GetByGroupId(int groupId);
     }
     public class AttendeeGroupService : IAttendeeGroupService
     {
         private readonly IAttendeeGroupRepository attendeeGroupRepository;
+        private readonly IAttendeeService attendeeService;
         protected readonly MyUnitOfWork unitOfWork;
         protected readonly DbContext dbContext;
 
-        public AttendeeGroupService(MyUnitOfWork unitOfWork)
+        public AttendeeGroupService(MyUnitOfWork unitOfWork, IAttendeeService attendeeService)
         {
             this.unitOfWork = unitOfWork;
             this.dbContext = unitOfWork.DbContext;
+            this.attendeeService = attendeeService;
             attendeeGroupRepository = unitOfWork.AttendeeGroupRepository;
         }
 
@@ -38,6 +42,13 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
         {
             await attendeeGroupRepository.Add(attendeeGroup);
             unitOfWork.Commit();
+        }
+
+        public IEnumerable<AttendeeGroup> GetByGroupId(int groupId)
+        {
+            var attendeeGroups = attendeeGroupRepository.GetByGroupId(groupId).ToList();
+            attendeeGroups.ForEach(ag => { ag.Attendee = attendeeService.GetById(ag.AttendeeId).Result;});
+            return attendeeGroups;
         }
     }
 }

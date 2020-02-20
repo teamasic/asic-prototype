@@ -95,7 +95,7 @@ namespace AttendanceSystemIPCamera
                 endpoints.MapHub<RealTimeService>("/hub");
             });
 
-            /*
+
             app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
@@ -105,7 +105,7 @@ namespace AttendanceSystemIPCamera
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
-            */
+
         }
 
         private void setupSwagger(IServiceCollection services)

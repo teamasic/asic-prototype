@@ -17,3 +17,9 @@ export const createGroup = async (newGroup: Group): Promise<ApiResponse> => {
     const response = await axios.post(baseRoute, newGroup);
     return await response.data;
 };
+
+export const getGroupDetail = async (id: number): Promise<ApiResponse> => {
+    var url = baseRoute + '/' + id;
+    const response = await axios.get(url);
+    return await response.data;
+};

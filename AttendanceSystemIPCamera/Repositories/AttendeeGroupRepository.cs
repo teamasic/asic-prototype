@@ -11,6 +11,8 @@ namespace AttendanceSystemIPCamera.Repositories
     {
         Task Add(AttendeeGroup entity);
         Task Add(IEnumerable<AttendeeGroup> entities);
+
+        IEnumerable<AttendeeGroup> GetByGroupId(int groupId);
     }
     public class AttendeeGroupRepository : IAttendeeGroupRepository
     {
@@ -31,6 +33,11 @@ namespace AttendanceSystemIPCamera.Repositories
         public async Task Add(IEnumerable<AttendeeGroup> entities)
         {
             await dbSet.AddRangeAsync(entities);
+        }
+
+        public IEnumerable<AttendeeGroup> GetByGroupId(int groupId)
+        {
+            return dbSet.Where(a => a.GroupId == groupId).ToList();
         }
 
         #region IDisposable Support

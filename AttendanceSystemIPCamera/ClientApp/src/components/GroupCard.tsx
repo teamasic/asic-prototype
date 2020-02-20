@@ -10,9 +10,9 @@ import * as moment from 'moment'
 import Room from '../models/Room';
 import { startSession } from '../services/session';
 import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker } from 'antd';
-import format from 'date-fns/format';
 import { formatFullDateTimeString } from '../utils';
 import classNames from 'classnames';
+import { createBrowserHistory } from 'history';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -20,6 +20,7 @@ const { Option } = Select;
 interface Props {
     roomList: Room[];
     group: Group;
+    viewDetail: any
     redirect: (url: string) => void;
 }
 
@@ -163,7 +164,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                     </div>
                 </div>
                 <div className="actions">
-                    <Button className="past-button" type="link">Past sessions</Button>
+                    <Button className="past-button" type="link" onClick={this.props.viewDetail} id={group.id.toString()}>View Detail</Button>
                     <Button className="take-attendance-button" type="primary" onClick={this.takeAttendance}>Take attendance</Button>
                     <Modal
                         title="Input session for attendance"
