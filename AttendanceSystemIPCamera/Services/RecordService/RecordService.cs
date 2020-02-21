@@ -55,14 +55,21 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             var record = await recordRepository.GetRecordBySessionAndAttendeeCode(activeSession.Id, viewModel.Code);
             var isAttendeeInGroup = await groupRepository.CheckAttendeeExistedInGroup(activeSession.Group.Id, viewModel.Code);
 
-            if (record != null)
-            {
-                return mapper.Map<SetRecordViewModel>(record);
-            }
-            else if (!isAttendeeInGroup)
+            if (!isAttendeeInGroup)
             {
                 throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_ATTENDEE_WITH_CODE, viewModel.Code);
             }
+            else if (record != null)
+            {
+                if (!record.Present)
+                {
+                    record.Present = true;
+                    recordRepository.Update(record);
+                    unitOfWork.Commit();
+                }
+                return mapper.Map<SetRecordViewModel>(record);
+            }
+
             else {
                 var attendee = await attendeeRepository.GetByAttendeeCode(viewModel.Code);
                 var newRecord = new Record
