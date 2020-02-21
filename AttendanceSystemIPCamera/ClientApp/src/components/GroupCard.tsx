@@ -13,9 +13,12 @@ import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typo
 import { formatFullDateTimeString } from '../utils';
 import classNames from 'classnames';
 import { createBrowserHistory } from 'history';
+import { resolve } from 'dns';
+import { rejects } from 'assert';
 
 const { Title } = Typography;
 const { Option } = Select;
+const { confirm } = Modal;
 
 interface Props {
     roomList: Room[];
@@ -119,6 +122,19 @@ class GroupCard extends React.PureComponent<GroupProps> {
         }
         return minutes;
     }
+
+    private showConfirm = () => {
+        confirm({
+            title: 'Do you want to delete group ' + this.props.group.name + ' ?',
+            onOk() {
+                return new Promise((resolve, rejects) => {
+                    setTimeout(Math.random() > 0.5 ? resolve : rejects, 1000);
+                }).catch(() => { console.log("Oops. Error when deleting group") });
+            },
+            onCancel() {}
+        });
+    }
+
     public render() {
         var group = this.props.group;
         const { startTime, duration } = { ...this.state };
@@ -132,7 +148,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                 <Menu.Item key="1">
                     Edit
                 </Menu.Item>
-                <Menu.Item key="2">
+                <Menu.Item key="2" onClick={this.showConfirm}>
                     Delete
                 </Menu.Item>
             </Menu>
