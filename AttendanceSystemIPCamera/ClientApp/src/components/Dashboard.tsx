@@ -14,7 +14,9 @@ import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
 import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
 import { RoomsState } from '../store/room/state';
+import { UnitsState } from '../store/unit/state';
 import { sessionActionCreators } from '../store/session/actionCreators';
+import { unitActionCreators } from '../store/unit/actionCreators';
 import { log, isNullOrUndefined } from 'util';
 import { parse } from 'papaparse';
 
@@ -25,9 +27,11 @@ const { Text } = Typography;
 // At runtime, Redux will merge together...
 type GroupProps =
     GroupsState
+    & UnitsState
     & RoomsState// ... state we've requested from the Redux store
     & typeof groupActionCreators
     & typeof roomActionCreators
+    & typeof unitActionCreators
     & typeof sessionActionCreators// ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
 
@@ -295,6 +299,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         this.props.requestGroups(this.props.groupSearch);
         this.props.requestRooms();
         this.props.requestActiveSession();
+        this.props.requestUnits();
     }
 
     private hasGroups(): boolean {
@@ -324,7 +329,10 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                     dataSource={this.props.paginatedGroupList!.list}
                     renderItem={group => (
                         <List.Item>
-                            <GroupCard redirect={url => this.redirect(url)} group={group} roomList={this.props.roomList}
+                            <GroupCard redirect={url => this.redirect(url)}
+                                group={group}
+                                roomList={this.props.roomList}
+                                units={this.props.units}
                                 viewDetail={this.viewDetail}/>
                         </List.Item>
                     )}
@@ -341,9 +349,10 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         this.props.history.push(url);
     }
 }
-const mapStateToProps = (state: ApplicationState) => ({ ...state.groups, ...state.rooms })
+const mapStateToProps = (state: ApplicationState) => ({ ...state.groups, ...state.rooms, ...state.units })
 const mapDispatchToProps = {
- ...roomActionCreators, ...groupActionCreators, ...sessionActionCreators
+    ...roomActionCreators, ...groupActionCreators, ...sessionActionCreators,
+    ...unitActionCreators
 }
 export default connect(
     mapStateToProps, // Selects which state properties are merged into the component's props

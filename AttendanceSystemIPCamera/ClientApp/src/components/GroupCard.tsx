@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators } from 'redux';
 import Group from '../models/Group';
+import Unit from '../models/Unit';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
@@ -19,6 +20,7 @@ const { Option } = Select;
 
 interface Props {
     roomList: Room[];
+    units: Unit[];
     group: Group;
     viewDetail: any
     redirect: (url: string) => void;
@@ -33,10 +35,11 @@ type GroupProps = Props &
 class GroupCard extends React.PureComponent<GroupProps> {
     public state = {
         modelOpen: false,
+        sessionName: "",
         startTime: moment(),
-        duration: 30,
+        endTime: moment(),
         roomName: "",
-        rtspString: "",
+        rtspString: ""
     };
 
     private takeAttendance = () => {
@@ -50,10 +53,18 @@ class GroupCard extends React.PureComponent<GroupProps> {
         this.setState({
             modelOpen: false,
         })
-        const { startTime, duration, roomName, rtspString } = { ...this.state };
+        const { startTime, endTime, roomName, rtspString, sessionName } = { ...this.state };
         const groupId = this.props.group.id;
         let startTimeString = startTime.format('YYYY-MM-DD HH:mm');
-        const data = await startSession({ startTime: startTimeString, duration, rtspString, roomName, groupId });
+        let endTimeString = endTime.format('YYYY-MM-DD HH:mm');
+        const data = await startSession({
+            startTime: startTimeString,
+            endTime: endTimeString,
+            rtspString,
+            roomName,
+            groupId,
+            name: sessionName
+        });
         if (data != null && data.data != null) {
             const sessionId = data.data.id;
             if (sessionId != null) {
@@ -74,18 +85,12 @@ class GroupCard extends React.PureComponent<GroupProps> {
         })
     }
 
-    private handleChangeDuration = (duration: number | undefined) => {
-        if (duration) {
-            this.setState({
-                duration: duration
-            })
-        }
-        else {
-            this.setState({
-                duration: 30
-            })
-        }
+    private handleChangeEndTime = (time: moment.Moment, timeString: any) => {
+        this.setState({
+            endTime: time,
+        })
     }
+
     private onChange = (value: any) => {
         let currentRoom = this.props.roomList.filter(c => c.id == value)[0];
         this.setState({
@@ -97,6 +102,12 @@ class GroupCard extends React.PureComponent<GroupProps> {
         const { roomList } = this.props;
         const roomOptions = roomList.map(room => {
             return <Option key={room.id} value={room.id}>{room.name}</Option>
+        })
+        return roomOptions;
+    }
+    private renderUnitOptions = () => {
+        const roomOptions = this.props.units.map((unit, index) => {
+            return <Option key={unit.name} value={index}>{unit.name}</Option>
         })
         return roomOptions;
     }
@@ -121,8 +132,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
     }
     public render() {
         var group = this.props.group;
-        const { startTime, duration } = { ...this.state };
-        const endTime = moment(startTime).add(duration, "minutes");
+        const { startTime, endTime } = { ...this.state };
         const lastSessionTime =
 			group.sessions.length > 0
 				? group.sessions[group.sessions.length - 1].startTime
@@ -179,8 +189,8 @@ class GroupCard extends React.PureComponent<GroupProps> {
                                 <Col span={7}><TimePicker disabledMinutes={this.getDisableMinutes} disabledHours={this.getDisableHours} onChange={this.handleChangeStartTime} value={startTime} format={'HH:mm'} /></Col>
                             </Row>
                             <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
-                                <Col span={4}>Duration</Col>
-                                <Col><InputNumber min={1} max={90} value={duration} onChange={this.handleChangeDuration} /></Col>
+                                <Col span={4}>End time</Col>
+                                <Col span={7}><TimePicker disabledMinutes={this.getDisableMinutes} disabledHours={this.getDisableHours} onChange={this.handleChangeEndTime} value={endTime} format={'HH:mm'} /></Col>
                             </Row>
                             <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
                                 <Col span={4}>End time</Col>
@@ -200,6 +210,22 @@ class GroupCard extends React.PureComponent<GroupProps> {
                                         }
                                     >
                                         {this.renderRoomOptions()}
+                                    </Select>,
+                                </Col>
+                            </Row>
+                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
+                                <Col span={4}>Choose unit</Col>
+                                <Col span={7}>
+                                    <Select
+                                        showSearch
+                                        style={{ width: 130 }}
+                                        placeholder="Select unit"
+                                        optionFilterProp="children"
+                                        filterOption={(input: any, option: any) =>
+                                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                        }
+                                    >
+                                        {this.renderUnitOptions()}
                                     </Select>,
                                 </Col>
                             </Row>
