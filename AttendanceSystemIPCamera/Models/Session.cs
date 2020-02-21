@@ -12,9 +12,9 @@ namespace AttendanceSystemIPCamera.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        public string Name { get; set; }
         public DateTime StartTime { get; set; }
-        public int Duration { get; set; }
-        public bool Active { get; set; }
+        public DateTime EndTime { get; set; }
         public string RtspString { get; set; }
         public string RoomName { get; set; }
         public int GroupId { get; set; }

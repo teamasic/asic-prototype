@@ -25,6 +25,8 @@ using System;
 using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Services.NetworkService;
 using AttendanceSystemIPCamera.Services.RecognitionService;
+using AttendanceSystemIPCamera.Services.UnitService;
+using AttendanceSystemIPCamera.Framework.GlobalStates;
 
 namespace AttendanceSystemIPCamera
 {
@@ -146,6 +148,8 @@ namespace AttendanceSystemIPCamera
 
             SetupServices(services);
             SetupRepositories(services);
+            SetupUnitConfig(services);
+            SetupGlobalStateManager(services);
         }
 
         private void SetupServices(IServiceCollection services)
@@ -176,6 +180,16 @@ namespace AttendanceSystemIPCamera
             services.AddHostedService<SupervisorRunnerService>();
         }
 
+        private void SetupUnitConfig(IServiceCollection services)
+        {
+            UnitService unitServiceInstance = UnitServiceFactory.Create(Configuration.GetValue<string>("UnitConfigFile"));
+            services.AddSingleton(unitServiceInstance);
+        }
 
+        private void SetupGlobalStateManager(IServiceCollection services)
+        {
+            var globalState = new GlobalState();
+            services.AddSingleton(globalState);
+        }
     }
 }

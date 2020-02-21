@@ -17,7 +17,6 @@ namespace AttendanceSystemIPCamera.Services.GroupService
     public interface IGroupService : IBaseService<Group>
     {
         public Task<PaginatedList<Group>> GetAll(GroupSearchViewModel groupSearchViewModel);
-        public Task StartTakingAttendance(TakeAttendanceViewModel takeAttendanceViewModel);
         public Task<Group> AddIfNotInDb(Group group);
     }
 
@@ -44,18 +43,6 @@ namespace AttendanceSystemIPCamera.Services.GroupService
         public async Task<PaginatedList<Group>> GetAll(GroupSearchViewModel groupSearchViewModel)
         {
             return await groupRepository.GetAll(groupSearchViewModel);
-        }
-        public async Task StartTakingAttendance(TakeAttendanceViewModel takeAttendanceViewModel)
-        {
-            var group = await groupRepository.GetById(takeAttendanceViewModel.GroupId);
-            group.Sessions.Add(new Session {
-                Group = group,
-                StartTime = DateTime.UtcNow,
-                Duration = takeAttendanceViewModel.Duration
-            });
-            groupRepository.Update(group);
-            unitOfWork.Commit();
-
         }
     }
 }

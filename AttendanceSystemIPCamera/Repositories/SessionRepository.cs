@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AttendanceSystemIPCamera.Framework.GlobalStates;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -16,17 +17,25 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface ISessionRepository : IRepository<Session>
     {
         public Task<Session> GetActiveSession();
+        public void SetActiveSession(int sessionId);
         bool isSessionRunning();
         List<Session> GetSessionsWithRecords(List<int> groups);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
-        public SessionRepository(DbContext context) : base(context)
+        private GlobalState globalState;
+        public SessionRepository(DbContext context, GlobalState globalState) : base(context)
         {
+            this.globalState = globalState;
         }
         public bool isSessionRunning()
         {
-            return dbSet.Any(s => s.Active == true);
+            return globalState.CurrentActiveSession != -1;
+        }
+
+        public void SetActiveSession(int sessionId)
+        {
+            globalState.CurrentActiveSession = sessionId;
         }
 
         public async Task<Session> GetActiveSession()
@@ -37,7 +46,7 @@ namespace AttendanceSystemIPCamera.Repositories
                 .Include(s => s.Group)
                     .ThenInclude(g => g.AttendeeGroups)
                         .ThenInclude(ag => ag.Attendee)
-                .FirstOrDefaultAsync(x => x.Active);
+                .FirstOrDefaultAsync(x => x.Id == globalState.CurrentActiveSession);
         }
 
         public new async Task<Session> GetById(object id)

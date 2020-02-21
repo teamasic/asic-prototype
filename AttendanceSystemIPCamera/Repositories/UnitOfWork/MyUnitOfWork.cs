@@ -1,4 +1,5 @@
-﻿using AttendanceSystemIPCamera.Models;
+﻿using AttendanceSystemIPCamera.Framework.GlobalStates;
+using AttendanceSystemIPCamera.Models;
 using AttendanceSystemIPCamera.Services.GroupService;
 using AttendanceSystemIPCamera.Services.SessionService;
 using AutoMapper;
@@ -12,8 +13,9 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
 {
     public class MyUnitOfWork: UnitOfWork
     {
-        public MyUnitOfWork(DbContext dbContext) : base(dbContext)
+        public MyUnitOfWork(DbContext dbContext, GlobalState globalState) : base(dbContext)
         {
+            this.globalState = globalState;
         }
         public IRepository<T> GetRepository<T>() where T: class, BaseEntity
         {
@@ -21,6 +23,7 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
         }
 
         #region Repository
+        private GlobalState globalState;
         private IGroupRepository groupRepository;
         private ISessionRepository sessionRepository;
         private IRecordRepository recordRepository;
@@ -45,7 +48,7 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
             {
                 if (sessionRepository == null)
                 {
-                    sessionRepository = new SessionRepository(DbContext);
+                    sessionRepository = new SessionRepository(DbContext, globalState);
                 }
                 return sessionRepository;
             }

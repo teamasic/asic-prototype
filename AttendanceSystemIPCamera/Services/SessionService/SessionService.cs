@@ -127,8 +127,10 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
             else
             {
+                var startTime = sessionStarterViewModel.StartTime;
+                var endTime = sessionStarterViewModel.EndTime;
                 var currentTime = DateTime.Now;
-                var timeDifferenceMilliseconds = sessionStarterViewModel.StartTime.Subtract(currentTime).TotalMilliseconds;
+                var timeDifferenceMilliseconds = startTime.Subtract(currentTime).TotalMilliseconds;
                 if (timeDifferenceMilliseconds <= -60 * 1000)
                 {
                     throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
@@ -138,10 +140,11 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                     timeDifferenceMilliseconds = 0;
                 }
                 var session = mapper.Map<Session>(sessionStarterViewModel);
-                session.Active = true;
                 session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
                 var sessionAdded = await Add(session);
-                recognitionService.StartRecognition(timeDifferenceMilliseconds, sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
+                var duration = (int)endTime.Subtract(startTime).TotalMinutes;
+                sessionRepository.SetActiveSession(session.Id);
+                recognitionService.StartRecognition(timeDifferenceMilliseconds, duration, sessionStarterViewModel.RtspString);
                 return mapper.Map<SessionViewModel>(sessionAdded);
             }
         }
