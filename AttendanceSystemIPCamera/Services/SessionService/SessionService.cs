@@ -179,21 +179,24 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             foreach (var groupId in groupIds)
             {
                 var sessionsInGroupId = sessions.Where(s => s.GroupId == groupId).ToList();
-                var group = sessionsInGroupId.FirstOrDefault().Group;
-                var sessionViewModels = sessionsInGroupId.Select(s =>
+                if (sessionsInGroupId.Count > 0)
                 {
-                    var svm = mapper.Map<Session, SessionViewModel>(s);
-                    svm.Record = mapper.Map<Record, RecordViewModel>(s.Records.LastOrDefault());
-                    return svm;
-                });
+                    var group = sessionsInGroupId.FirstOrDefault().Group;
+                    var sessionViewModels = sessionsInGroupId.Select(s =>
+                    {
+                        var svm = mapper.Map<Session, SessionViewModel>(s);
+                        svm.Record = mapper.Map<Record, RecordViewModel>(s.Records.LastOrDefault());
+                        return svm;
+                    });
 
-                var groupSession = new GroupSessionViewModel()
-                {
-                    GroupCode = group.Code,
-                    Name = group.Name,
-                    Sessions = sessionViewModels.ToList()
-                };
-                groupSessions.Add(groupSession);
+                    var groupSession = new GroupSessionViewModel()
+                    {
+                        GroupCode = group.Code,
+                        Name = group.Name,
+                        Sessions = sessionViewModels.ToList()
+                    };
+                    groupSessions.Add(groupSession);
+                }
             }
             return groupSessions;
         }
