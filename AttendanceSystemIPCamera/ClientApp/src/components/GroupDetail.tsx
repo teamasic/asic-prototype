@@ -15,6 +15,7 @@ import PastSession from './PastSession'
 import classNames from 'classnames';
 
 const { Title } = Typography;
+const { Paragraph } = Typography
 const { TabPane } = Tabs;
 
 // At runtime, Redux will merge together...
@@ -28,6 +29,13 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
     // This method is called when the component is first added to the document
     public componentDidMount() {
         this.ensureDataFetched();
+    }
+
+    public onChange = (str: string) => {
+        var updateGroupName = {
+            ...this.props.selectedGroup,
+            name: str
+        }
     }
 
     public render() {
@@ -48,7 +56,9 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
                     </Breadcrumb>
                 </div>
                 <div className="title-container">
-                    <Title className="title" level={3}>{this.props.selectedGroup.code} - {this.props.selectedGroup.name}</Title>
+                    <Title className="title" level={3}>
+                        <Paragraph editable={{ onChange: this.onChange }}>{this.props.selectedGroup.name}</Paragraph>
+                    </Title>
                 </div>
                 <Tabs defaultActiveKey="1" type="card">
                     <TabPane tab="Group Information" key="1">
