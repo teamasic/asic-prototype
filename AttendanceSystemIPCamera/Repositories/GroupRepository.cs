@@ -42,7 +42,8 @@ namespace AttendanceSystemIPCamera.Repositories
                 .Include(g => g.AttendeeGroups)
                     .ThenInclude(ag => ag.Attendee)
                 .Include(g => g.Sessions)
-                .Where(g => g.Name.ToLower().Contains(groupSearchViewModel.NameContains.ToLower()));
+                .Where(g => g.Name.ToLower().Contains(groupSearchViewModel.NameContains.ToLower())
+                            && g.Deleted == false);
             query = orderFunction(query);
             return await PaginatedList<Group>.CreateAsync(query, groupSearchViewModel.Page, groupSearchViewModel.PageSize);
         }
