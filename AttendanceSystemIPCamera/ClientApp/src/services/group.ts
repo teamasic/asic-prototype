@@ -23,3 +23,9 @@ export const getGroupDetail = async (id: number): Promise<ApiResponse> => {
     const response = await axios.get(url);
     return await response.data;
 };
+
+export const deactiveGroup = async (id: number): Promise<ApiResponse> => {
+    var url = baseRoute + '/deactive/' + id;
+    const response = await axios.put(url);
+    return await response.data;
+};

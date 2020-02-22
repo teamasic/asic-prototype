@@ -92,5 +92,15 @@ namespace AttendanceSystemIPCamera.Controllers
                 return mapper.Map<GroupViewModel>(addedGroup);
             });
         }
+
+        [HttpPut("deactive/{id}")]
+        public Task<BaseResponse<GroupViewModel>> DeactiveGroup(int id)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var deactiveGroup = service.DeactiveGroup(id);
+                return mapper.Map<GroupViewModel>(deactiveGroup);
+            });
+        }
     }
 }

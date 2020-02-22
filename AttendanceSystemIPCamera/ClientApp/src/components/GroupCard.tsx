@@ -9,12 +9,8 @@ import { GroupsState } from '../store/group/state';
 import * as moment from 'moment'
 import Room from '../models/Room';
 import { startSession } from '../services/session';
-import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker } from 'antd';
+import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker, message } from 'antd';
 import { formatFullDateTimeString } from '../utils';
-import classNames from 'classnames';
-import { createBrowserHistory } from 'history';
-import { resolve } from 'dns';
-import { rejects } from 'assert';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -126,13 +122,22 @@ class GroupCard extends React.PureComponent<GroupProps> {
     private showConfirm = () => {
         confirm({
             title: 'Do you want to delete group ' + this.props.group.name + ' ?',
-            onOk() {
-                return new Promise((resolve, rejects) => {
-                    setTimeout(Math.random() > 0.5 ? resolve : rejects, 1000);
-                }).catch(() => { console.log("Oops. Error when deleting group") });
+            okType: 'danger',
+            okButtonProps: {
+                onClick: this.startDeactiveGroup
             },
-            onCancel() {}
         });
+    }
+
+    private startDeactiveGroup = () => {
+        this.props.startDeactiveGroup(this.props.group.id,
+            this.props.groupSearch,
+            this.successDeactive);
+    }
+
+    public successDeactive = () => {
+        message.success("Delete group " + this.props.group.name + " success!");
+        Modal.destroyAll();
     }
 
     public render() {

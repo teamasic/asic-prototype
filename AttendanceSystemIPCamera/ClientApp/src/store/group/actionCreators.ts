@@ -1,6 +1,6 @@
 ﻿import Group from "../../models/Group";
 import ApiResponse from "../../models/ApiResponse";
-import { getGroups, createGroup, getGroupDetail } from "../../services/group";
+import { getGroups, createGroup, getGroupDetail, deactiveGroup } from "../../services/group";
 import { ThunkDispatch } from "redux-thunk";
 import { AppThunkAction } from "..";
 import { AnyAction } from "redux";
@@ -90,9 +90,25 @@ const postGroup = (newGroup: Group, renderDetailPage: Function): AppThunkAction 
     }
 }
 
+const startDeactiveGroup = (id: number, groupSearch: GroupSearch, success: Function): AppThunkAction => async (dispatch, getState) => {
+    const apiResponse: ApiResponse = await deactiveGroup(id);
+    if (apiResponse.success) {
+        success();
+        const groupResponse: ApiResponse = await getGroups(groupSearch);
+        if (groupResponse.success) {
+            dispatch(receiveGroupsData(groupResponse.data));
+        } else {
+            dispatch(stopRequestGroupsWithError(groupResponse.errors));
+        }
+    } else {
+        console.log("Delete group error: " + apiResponse.errors.toString());
+    }
+}
+
 export const groupActionCreators = {
     postGroup,
     requestGroups,
     requestGroupDetail,
-    startRequestGroups
+    startRequestGroups,
+    startDeactiveGroup
 };

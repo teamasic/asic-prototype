@@ -92,7 +92,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         newGroup.name = this.state.groupName;
         newGroup.code = this.state.groupCode;
         newGroup.attendees = this.state.importAttendees;
-        console.log(newGroup);
+        //console.log(newGroup);
         this.props.postGroup(newGroup, this.renderGroupDetail);
     }
 
@@ -325,7 +325,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                     renderItem={group => (
                         <List.Item>
                             <GroupCard redirect={url => this.redirect(url)} group={group} roomList={this.props.roomList}
-                                viewDetail={this.viewDetail}/>
+                                viewDetail={this.viewDetail} />
                         </List.Item>
                     )}
                 />
