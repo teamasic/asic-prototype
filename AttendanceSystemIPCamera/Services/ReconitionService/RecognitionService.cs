@@ -21,10 +21,10 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             this.myConfiguration = myConfiguration;
         }
 
-        public async Task StartRecognition(double timeDifferenceMilliseconds, int durationMinutes, string rtspString)
+        public async Task StartRecognition(int durationStartIn, int durationMinutes, string rtspString)
         {
             // Wait until start time
-            await Task.Delay(Convert.ToInt32(timeDifferenceMilliseconds));
+            await Task.Delay(1000 * 60 * durationStartIn);
 
             // Start process on python
             ProcessStartInfo startInfo = new ProcessStartInfo();
