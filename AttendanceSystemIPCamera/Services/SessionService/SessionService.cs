@@ -29,7 +29,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 {
     public interface ISessionService : IBaseService<Session>
     {
-        List<GroupSessionViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds);
+        List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds, int attendeeId);
         public Task<ICollection<AttendeeRecordPair>> GetSessionAttendeeRecordMap(int sessionId);
         bool IsSessionRunning();
         Task<SessionViewModel> GetActiveSession();
@@ -172,28 +172,31 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         }
         #endregion
 
-        public List<GroupSessionViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds)
+        public List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds, int attendeeId)
         {
             var sessions = sessionRepository.GetSessionsWithRecords(groupIds);
-            var groupSessions = new List<GroupSessionViewModel>();
+            var groupSessions = new List<GroupNetworkViewModel>();
             foreach (var groupId in groupIds)
             {
                 var sessionsInGroupId = sessions.Where(s => s.GroupId == groupId).ToList();
-                var group = sessionsInGroupId.FirstOrDefault().Group;
-                var sessionViewModels = sessionsInGroupId.Select(s =>
+                if (sessionsInGroupId != null && sessionsInGroupId.Count > 0)
                 {
-                    var svm = mapper.Map<Session, SessionViewModel>(s);
-                    svm.Record = mapper.Map<Record, RecordViewModel>(s.Records.LastOrDefault());
-                    return svm;
-                });
+                    var group = sessionsInGroupId.FirstOrDefault().Group;
+                    var sessionViewModels = sessionsInGroupId.Select(s =>
+                    {
+                        var svm = mapper.Map<Session, SessionNetworkViewModel>(s);
+                        svm.Records = mapper.ProjectTo<Record, RecordNetworkViewModel>(s.Records)?.ToList();
+                        return svm;
+                    });
 
-                var groupSession = new GroupSessionViewModel()
-                {
-                    GroupCode = group.Code,
-                    Name = group.Name,
-                    Sessions = sessionViewModels.ToList()
-                };
-                groupSessions.Add(groupSession);
+                    var groupSession = new GroupNetworkViewModel()
+                    {
+                        Code = group.Code,
+                        Name = group.Name,
+                        Sessions = sessionViewModels.ToList()
+                    };
+                    groupSessions.Add(groupSession);
+                }
             }
             return groupSessions;
         }

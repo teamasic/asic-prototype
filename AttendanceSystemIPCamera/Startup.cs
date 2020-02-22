@@ -25,11 +25,16 @@ using System;
 using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Services.NetworkService;
 using AttendanceSystemIPCamera.Services.RecognitionService;
+using Microsoft.Extensions.Logging;
 
 namespace AttendanceSystemIPCamera
 {
     public class Startup
     {
+
+        public static readonly ILoggerFactory DefaultLoggerFactory
+                                    = LoggerFactory.Create(builder => { builder.AddConsole(); });
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -41,7 +46,8 @@ namespace AttendanceSystemIPCamera
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews()
-                .AddNewtonsoftJson(options => {
+                .AddNewtonsoftJson(options =>
+                {
                     options.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects;
                 });
 
@@ -119,7 +125,11 @@ namespace AttendanceSystemIPCamera
 
         private void SetupDatabaseContext(IServiceCollection services)
         {
-            services.AddDbContext<MainDbContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDB")));
+            services.AddDbContext<MainDbContext>(options =>
+            {
+                options.UseSqlite(Configuration.GetConnectionString("SqliteDB"));
+                options.UseLoggerFactory(DefaultLoggerFactory);
+            });
         }
         private void SetupAutoMapper(IServiceCollection services)
         {
