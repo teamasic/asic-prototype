@@ -1,7 +1,7 @@
 ﻿import * as signalR from "@microsoft/signalr";
 import { MiddlewareAPI, Dispatch, Middleware } from "redux";
 import { ApplicationState } from "../store";
-import signalRConnection from './SignalRConnection';
+import SignalRConnection from './SignalRConnection';
 import { sessionActionCreators } from '../store/session/actionCreators';
 
 function createSignalRMiddleware() {
@@ -16,9 +16,7 @@ function createSignalRMiddleware() {
     return middleware;
 }
 
-export function signalRStart(store: any) {
-    let connection = signalRConnection;
-
+function attachSignalREvents(connection: signalR.HubConnection, store: any) {
     connection.on("attendeePresented", attendeeCode => {
         store.dispatch(sessionActionCreators.updateAttendeeRecordRealTime(attendeeCode));
     });
@@ -27,6 +25,19 @@ export function signalRStart(store: any) {
         store.dispatch(sessionActionCreators.requestSession(sessionId));
     });
 
+    connection.on("keepAlive", () => {
+        console.log('kept alive');
+    });
+}
+
+export function signalRStart(store: any) {
+    let connection = new SignalRConnection().connection;
+    attachSignalREvents(connection, store);
+    connection.on("disconnect", () => {
+        setTimeout(() => {
+            connection.start();
+        }, 2000); // wait 2 seconds to reconnect to avoid doing this too frequently
+    });
     connection.start();
 }
 
