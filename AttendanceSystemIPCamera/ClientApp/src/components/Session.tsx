@@ -112,62 +112,6 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		});
 	}
 
-	private renderActions(pair: AttendeeRecordPair) {
-		let presentButton = (
-			<Button
-				className="present-button"
-				type="default"
-				size="large"
-				icon="check"
-				onClick={() => this.markAsPresent(pair.attendee.id)}
-			>
-				Present
-			</Button>
-		);
-		let absentButton = (
-			<Button
-				className="absent-button"
-				type="default"
-				size="large"
-				icon="close"
-				onClick={() => this.markAsAbsent(pair.attendee.id)}
-			>
-				Absent
-			</Button>
-		);
-		if (pair.record) {
-			if (pair.record.present) {
-				presentButton = (
-					<Button
-						className="present-button selected"
-						type="primary"
-						size="large"
-						icon="check"
-					>
-						Present
-					</Button>
-				);
-			} else {
-				absentButton = (
-					<Button
-						className="absent-button selected"
-						type="danger"
-						size="large"
-						icon="close"
-					>
-						Absent
-					</Button>
-				);
-			}
-		}
-		return (
-			<div className="attendance-actions">
-				{presentButton}
-				{absentButton}
-			</div>
-		);
-	}
-
 	private searchAttendeeList(
 		attendeeRecords: AttendeeRecordPair[],
 		query: string
@@ -243,13 +187,24 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.name
 			},
 			{
-				title: 'Present',
+				title: <div className="actions">
+					Present
+					<div className="buffer"></div>
+					Absent
+				</div>,
 				key: 'present',
 				render: (text: string, pair: AttendeeRecordPair) =>
-					<Radio
-						checked={pair.record != null && pair.record.present}
-						onChange={() => this.markAsPresent(pair.attendee.id)}></Radio>
+					<div className="actions">
+						<Radio
+							checked={pair.record != null && pair.record.present}
+							onChange={() => this.markAsPresent(pair.attendee.id)}></Radio>
+						<div className="big-buffer"></div>
+						<Radio
+							checked={pair.record != null && !pair.record.present}
+							onChange={() => this.markAsAbsent(pair.attendee.id)}></Radio>
+					</div>
 			},
+			/*
 			{
 				title: 'Absent',
 				key: 'absent',
@@ -257,7 +212,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					<Radio
 						checked={pair.record != null && !pair.record.present}
 						onChange={() => this.markAsAbsent(pair.attendee.id)}></Radio>
-			}
+			}*/
 		];
 		const processedList = this.searchAttendeeList(
 			this.filterAttendeeList(
