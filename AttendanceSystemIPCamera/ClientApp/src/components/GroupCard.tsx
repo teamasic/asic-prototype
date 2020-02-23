@@ -210,7 +210,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                                         }
                                     >
                                         {this.renderRoomOptions()}
-                                    </Select>,
+                                    </Select>
                                 </Col>
                             </Row>
                             <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
@@ -226,7 +226,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                                         }
                                     >
                                         {this.renderUnitOptions()}
-                                    </Select>,
+                                    </Select>
                                 </Col>
                             </Row>
                         </div>

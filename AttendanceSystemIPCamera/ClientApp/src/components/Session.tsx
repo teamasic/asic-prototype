@@ -15,7 +15,8 @@ import {
 	Spin,
 	Col,
 	Row,
-	Select
+	Select,
+	Radio
 } from 'antd';
 import { Typography } from 'antd';
 import { Input } from 'antd';
@@ -242,10 +243,20 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.name
 			},
 			{
-				title: 'Actions',
-				key: 'actions',
+				title: 'Present',
+				key: 'present',
 				render: (text: string, pair: AttendeeRecordPair) =>
-					this.renderActions(pair)
+					<Radio
+						checked={pair.record != null && pair.record.present}
+						onChange={() => this.markAsPresent(pair.attendee.id)}></Radio>
+			},
+			{
+				title: 'Absent',
+				key: 'absent',
+				render: (text: string, pair: AttendeeRecordPair) =>
+					<Radio
+						checked={pair.record != null && !pair.record.present}
+						onChange={() => this.markAsAbsent(pair.attendee.id)}></Radio>
 			}
 		];
 		const processedList = this.searchAttendeeList(
@@ -312,7 +323,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 								columns={columns}
 								dataSource={processedList}
 								pagination={false}
-								rowKey="attendee"
+								rowKey={record => record.attendee.id.toString()}
 							/>
 						)}
 				</div>
