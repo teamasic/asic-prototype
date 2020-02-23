@@ -93,6 +93,18 @@ namespace AttendanceSystemIPCamera.Controllers
             });
         }
 
+        [HttpPut("{id}")]
+        public Task<BaseResponse<GroupViewModel>> Update(int id, [FromQuery] string groupName)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var group = service.UpdateName(id, groupName);
+                var attendeeGroup = attendeeGroupService.GetByGroupId(group.Id);
+                group.AttendeeGroups = attendeeGroup.ToList();
+                return mapper.Map<GroupViewModel>(group);
+            });
+        }
+
         [HttpPut("deactive/{id}")]
         public Task<BaseResponse<GroupViewModel>> DeactiveGroup(int id)
         {

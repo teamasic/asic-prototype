@@ -19,8 +19,8 @@ namespace AttendanceSystemIPCamera.Services.GroupService
         public Task<PaginatedList<Group>> GetAll(GroupSearchViewModel groupSearchViewModel);
         public Task StartTakingAttendance(TakeAttendanceViewModel takeAttendanceViewModel);
         public Task<Group> AddIfNotInDb(Group group);
-
         public Group DeactiveGroup(int groupId);
+        public Group UpdateName(int id, string newName);
     }
 
     public class GroupService : BaseService<Group>, IGroupService
@@ -69,6 +69,17 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             groupRepository.Update(group);
             unitOfWork.Commit();
 
+        }
+
+        public Group UpdateName(int id, string newName)
+        {
+            var groupInDb = groupRepository.GetById(id).Result;
+            if(groupInDb != null)
+            {
+                groupInDb.Name = newName;
+                Update(groupInDb);
+            }
+            return groupInDb;
         }
     }
 }

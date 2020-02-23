@@ -7,7 +7,7 @@ import Attendee from '../models/Attendee';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
-import { Breadcrumb, Icon, Button, Empty } from 'antd';
+import { Breadcrumb, Icon, Button, Empty, message } from 'antd';
 import { Typography } from 'antd';
 import { Tabs } from 'antd'
 import GroupInfo from './GroupInfo'
@@ -31,11 +31,12 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
         this.ensureDataFetched();
     }
 
-    public onChange = (str: string) => {
-        var updateGroupName = {
+    public editGroupName = (str: string) => {
+        var group = {
             ...this.props.selectedGroup,
             name: str
         }
+        this.props.startUpdateGroup(group, message.success("Update group name success!"));
     }
 
     public render() {
@@ -57,7 +58,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
                 </div>
                 <div className="title-container">
                     <Title className="title" level={3}>
-                        <Paragraph editable={{ onChange: this.onChange }}>{this.props.selectedGroup.name}</Paragraph>
+                        <Paragraph editable={{ onChange: this.editGroupName }}>{this.props.selectedGroup.name}</Paragraph>
                     </Title>
                 </div>
                 <Tabs defaultActiveKey="1" type="card">

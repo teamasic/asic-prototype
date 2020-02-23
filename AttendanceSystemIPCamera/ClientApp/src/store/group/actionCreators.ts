@@ -1,6 +1,6 @@
 ﻿import Group from "../../models/Group";
 import ApiResponse from "../../models/ApiResponse";
-import { getGroups, createGroup, getGroupDetail, deactiveGroup } from "../../services/group";
+import { getGroups, createGroup, getGroupDetail, deactiveGroup, updateGroup } from "../../services/group";
 import { ThunkDispatch } from "redux-thunk";
 import { AppThunkAction } from "..";
 import { AnyAction } from "redux";
@@ -13,7 +13,8 @@ export const ACTIONS = {
     RECEIVE_GROUPS_DATA: 'RECEIVE_GROUPS_DATA',
     CREATE_NEW_GROUP: 'CREATE_NEW_GROUP',
     CREATE_NEW_GROUP_SUCCESS: 'CREATE_NEW_GROUP_SUCCESS',
-    RECEIVE_GROUP_DETAIL: 'RECEIVE_GROUP_DETAIL'
+    RECEIVE_GROUP_DETAIL: 'RECEIVE_GROUP_DETAIL',
+    UPDATE_GROUP_NAME_SUCCESS: 'UPDATE_GROUP_NAME_SUCCESS'
 }
 
 function startRequestGroups(groupSearch: GroupSearch) {
@@ -55,6 +56,13 @@ function createGroupSuccess(newGroup: Group) {
     return {
         type: ACTIONS.CREATE_NEW_GROUP_SUCCESS,
         newGroup: newGroup
+    }
+}
+
+function updateGroupNameSuccess(updatedGroup: Group) {
+    return {
+        type: ACTIONS.UPDATE_GROUP_NAME_SUCCESS,
+        updatedGroup: updatedGroup
     }
 }
 
@@ -105,10 +113,20 @@ const startDeactiveGroup = (id: number, groupSearch: GroupSearch, success: Funct
     }
 }
 
+const startUpdateGroup = (group: Group, success: Function): AppThunkAction => async (dispatch, getState) => {
+    const apiResponse: ApiResponse = await updateGroup(group.id, group.name);
+    if (apiResponse.success) {
+        dispatch(updateGroupNameSuccess(apiResponse.data));
+    } else {
+        console.log("Update group error: " + apiResponse.errors.toString());
+    }
+}
+
 export const groupActionCreators = {
     postGroup,
     requestGroups,
     requestGroupDetail,
     startRequestGroups,
-    startDeactiveGroup
+    startDeactiveGroup,
+    startUpdateGroup
 };

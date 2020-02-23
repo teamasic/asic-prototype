@@ -80,6 +80,11 @@ const reducers: Reducer<GroupsState> = (
                 selectedGroup: action.groupDetail
 
             };
+        case ACTIONS.UPDATE_GROUP_NAME_SUCCESS:
+            return {
+                ...state,
+                selectedGroup: action.updatedGroup
+            }
 	}
 
 	return state;
