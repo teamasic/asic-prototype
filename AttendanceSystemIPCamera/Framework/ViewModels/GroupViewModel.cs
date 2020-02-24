@@ -16,4 +16,13 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public ICollection<AttendeeViewModel> Attendees { get; set; }
         public ICollection <SessionViewModel> Sessions { get; set; }
     }
+
+    public class GroupNetworkViewModel : BaseViewModel<Group>
+    {
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public List<SessionNetworkViewModel> Sessions { get; set; }
+
+    }
+
 }
