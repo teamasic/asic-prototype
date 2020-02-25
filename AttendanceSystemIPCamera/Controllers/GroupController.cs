@@ -93,6 +93,34 @@ namespace AttendanceSystemIPCamera.Controllers
             });
         }
 
+        [HttpPost("{id}/attendee")]
+        public Task<BaseResponse<AttendeeViewModel>> AddAttendeeIntoGroup(int id, [FromBody] AttendeeViewModel attendee)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var attendeeGroup = attendeeGroupService.GetByAttendeeCodeAndGroupId(attendee.Code, id);
+                if(attendeeGroup == null)
+                {
+                    var attendeeInDb = attendeeService.GetByAttendeeCode(attendee.Code);
+                    if (attendeeInDb == null)
+                    {
+                        var newAttendee = mapper.Map<Attendee>(attendee);
+                        attendeeInDb = attendeeService.Add(newAttendee).Result;
+                    }
+
+                    attendeeGroup = new AttendeeGroup()
+                    {
+                        Attendee = attendeeInDb,
+                        AttendeeId = attendeeInDb.Id,
+                        GroupId = id
+                    };
+                    await attendeeGroupService.AddAsync(attendeeGroup);
+                    return mapper.Map<AttendeeViewModel>(attendeeInDb);
+                }
+                return null;
+            });
+        }
+
         [HttpPut("{id}")]
         public Task<BaseResponse<GroupViewModel>> Update(int id, [FromQuery] string groupName)
         {
@@ -112,6 +140,16 @@ namespace AttendanceSystemIPCamera.Controllers
             {
                 var deactiveGroup = service.DeactiveGroup(id);
                 return mapper.Map<GroupViewModel>(deactiveGroup);
+            });
+        }
+
+        [HttpDelete("{groupId}")]
+        public Task<BaseResponse<AttendeeGroupViewModel>> DeleteAttendeeGroup(int groupId, [FromQuery] int attendeeId)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var deletedAttendee = attendeeGroupService.Detete(attendeeId, groupId);
+                return mapper.Map<AttendeeGroupViewModel>(deletedAttendee);
             });
         }
     }

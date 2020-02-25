@@ -36,7 +36,11 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
             ...this.props.selectedGroup,
             name: str
         }
-        this.props.startUpdateGroup(group, message.success("Update group name success!"));
+        this.props.startUpdateGroup(group, this.updateGroupSuccess);
+    }
+
+    public updateGroupSuccess() {
+        message.success("Update group name success!")
     }
 
     public render() {
