@@ -150,10 +150,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
 				: null;
         const menu = (
             <Menu onClick={(click: any) => console.log(click)}>
-                <Menu.Item key="1">
-                    Edit
-                </Menu.Item>
-                <Menu.Item key="2" onClick={this.showConfirm}>
+                <Menu.Item key="1" onClick={this.showConfirm}>
                     Delete
                 </Menu.Item>
             </Menu>
