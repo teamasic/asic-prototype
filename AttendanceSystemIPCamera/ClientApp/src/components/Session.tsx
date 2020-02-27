@@ -16,15 +16,17 @@ import {
 	Col,
 	Row,
 	Select,
-	Radio
+	Radio,
+	Modal,
+	Input
 } from 'antd';
 import { Typography } from 'antd';
-import { Input } from 'antd';
 import classNames from 'classnames';
 import '../styles/Session.css';
 import { SessionState } from '../store/session/state';
 import AttendeeRecordPair from '../models/AttendeeRecordPair';
 import { formatFullDateTimeString } from '../utils';
+import { takeAttendance } from '../services/session';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -49,6 +51,9 @@ interface SessionLocalState {
 		query: string;
 		filter: FilterBy;
 	};
+	isModelOpen: boolean,
+	durationStartIn: number,
+	duration: number,
 }
 
 class Session extends React.PureComponent<SessionProps, SessionLocalState> {
@@ -59,7 +64,10 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 			search: {
 				query: '',
 				filter: FilterBy.ALL
-			}
+			},
+			isModelOpen: false,
+			durationStartIn: 1,
+			duration: 1,
 		};
 	}
 	// This method is called when the component is first added to the document
@@ -72,7 +80,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					sessionId: id
 				});
 				this.props.requestSession(id);
-			} catch (e) {}
+			} catch (e) { }
 		}
 	}
 
@@ -140,7 +148,36 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				);
 		}
 	}
-
+	private openModelTakingAttendance = () => {
+		this.setState({
+			isModelOpen: true,
+		})
+	}
+	private onCancelModel = () => {
+		this.setState({
+			isModelOpen: false,
+		})
+	}
+	private onOkModel = async () => {
+		const data = await takeAttendance({
+			sessionId: this.state.sessionId,
+			durationBeforeStartInMinutes: this.state.durationStartIn,
+			durationInMinutes: this.state.duration
+		})
+		this.setState({
+			isModelOpen: false
+		})
+	}
+	private onChangeDurationStartIn = (e: any) => {
+		this.setState({
+			durationStartIn: e.target.value,
+		})
+	}
+	private onChangeDuration = (e: any) => {
+		this.setState({
+			duration: e.target.value,
+		})
+	}
 	public render() {
 		return (
 			<React.Fragment>
@@ -167,8 +204,8 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					) : this.props.activeSession ? (
 						this.renderSessionSection()
 					) : (
-						this.renderEmpty()
-					)}
+								this.renderEmpty()
+							)}
 				</div>
 			</React.Fragment>
 		);
@@ -265,6 +302,17 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 						</div>
 					</Col>
 				</Row>
+				<Row style={{ marginTop: 5 }} type="flex" gutter={[4, 4]} align="bottom">
+					<Col span={3}>
+						<Button type="primary" onClick={this.openModelTakingAttendance}>Start taking attendance</Button>
+					</Col>
+				</Row>
+				<Modal visible={this.state.isModelOpen} onCancel={this.onCancelModel} onOk={this.onOkModel} okText="Start">	
+					<p style={{ fontWeight: "bold" }}>Start in </p>
+					<Input style={{width: "100px"}} placeholder="" type="number" value={this.state.durationStartIn} onChange={this.onChangeDurationStartIn}/>
+					<p style={{ fontWeight: "bold" }}>Duration </p>
+					<Input style={{width: "100px"}} placeholder="" type="number" value={this.state.duration} onChange={this.onChangeDuration}/>
+				</Modal>
 				<div
 					className={classNames({
 						'attendee-container': true,

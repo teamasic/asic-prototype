@@ -49,11 +49,19 @@ namespace AttendanceSystemIPCamera.Controllers
         }
         
         [HttpPost]
-        public Task<BaseResponse<SessionViewModel>> StartSession([FromBody] SessionStarterViewModel sessionStarterViewModel)
+        public Task<BaseResponse<SessionViewModel>> CreateSession([FromBody] CreateSessionViewModel createSessionViewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
-                return await sessionService.StartNewSession(sessionStarterViewModel);
+                return await sessionService.CreateSession(createSessionViewModel);
+            });
+        }
+        [HttpPost("take-attendance")]
+        public Task<BaseResponse<SessionViewModel>> TakingAttendance([FromBody] TakingAttendanceViewModel viewModel)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                return await sessionService.StartTakingAttendance(viewModel);
             });
         }
 

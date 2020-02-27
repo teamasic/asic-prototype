@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
-    public class SessionStarterViewModel
+    public class CreateSessionViewModel
     {
         public int Id { get; set; }
         public string Name { get; set; }
