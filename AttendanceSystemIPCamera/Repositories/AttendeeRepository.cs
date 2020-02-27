@@ -27,7 +27,7 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public async Task<Attendee> GetByAttendeeCode(string attendeeCode)
         {
-            return await dbSet.FirstOrDefaultAsync(a => a.Code.Equals(attendeeCode, StringComparison.InvariantCultureIgnoreCase));
+            return await dbSet.FirstOrDefaultAsync(a => a.Code.Equals(attendeeCode));
         }
 
         public Attendee GetByCode(string code)
@@ -37,7 +37,7 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public Attendee GetByCodeWithAttendeeGroups(string code)
         {
-            return Get(a => a.Code.Equals(code, StringComparison.InvariantCultureIgnoreCase), null, includeProperties: "AttendeeGroups").FirstOrDefault();
+            return Get(a => a.Code.Equals(code), null, includeProperties: "AttendeeGroups").FirstOrDefault();
         }
 
 

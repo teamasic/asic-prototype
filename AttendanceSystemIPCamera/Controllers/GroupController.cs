@@ -98,17 +98,12 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var attendeeGroup = attendeeGroupService.GetByAttendeeCodeAndGroupId(attendee.Code, id);
-                if(attendeeGroup == null)
+                var attendeeInDb = attendeeService.GetByAttendeeCode(attendee.Code);
+                if (attendeeInDb == null)
                 {
-                    var attendeeInDb = attendeeService.GetByAttendeeCode(attendee.Code);
-                    if (attendeeInDb == null)
-                    {
-                        var newAttendee = mapper.Map<Attendee>(attendee);
-                        attendeeInDb = attendeeService.Add(newAttendee).Result;
-                    }
-
-                    attendeeGroup = new AttendeeGroup()
+                    var newAttendee = mapper.Map<Attendee>(attendee);
+                    attendeeInDb = attendeeService.Add(newAttendee).Result;
+                    var attendeeGroup = new AttendeeGroup()
                     {
                         Attendee = attendeeInDb,
                         AttendeeId = attendeeInDb.Id,
@@ -116,8 +111,23 @@ namespace AttendanceSystemIPCamera.Controllers
                     };
                     await attendeeGroupService.AddAsync(attendeeGroup);
                     return mapper.Map<AttendeeViewModel>(attendeeInDb);
+                } else
+                {
+                    var attendeeGroup = attendeeGroupService.GetByAttendeeIdAndGroupId(attendeeInDb.Id, id);
+                    if(attendeeGroup == null)
+                    {
+                        attendeeGroup = new AttendeeGroup()
+                        {
+                            Attendee = attendeeInDb,
+                            AttendeeId = attendeeInDb.Id,
+                            GroupId = id
+                        };
+                        await attendeeGroupService.AddAsync(attendeeGroup);
+                        return mapper.Map<AttendeeViewModel>(attendeeInDb);
+                    }
+                    return null;
                 }
-                return null;
+                
             });
         }
 

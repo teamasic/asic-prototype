@@ -136,7 +136,7 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
         
         return (
             <div>
-                <Button type="primary" onClick={this.openModal}>Add an attendee</Button>
+                <Button type="primary" icon="user-add" onClick={this.openModal}>Add an attendee</Button>
                 <Modal
                     visible={this.state.modalVisible}
                     title="Add new attendee"
@@ -146,7 +146,7 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                 >
                     <Form labelCol={{ span: 5 }} wrapperCol={{ span: 12 }} onSubmit={this.addAttendee}>
                         <Form.Item label="Code" required>
-                            <Input type="text" onChange={this.onNewCodeChange} onBlur={this.getAttendeeName} />
+                            <Input type="text" onChange={this.onNewCodeChange} value={this.state.newAttendee.code} onBlur={this.getAttendeeName} />
                         </Form.Item>
                         <Form.Item label="Name" required>
                             <Input type="text" onChange={this.onNewNameChange} value={this.state.newAttendee.name} />

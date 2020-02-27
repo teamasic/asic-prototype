@@ -17,7 +17,7 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
         Task AddAsync(IEnumerable<AttendeeGroup> attendeeGroups);
         IEnumerable<AttendeeGroup> GetByGroupId(int groupId);
         AttendeeGroup Detete(int attendeeId, int groupId);
-        AttendeeGroup GetByAttendeeCodeAndGroupId(string attendeeCode, int groupId);
+        AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId);
     }
     public class AttendeeGroupService : IAttendeeGroupService
     {
@@ -65,9 +65,9 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
             return attendeeGroupInDb;
         }
 
-        public AttendeeGroup GetByAttendeeCodeAndGroupId(string attendeeCode, int groupId)
+        public AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId)
         {
-            return attendeeGroupRepository.GetByAttendeeIdAndGroupId(attendeeCode, groupId);
+            return attendeeGroupRepository.GetByAttendeeIdAndGroupId(attendeeId, groupId);
         }
     }
 }
