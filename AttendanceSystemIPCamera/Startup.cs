@@ -173,6 +173,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<IAttendeeGroupService, AttendeeGroupService>();
             services.AddScoped<SupervisorNetworkService>();
             services.AddScoped<RecognitionService, RecognitionService>();
+            services.AddScoped<IChangeRequestService, ChangeRequestService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
@@ -182,6 +183,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<IAttendeeRepository, AttendeeRepository>();
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<IAttendeeGroupRepository, AttendeeGroupRepository>();
+            services.AddScoped<IChangeRequestRepository, ChangeRequestRepository>();
         }
 
         private void SetupBackgroundService(IServiceCollection services)

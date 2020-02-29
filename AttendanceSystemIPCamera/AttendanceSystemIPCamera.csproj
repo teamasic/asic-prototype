@@ -48,6 +48,8 @@
     <Compile Remove="Migrations\20200214112808_Update1.Designer.cs" />
     <Compile Remove="Migrations\20200214113108_Update1.cs" />
     <Compile Remove="Migrations\20200214113108_Update1.Designer.cs" />
+    <Compile Remove="Migrations\20200229085155_Update2.cs" />
+    <Compile Remove="Migrations\20200229085155_Update2.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,11 +62,13 @@
     <None Remove="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
     <None Remove="ClientApp\src\models\Attendee.ts" />
+    <None Remove="ClientApp\src\models\ChangeRequest.ts" />
     <None Remove="ClientApp\src\models\Group - Copy.ts" />
     <None Remove="ClientApp\src\models\Group.ts" />
     <None Remove="ClientApp\src\models\Record.ts" />
     <None Remove="ClientApp\src\models\Session.ts" />
     <None Remove="ClientApp\src\models\UpdateRecord.ts" />
+    <None Remove="ClientApp\src\services\changeRequest.ts" />
     <None Remove="ClientApp\src\services\group.ts" />
     <None Remove="ClientApp\src\services\record.ts" />
     <None Remove="ClientApp\src\services\session.ts" />
@@ -93,6 +97,9 @@
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRConnection.ts" />
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\ChangeRequest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\Record.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -105,6 +112,9 @@
     <TypeScriptCompile Include="ClientApp\src\models\Group.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\UpdateRecord.ts" />
     <TypeScriptCompile Include="ClientApp\src\services\record.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\services\changeRequest.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\unit.ts">
