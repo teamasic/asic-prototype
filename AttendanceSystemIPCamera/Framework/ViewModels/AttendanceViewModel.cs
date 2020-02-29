@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
-    public class AttendanceViewModel
+    public class AttendanceNetworkViewModel
     {
         public bool Success { get; set; } = false;
         public string AttendeeCode { get; set; }
         public string AttendeeName { get; set; }
-        public List<GroupSessionViewModel> Groups { get; set; }
+        public List<GroupNetworkViewModel> Groups { get; set; }
 
     }
 

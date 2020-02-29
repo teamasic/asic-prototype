@@ -132,13 +132,10 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                     };
                     await recordRepository.Add(record);
                 });
-
-                // Update session status
-                // activeSession.Active = false;
-                sessionRepository.Update(activeSession);
                 unitOfWork.Commit();
                 var newRecordList = await recordRepository.GetRecordsBySessionId(activeSession.Id);
                 await realTimeService.SessionEnded(activeSession.Id);
+                sessionRepository.SetActiveSession(-1);
                 return mapper.ProjectTo<Record, SetRecordViewModel>(newRecordList);
             }
             else

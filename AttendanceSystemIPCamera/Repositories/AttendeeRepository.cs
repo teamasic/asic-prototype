@@ -17,7 +17,7 @@ namespace AttendanceSystemIPCamera.Repositories
     {
         Task<Attendee> GetByAttendeeCode(string attendeeCode);
         Attendee GetByCode(string code);
-        Attendee GetByCodeWithAttendeeGroups(string code);
+        Attendee GetByCodeForNetwork(string code);
     }
     public class AttendeeRepository : Repository<Attendee>, IAttendeeRepository
     {
@@ -35,9 +35,37 @@ namespace AttendanceSystemIPCamera.Repositories
             return dbSet.Where(a => code.Equals(a.Code)).FirstOrDefault();
         }
 
-        public Attendee GetByCodeWithAttendeeGroups(string code)
+        public Attendee GetByCodeForNetwork(string code)
         {
-            return Get(a => a.Code.Equals(code), null, includeProperties: "AttendeeGroups").FirstOrDefault();
+            //var attendee = dbSet.FirstOrDefault(a => a.Code.Equals(code));
+            //var data = attendee?.AttendeeGroups
+            //    .Join(context.Set<Group>(),
+            //            attGr => attGr.GroupId,
+            //            gr => gr.Id,
+            //            (attGr, group) => new { group })
+            //    .Where(a => a.group.Sessions.Count != 0)
+            //    .Join(context.Set<Session>(),
+            //        att => att.group.Id,
+            //        sess => sess.GroupId,
+            //        (att, session) => new { att.group, session })
+            //    .Where(a => a.session.Records.Count != 0)
+            //    .Join(context.Set<Record>(),
+            //    a => a.session.Id,
+            //    re => re.SessionId,
+            //    (att, record) => new { att.group, att.session, record }).ToList();
+
+            //var attendance = new AttendanceNetworkViewModel()
+            //{
+            //    AttendeeCode = attendee.Code,
+            //    AttendeeName = attendee.Name,
+            //    Groups =
+            //}
+
+            return Get(a => a.Code.Equals(code),
+                null,
+                includeProperties:
+                "AttendeeGroups,AttendeeGroups.Group,AttendeeGroups.Group.Sessions,AttendeeGroups.Group.Sessions.Records")
+                .FirstOrDefault();
         }
 
 

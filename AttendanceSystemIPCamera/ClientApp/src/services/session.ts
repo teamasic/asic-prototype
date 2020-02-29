@@ -1,4 +1,4 @@
-import ApiResponse from "../models/ApiResponse";
+﻿import ApiResponse from "../models/ApiResponse";
 import axios from 'axios';
 
 const baseRoute = 'api/session';
@@ -16,7 +16,7 @@ export const getSessionAttendeeRecordList = async (
 	return await response.data;
 };
 
-export const startSession = async (data: any) => {
+export const createSession = async (data: any) => {
 	const response = await axios.post(baseRoute, data)
 	return await response.data;
 };
@@ -25,3 +25,7 @@ export const getActiveSession = async (): Promise<ApiResponse> => {
     const response = await axios(apify("active"));
     return await response.data;
 }
+export const takeAttendance = async (data: any) => {
+	const response = await axios.post(apify("take-attendance"), data)
+	return await response.data;
+};
