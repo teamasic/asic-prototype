@@ -15,6 +15,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public DateTime EndTime { get; set; }
         public int GroupId { get; set; }
         public RecordViewModel Record { get; set; }
+        public GroupViewModel Group { get; set; }
     }
 
     public class SessionNetworkViewModel : BaseViewModel<Session>

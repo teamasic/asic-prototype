@@ -224,32 +224,24 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.name
 			},
 			{
-				title: <div className="actions">
-					Present
-					<div className="buffer"></div>
-					Absent
-				</div>,
+				title: 'Present',
 				key: 'present',
+				width: '12%',
 				render: (text: string, pair: AttendeeRecordPair) =>
-					<div className="actions">
-						<Radio
-							checked={pair.record != null && pair.record.present}
-							onChange={() => this.markAsPresent(pair.attendee.id)}></Radio>
-						<div className="big-buffer"></div>
-						<Radio
-							checked={pair.record != null && !pair.record.present}
-							onChange={() => this.markAsAbsent(pair.attendee.id)}></Radio>
-					</div>
+					<Radio
+					checked={pair.record != null && pair.record.present}
+						onChange={() => this.markAsPresent(pair.attendee.id)}>
+					</Radio>
 			},
-			/*
 			{
 				title: 'Absent',
 				key: 'absent',
+				width: '20%',
 				render: (text: string, pair: AttendeeRecordPair) =>
 					<Radio
 						checked={pair.record != null && !pair.record.present}
 						onChange={() => this.markAsAbsent(pair.attendee.id)}></Radio>
-			}*/
+			}
 		];
 		const processedList = this.searchAttendeeList(
 			this.filterAttendeeList(

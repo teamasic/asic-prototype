@@ -18,5 +18,11 @@ namespace AttendanceSystemIPCamera.Framework.ExeptionHandler
         public static string WRONG_SESSION_START_TIME = "Session start time is not suitable";
 
         public static string SESSION_ID_NOT_EXISTED = "Session id not existed: {0}";
+
+        public static string NOT_FOUND_ATTENDEE_WITH_ID = "Not found attendee with id {0}";
+
+        public static string NOT_FOUND_RECORD_WITH_ID = "Not found record with id {0}";
+
+        public static string CHANGE_REQUEST_INVALID = "Change request invalid";
     }
 }

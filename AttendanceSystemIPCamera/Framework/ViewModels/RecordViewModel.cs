@@ -12,6 +12,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     {
         public int Id { get; set; }
         public AttendeeViewModel Attendee { get; set; }
+        public SessionViewModel Session { get; set; }
         public bool Present { get; set; }
     }
 
