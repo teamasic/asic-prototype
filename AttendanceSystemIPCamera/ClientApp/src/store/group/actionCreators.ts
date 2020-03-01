@@ -168,14 +168,14 @@ const startGetAttendeeByCode = (code: string, loadName: Function): AppThunkActio
     }
 }
 
-const startCreateAttendeeInGroup = (groupId: number, newAttendee: Attendee, success: Function): AppThunkAction => async (dispatch, getState) => {
+const startCreateAttendeeInGroup = (groupId: number, newAttendee: Attendee, success: Function, duplicateAttendee: Function): AppThunkAction => async (dispatch, getState) => {
     const apiResponse: ApiResponse = await createAttendeeInGroup(groupId, newAttendee);
     if (apiResponse.success) {
         if (apiResponse.data != null) {
             dispatch(createAttendeeInGroupSuccess(apiResponse.data));
             success();
         } else {
-            console.log("Attendee is already in group");
+            duplicateAttendee();
         }
     } else {
         console.log("Create attendee in group errors: " + apiResponse.errors.toString());
