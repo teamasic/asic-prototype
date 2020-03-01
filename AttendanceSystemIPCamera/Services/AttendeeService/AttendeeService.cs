@@ -18,6 +18,7 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
     {
         Task<Attendee> AddIfNotInDb(Attendee attendee);
         Attendee GetByAttendeeCodeForNetwork(string code);
+        Attendee GetByAttendeeCode(string code);
     }
 
     public class AttendeeService : BaseService<Attendee>, IAttendeeService
@@ -37,6 +38,11 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
                 return await Add(attendee);
             }
             return attendeeInDb;
+        }
+
+        public Attendee GetByAttendeeCode(string code)
+        {
+            return attendeeRepository.GetByCode(code);
         }
 
         public Attendee GetByAttendeeCodeForNetwork(string code)
