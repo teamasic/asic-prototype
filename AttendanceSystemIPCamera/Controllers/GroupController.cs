@@ -92,5 +92,75 @@ namespace AttendanceSystemIPCamera.Controllers
                 return mapper.Map<GroupViewModel>(addedGroup);
             });
         }
+
+        [HttpPost("{id}/attendee")]
+        public Task<BaseResponse<AttendeeViewModel>> AddAttendeeIntoGroup(int id, [FromBody] AttendeeViewModel attendee)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var attendeeInDb = attendeeService.GetByAttendeeCode(attendee.Code);
+                if (attendeeInDb == null)
+                {
+                    var newAttendee = mapper.Map<Attendee>(attendee);
+                    attendeeInDb = attendeeService.Add(newAttendee).Result;
+                    var attendeeGroup = new AttendeeGroup()
+                    {
+                        Attendee = attendeeInDb,
+                        AttendeeId = attendeeInDb.Id,
+                        GroupId = id
+                    };
+                    await attendeeGroupService.AddAsync(attendeeGroup);
+                    return mapper.Map<AttendeeViewModel>(attendeeInDb);
+                } else
+                {
+                    var attendeeGroup = attendeeGroupService.GetByAttendeeIdAndGroupId(attendeeInDb.Id, id);
+                    if(attendeeGroup == null)
+                    {
+                        attendeeGroup = new AttendeeGroup()
+                        {
+                            Attendee = attendeeInDb,
+                            AttendeeId = attendeeInDb.Id,
+                            GroupId = id
+                        };
+                        await attendeeGroupService.AddAsync(attendeeGroup);
+                        return mapper.Map<AttendeeViewModel>(attendeeInDb);
+                    }
+                    return null;
+                }
+                
+            });
+        }
+
+        [HttpPut("{id}")]
+        public Task<BaseResponse<GroupViewModel>> Update(int id, [FromQuery] string groupName)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var group = service.UpdateName(id, groupName);
+                var attendeeGroup = attendeeGroupService.GetByGroupId(group.Id);
+                group.AttendeeGroups = attendeeGroup.ToList();
+                return mapper.Map<GroupViewModel>(group);
+            });
+        }
+
+        [HttpPut("deactive/{id}")]
+        public Task<BaseResponse<GroupViewModel>> DeactiveGroup(int id)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var deactiveGroup = service.DeactiveGroup(id);
+                return mapper.Map<GroupViewModel>(deactiveGroup);
+            });
+        }
+
+        [HttpDelete("{groupId}")]
+        public Task<BaseResponse<AttendeeGroupViewModel>> DeleteAttendeeGroup(int groupId, [FromQuery] int attendeeId)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var deletedAttendee = attendeeGroupService.Detete(attendeeId, groupId);
+                return mapper.Map<AttendeeGroupViewModel>(deletedAttendee);
+            });
+        }
     }
 }

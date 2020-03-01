@@ -22,6 +22,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public Task<Record> Set(SetRecordViewModel createRecordViewModel);
         public Task<IEnumerable<SetRecordViewModel>> UpdateRecordsAfterEndSession();
         public Task<SetRecordViewModel> RecordAttendance(AttendeeViewModel viewModel);
+        public IEnumerable<Record> GetRecordsBySessionId(int sessionId);
     }
 
     public class RecordService: BaseService<Record>, IRecordService
@@ -41,7 +42,12 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             this.realTimeService = realTimeService;
             this.mapper = mapper;
         }
-        
+
+        public IEnumerable<Record> GetRecordsBySessionId(int sessionId)
+        {
+            return recordRepository.GetRecordsBySessionId(sessionId).Result;
+        }
+
         public async Task<SetRecordViewModel> RecordAttendance(AttendeeViewModel viewModel)
         {
             // check not exist active session
