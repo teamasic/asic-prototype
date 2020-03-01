@@ -19,7 +19,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
 {
     public interface IRecordService : IBaseService<Record>
     {
-        public Task<(Record record, bool isActiveSession)> Set(SetRecordViewModel createRecordViewModel);
+        public Task<Record> Set(SetRecordViewModel createRecordViewModel);
         public Task<IEnumerable<SetRecordViewModel>> UpdateRecordsAfterEndSession();
         public Task<SetRecordViewModel> RecordAttendance(AttendeeViewModel viewModel);
         public IEnumerable<Record> GetRecordsBySessionId(int sessionId);
@@ -61,14 +61,21 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             var record = await recordRepository.GetRecordBySessionAndAttendeeCode(activeSession.Id, viewModel.Code);
             var isAttendeeInGroup = await groupRepository.CheckAttendeeExistedInGroup(activeSession.Group.Id, viewModel.Code);
 
-            if (record != null)
-            {
-                return mapper.Map<SetRecordViewModel>(record);
-            }
-            else if (!isAttendeeInGroup)
+            if (!isAttendeeInGroup)
             {
                 throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_ATTENDEE_WITH_CODE, viewModel.Code);
             }
+            else if (record != null)
+            {
+                if (!record.Present)
+                {
+                    record.Present = true;
+                    recordRepository.Update(record);
+                    unitOfWork.Commit();
+                }
+                return mapper.Map<SetRecordViewModel>(record);
+            }
+
             else {
                 var attendee = await attendeeRepository.GetByAttendeeCode(viewModel.Code);
                 var newRecord = new Record
@@ -83,7 +90,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             }
         }
 
-        public async Task<(Record record, bool isActiveSession)> Set(SetRecordViewModel viewModel)
+        public async Task<Record> Set(SetRecordViewModel viewModel)
         {
             var record = recordRepository.GetRecordBySessionAndAttendee(viewModel.SessionId, viewModel.AttendeeId);
             Session session;
@@ -109,7 +116,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 record.Present = viewModel.Present;
             }
             unitOfWork.Commit();
-            return (record, session.Active);
+            return record;
         }
 
         public async Task<IEnumerable<SetRecordViewModel>> UpdateRecordsAfterEndSession()
@@ -131,13 +138,10 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                     };
                     await recordRepository.Add(record);
                 });
-
-                // Update session status
-                activeSession.Active = false;
-                sessionRepository.Update(activeSession);
                 unitOfWork.Commit();
                 var newRecordList = await recordRepository.GetRecordsBySessionId(activeSession.Id);
                 await realTimeService.SessionEnded(activeSession.Id);
+                sessionRepository.SetActiveSession(-1);
                 return mapper.ProjectTo<Record, SetRecordViewModel>(newRecordList);
             }
             else

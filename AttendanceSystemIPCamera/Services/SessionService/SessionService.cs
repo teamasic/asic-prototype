@@ -31,12 +31,14 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 {
     public interface ISessionService : IBaseService<Session>
     {
-        List<GroupSessionViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds);
+        List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds, int attendeeId);
         public Task<ICollection<AttendeeRecordPair>> GetSessionAttendeeRecordMap(int sessionId);
         bool IsSessionRunning();
         Task<SessionViewModel> GetActiveSession();
-        Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
+        //Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
         List<SessionExportViewModel> Export(int groupId, DateTime startDate, DateTime endDate);
+        Task<SessionViewModel> CreateSession(CreateSessionViewModel createSessionViewModel);
+        Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -121,33 +123,36 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             return sessionRepository.isSessionRunning();
         }
 
-        public async Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel)
-        {
-            var sessionAlreadyRunning = IsSessionRunning();
-            if (sessionAlreadyRunning)
-            {
-                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
-            }
-            else
-            {
-                var currentTime = DateTime.Now;
-                var timeDifferenceMilliseconds = sessionStarterViewModel.StartTime.Subtract(currentTime).TotalMilliseconds;
-                if (timeDifferenceMilliseconds <= -60 * 1000)
-                {
-                    throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
-                }
-                else if (timeDifferenceMilliseconds > -60 * 1000 & timeDifferenceMilliseconds < 0)
-                {
-                    timeDifferenceMilliseconds = 0;
-                }
-                var session = mapper.Map<Session>(sessionStarterViewModel);
-                session.Active = true;
-                session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
-                var sessionAdded = await Add(session);
-                recognitionService.StartRecognition(timeDifferenceMilliseconds, sessionStarterViewModel.Duration, sessionStarterViewModel.RtspString);
-                return mapper.Map<SessionViewModel>(sessionAdded);
-            }
-        }
+        //public async Task<SessionViewModel> StartNewSession(CreateSessionViewModel sessionStarterViewModel)
+        //{
+        //    var sessionAlreadyRunning = IsSessionRunning();
+        //    if (sessionAlreadyRunning)
+        //    {
+        //        throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
+        //    }
+        //    else
+        //    {
+        //        var startTime = sessionStarterViewModel.StartTime;
+        //        var endTime = sessionStarterViewModel.EndTime;
+        //        var currentTime = DateTime.Now;
+        //        var timeDifferenceMilliseconds = startTime.Subtract(currentTime).TotalMilliseconds;
+        //        if (timeDifferenceMilliseconds <= -60 * 1000)
+        //        {
+        //            throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
+        //        }
+        //        else if (timeDifferenceMilliseconds > -60 * 1000 & timeDifferenceMilliseconds < 0)
+        //        {
+        //            timeDifferenceMilliseconds = 0;
+        //        }
+        //        var session = mapper.Map<Session>(sessionStarterViewModel);
+        //        session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
+        //        var sessionAdded = await Add(session);
+        //        var duration = (int)endTime.Subtract(startTime).TotalMinutes;
+        //        sessionRepository.SetActiveSession(session.Id);
+        //        recognitionService.StartRecognition(timeDifferenceMilliseconds, duration, sessionStarterViewModel.RtspString);
+        //        return mapper.Map<SessionViewModel>(sessionAdded);
+        //    }
+        //}
 
 
         #region Support methods
@@ -175,28 +180,31 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         }
         #endregion
 
-        public List<GroupSessionViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds)
+        public List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds, int attendeeId)
         {
             var sessions = sessionRepository.GetSessionsWithRecords(groupIds);
-            var groupSessions = new List<GroupSessionViewModel>();
+            var groupSessions = new List<GroupNetworkViewModel>();
             foreach (var groupId in groupIds)
             {
                 var sessionsInGroupId = sessions.Where(s => s.GroupId == groupId).ToList();
-                var group = sessionsInGroupId.FirstOrDefault().Group;
-                var sessionViewModels = sessionsInGroupId.Select(s =>
+                if (sessionsInGroupId != null && sessionsInGroupId.Count > 0)
                 {
-                    var svm = mapper.Map<Session, SessionViewModel>(s);
-                    svm.Record = mapper.Map<Record, RecordViewModel>(s.Records.LastOrDefault());
-                    return svm;
-                });
+                    var group = sessionsInGroupId.FirstOrDefault().Group;
+                    var sessionViewModels = sessionsInGroupId.Select(s =>
+                    {
+                        var svm = mapper.Map<Session, SessionNetworkViewModel>(s);
+                        svm.Records = mapper.ProjectTo<Record, RecordNetworkViewModel>(s.Records)?.ToList();
+                        return svm;
+                    });
 
-                var groupSession = new GroupSessionViewModel()
-                {
-                    GroupCode = group.Code,
-                    Name = group.Name,
-                    Sessions = sessionViewModels.ToList()
-                };
-                groupSessions.Add(groupSession);
+                    var groupSession = new GroupNetworkViewModel()
+                    {
+                        Code = group.Code,
+                        Name = group.Name,
+                        Sessions = sessionViewModels.ToList()
+                    };
+                    groupSessions.Add(groupSession);
+                }
             }
             return groupSessions;
         }
@@ -207,7 +215,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             var sessionExports = new List<SessionExportViewModel>();
             var fileName = "GroupNotExisted.csv";
             var group = groupRepository.GetById(groupId).Result;
-            if(group != null)
+            if (group != null)
             {
                 fileName = group.Code + "-" + group.Name;
             }
@@ -228,14 +236,48 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                     sessionExports.Add(viewModel);
                 }
             }
-            using(var writer = new StreamWriter(this.myConfiguration.ExportFilePath + "\\" + fileName))
+            using (var writer = new StreamWriter(this.myConfiguration.ExportFilePath + "\\" + fileName))
             {
-                using(var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
                     csv.WriteRecords(sessionExports);
                 }
             }
             return sessionExports;
+        }
+
+        public async Task<SessionViewModel> CreateSession(CreateSessionViewModel sessionStarterViewModel)
+        {
+            var session = await sessionRepository.GetSessionWithGroupAndTime(sessionStarterViewModel.GroupId, sessionStarterViewModel.StartTime, sessionStarterViewModel.EndTime);
+            if (session != null)
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_AlREADY_EXISTED);
+            }
+            else
+            {
+                var newSession = mapper.Map<Session>(sessionStarterViewModel);
+                newSession.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
+                return mapper.Map<SessionViewModel>(await Add(newSession));
+            }
+        }
+
+        public async Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel)
+        {
+            if (sessionRepository.isSessionRunning())
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
+            }
+            var session = await GetById(viewModel.SessionId);
+            if (session == null)
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ID_NOT_EXISTED, viewModel.SessionId);
+            }
+            else
+            {
+                sessionRepository.SetActiveSession(viewModel.SessionId);
+                recognitionService.StartRecognition(viewModel.DurationBeforeStartInMinutes, viewModel.DurationInMinutes, session.RtspString);
+                return mapper.Map<SessionViewModel>(session);
+            }
         }
     }
 }

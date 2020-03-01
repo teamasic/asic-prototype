@@ -8,6 +8,7 @@ import {
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
+import Attendee from '../../models/Attendee';
 import AttendeeRecordPair from '../../models/AttendeeRecordPair';
 import UpdateRecord from '../../models/UpdateRecord';
 import { updateRecord } from '../../services/record';
@@ -109,6 +110,16 @@ function updateAttendeeRecord(updateInfo: UpdateRecord, updatedRecord: Record) {
 const createOrUpdateRecord = (
 	updateInfo: UpdateRecord
 ): AppThunkAction => async dispatch => {
+	const temporaryUpdatedRecord: Record = {
+		id: -1,
+		attendee: {
+			id: updateInfo.attendeeId,
+			code: '',
+			name: ''
+		},
+		present: updateInfo.present
+	};
+	dispatch(updateAttendeeRecord(updateInfo, temporaryUpdatedRecord));
 	const apiResponse: ApiResponse = await updateRecord(updateInfo);
 
 	if (apiResponse.success) {

@@ -31,7 +31,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var (record, isActiveSession) = await recordService.Set(viewModel);
+                var record = await recordService.Set(viewModel);
                 return mapper.Map<RecordViewModel>(record);
             });
         }

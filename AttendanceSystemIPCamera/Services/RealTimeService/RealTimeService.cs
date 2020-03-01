@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using AttendanceSystemIPCamera.Repositories;
 using Microsoft.AspNetCore.SignalR;
+using System.Timers;
 
 namespace AttendanceSystemIPCamera.Services.RecordService
 {
@@ -25,14 +26,22 @@ namespace AttendanceSystemIPCamera.Services.RecordService
     {
         public static string ATTENDEE_PRESENTED = "attendeePresented";
         public static string SESSION_ENDED = "sessionEnded";
+        public static string KEEP_ALIVE = "keepAlive";
     }
 
     public class RealTimeService : Hub, IRealTimeService
     {
         private readonly IHubContext<RealTimeService> hubContext;
+        private readonly Timer timer;
         public RealTimeService(IHubContext<RealTimeService> hubContext)
         {
             this.hubContext = hubContext;
+            timer = new Timer(TimeSpan.FromSeconds(30).TotalMilliseconds);
+            timer.Elapsed += async (source, e) =>
+            {
+                await KeepAlive();
+            };
+            timer.AutoReset = true;
         }
         public async Task MarkAttendeeAsPresent(string attendeeCode)
         {
@@ -42,6 +51,23 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public async Task SessionEnded(int sessionId)
         {
             await hubContext.Clients.All.SendAsync(HubMethods.SESSION_ENDED, sessionId);
+        }
+
+        public async Task KeepAlive()
+        {
+            await hubContext.Clients.All.SendAsync(HubMethods.KEEP_ALIVE);
+        }
+
+        public override Task OnConnectedAsync()
+        {
+            timer.Start();
+            return Task.CompletedTask;
+        }
+
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
+            timer?.Stop();
+            return Task.CompletedTask;
         }
     }
 }

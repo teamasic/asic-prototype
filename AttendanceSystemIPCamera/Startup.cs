@@ -25,11 +25,18 @@ using System;
 using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Services.NetworkService;
 using AttendanceSystemIPCamera.Services.RecognitionService;
+using AttendanceSystemIPCamera.Services.UnitService;
+using AttendanceSystemIPCamera.Framework.GlobalStates;
+using Microsoft.Extensions.Logging;
 
 namespace AttendanceSystemIPCamera
 {
     public class Startup
     {
+
+        public static readonly ILoggerFactory DefaultLoggerFactory
+                                    = LoggerFactory.Create(builder => { builder.AddConsole(); });
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -41,7 +48,8 @@ namespace AttendanceSystemIPCamera
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews()
-                .AddNewtonsoftJson(options => {
+                .AddNewtonsoftJson(options =>
+                {
                     options.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects;
                 });
 
@@ -96,15 +104,15 @@ namespace AttendanceSystemIPCamera
             });
 
 
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
+            //app.UseSpa(spa =>
+            //{
+            //    spa.Options.SourcePath = "ClientApp";
 
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
-            });
+            //    if (env.IsDevelopment())
+            //    {
+            //        spa.UseReactDevelopmentServer(npmScript: "start");
+            //    }
+            //});
 
         }
 
@@ -119,7 +127,11 @@ namespace AttendanceSystemIPCamera
 
         private void SetupDatabaseContext(IServiceCollection services)
         {
-            services.AddDbContext<MainDbContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDB")));
+            services.AddDbContext<MainDbContext>(options =>
+            {
+                options.UseSqlite(Configuration.GetConnectionString("SqliteDB"));
+                options.UseLoggerFactory(DefaultLoggerFactory);
+            });
         }
         private void SetupAutoMapper(IServiceCollection services)
         {
@@ -146,6 +158,8 @@ namespace AttendanceSystemIPCamera
 
             SetupServices(services);
             SetupRepositories(services);
+            SetupUnitConfig(services);
+            SetupGlobalStateManager(services);
         }
 
         private void SetupServices(IServiceCollection services)
@@ -176,6 +190,16 @@ namespace AttendanceSystemIPCamera
             services.AddHostedService<SupervisorRunnerService>();
         }
 
+        private void SetupUnitConfig(IServiceCollection services)
+        {
+            UnitService unitServiceInstance = UnitServiceFactory.Create(Configuration.GetValue<string>("UnitConfigFile"));
+            services.AddSingleton(unitServiceInstance);
+        }
 
+        private void SetupGlobalStateManager(IServiceCollection services)
+        {
+            var globalState = new GlobalState();
+            services.AddSingleton(globalState);
+        }
     }
 }

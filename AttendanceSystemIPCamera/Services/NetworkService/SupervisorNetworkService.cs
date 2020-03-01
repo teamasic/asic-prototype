@@ -16,6 +16,7 @@ using AutoMapper;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using static AttendanceSystemIPCamera.Framework.Constants;
+using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 
 namespace AttendanceSystemIPCamera.Services.NetworkService
 {
@@ -63,19 +64,20 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             }
         }
 
-        public AttendanceViewModel ProcessRequest(object msg)
+        public AttendanceNetworkViewModel ProcessRequest(object msg)
         {
             (bool success, Attendee attendee) = ValidateMessage(msg.ToString());
-            var attendanceData = new AttendanceViewModel()
+            var attendanceData = new AttendanceNetworkViewModel()
             {
                 Success = success
             };
+            
             if (success)
             {
                 attendanceData.AttendeeCode = attendee.Code;
                 attendanceData.AttendeeName = attendee.Name;
                 var groupIds = attendee.AttendeeGroups.Select(ag => ag.GroupId).ToList();
-                attendanceData.Groups = GetGroupSessionViewModels(groupIds);
+                attendanceData.Groups = GetGroupNetworkViewModels(attendee);
             }
             return attendanceData;
         }
@@ -94,7 +96,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                     case Constant.LOGIN_BY_FACE:
                         break;
                     case Constant.GET_DATA_BY_ATTENDEE_CODE:
-                        attendee = attendeeService.GetByAttendeeCode(loginViewModel.AttendeeCode);
+                        attendee = attendeeService.GetByAttendeeCodeForNetwork(loginViewModel.AttendeeCode);
                         break;
                 }
                 if (attendee != null)
@@ -106,9 +108,19 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             return (false, null);
         }
 
-        private List<GroupSessionViewModel> GetGroupSessionViewModels(List<int> groupIds)
+        private List<GroupNetworkViewModel> GetGroupNetworkViewModels(Attendee attendee)
         {
-            return sessionService.GetSessionsWithRecordsByGroupIDs(groupIds);
+            var groupNetworks = mapper.ProjectTo<Group, GroupNetworkViewModel>(attendee.Groups).ToList();
+            groupNetworks.RemoveAll(g => g.Sessions.Count == 0);
+            groupNetworks.ForEach(groupSession =>
+            {
+                groupSession.Sessions.RemoveAll(s => s.Records.Count == 0);
+                groupSession.Sessions.ForEach(session =>
+                {
+                    session.Records.RemoveAll(r => r.AttendeeId != attendee.Id);
+                });
+            });
+            return groupNetworks.ToList();
         }
     }
 }

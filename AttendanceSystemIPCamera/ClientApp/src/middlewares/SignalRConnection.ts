@@ -8,10 +8,15 @@ class SignalRConnection {
                 .withUrl("/hub")
                 .configureLogging(signalR.LogLevel.Information)
                 .build();
+            this.conn.serverTimeoutInMilliseconds = 100000; // 100 second
         }
         return this.conn;
     }
 }
 
+/*
 const connectionSingleton = new SignalRConnection();
 export default connectionSingleton.connection;
+*/
+
+export default SignalRConnection;

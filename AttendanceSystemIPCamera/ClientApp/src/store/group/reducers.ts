@@ -21,7 +21,9 @@ const unloadedState: GroupsState = {
         sessions: [{
             id: 1,
             active: false,
+            name: 'Slot 1',
             startTime: new Date(),
+            endTime: new Date(),
             attendees: [{
                 id: 1,
                 code: 'SE63147',

@@ -1,4 +1,5 @@
 ﻿using AttendanceSystemIPCamera.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -31,6 +32,13 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public DateTime StartTime { get; set; }
         [Required]
         public DateTime EndTime { get; set; }
+    }
+
+    public class RecordNetworkViewModel : BaseViewModel<Record>
+    {
+        [JsonIgnore]
+        public int AttendeeId { get; set; }
+        public bool Present { get; set; }
     }
 
 }
