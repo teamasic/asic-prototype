@@ -25,3 +25,14 @@ export const getActiveSession = async (): Promise<ApiResponse> => {
     const response = await axios(apify("active"));
     return await response.data;
 }
+
+export const exportSession = async (groupId: number, startDate: Date, endDate: Date): Promise<ApiResponse> => {
+	const response = await axios.get(apify("export"), {
+		params: {
+			groupId: groupId,
+			startDate: startDate,
+			endDate: endDate
+		}
+	});
+	return await response.data;
+}

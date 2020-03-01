@@ -12,6 +12,7 @@ import { Typography } from 'antd';
 import { Tabs } from 'antd'
 import GroupInfo from './GroupInfo'
 import PastSession from './PastSession'
+import ModalExport from './ModalExport'
 import classNames from 'classnames';
 
 const { Title } = Typography;
@@ -26,6 +27,9 @@ type GroupDetailProps =
 
 
 class GroupDetail extends React.PureComponent<GroupDetailProps> {
+    state = {
+        modalExportVisible: false
+    }
     // This method is called when the component is first added to the document
     public componentDidMount() {
         this.ensureDataFetched();
@@ -43,7 +47,20 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
         message.success("Update group name success!")
     }
 
+    public openModalExport = () => {
+        this.setState({
+            modalExportVisible: true
+        })
+    }
+
+    public closeModalExport = () => {
+        this.setState({
+            modalExportVisible: false
+        })
+    }
+
     public render() {
+        const exportModal = <Button type="default" onClick={this.openModalExport} icon="export">Export</Button>
         return (
             <React.Fragment>
                 <div className="breadcrumb-container">
@@ -65,7 +82,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
                         <Paragraph editable={{ onChange: this.editGroupName }}>{this.props.selectedGroup.name}</Paragraph>
                     </Title>
                 </div>
-                <Tabs defaultActiveKey="1" type="card">
+                <Tabs defaultActiveKey="1" type="card" tabBarExtraContent={exportModal}>
                     <TabPane tab="Group Information" key="1">
                         <GroupInfo attendees={this.props.selectedGroup.attendees} />
                     </TabPane>
@@ -73,6 +90,9 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
                         <PastSession/>
                     </TabPane>
                 </Tabs>
+                <ModalExport modalVisible={this.state.modalExportVisible}
+                    group={this.props.selectedGroup}
+                    closeModal={this.closeModalExport} />
             </React.Fragment>
         );
     }
@@ -86,8 +106,6 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
         </Empty>;
     }
 }
-
-//export default GroupDetail;
 
 export default connect(
     (state: ApplicationState) => state.groups, // Selects which state properties are merged into the component's props

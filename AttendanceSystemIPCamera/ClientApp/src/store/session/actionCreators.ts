@@ -3,7 +3,8 @@ import { AppThunkAction } from '..';
 import {
 	getSession,
 	getSessionAttendeeRecordList,
-    getActiveSession
+	getActiveSession,
+	exportSession
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -136,9 +137,19 @@ export const requestActiveSession = (): AppThunkAction => async (dispatch, getSt
 	dispatch(receiveActiveSession(apiResponse.data));
 };
 
+export const startExportSession = (groupId: number, startDate: Date, endDate: Date, success: Function): AppThunkAction => async (dispatch, getState) => {
+	const apiResponse: ApiResponse = await exportSession(groupId, startDate, endDate);
+	if (apiResponse.success) {
+		success();
+	} else {
+		console.log("Error at export: " + apiResponse.errors.toString());
+	}
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
 	updateAttendeeRecordRealTime,
-    requestActiveSession
+	requestActiveSession,
+	startExportSession
 };

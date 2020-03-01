@@ -44,7 +44,8 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
     public addAttendee = () => {
         this.props.startCreateAttendeeInGroup(this.props.selectedGroup.id,
             this.state.newAttendee,
-            this.addAttendeeSuccess)
+            this.addAttendeeSuccess,
+            this.duplicateAttendee);
     }
 
     public addAttendeeSuccess = () => {
@@ -107,6 +108,10 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
             newAttendee: attendee
         })
     } 
+
+    public duplicateAttendee = () => {
+        message.error("Attendee " + this.state.newAttendee.code + " is already in this group!");
+    }
 
     public render() {
         const columns = [

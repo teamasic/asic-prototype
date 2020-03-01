@@ -24,6 +24,8 @@ using System.Threading;
 using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using Microsoft.Extensions.DependencyInjection;
 using AttendanceSystemIPCamera.Services.RecognitionService;
+using System.Globalization;
+using CsvHelper;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -34,6 +36,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         bool IsSessionRunning();
         Task<SessionViewModel> GetActiveSession();
         Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
+        List<SessionExportViewModel> Export(int groupId, DateTime startDate, DateTime endDate);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -198,5 +201,41 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             return groupSessions;
         }
 
+        public List<SessionExportViewModel> Export(int groupId, DateTime startDate, DateTime endDate)
+        {
+            var sessions = sessionRepository.GetSessionExport(groupId, startDate, endDate);
+            var sessionExports = new List<SessionExportViewModel>();
+            var fileName = "GroupNotExisted.csv";
+            var group = groupRepository.GetById(groupId).Result;
+            if(group != null)
+            {
+                fileName = group.Code + "-" + group.Name;
+            }
+            //Mapping session to exportViewModel
+            foreach (var item in sessions)
+            {
+                var records = recordService.GetRecordsBySessionId(item.Id);
+                foreach (var record in records)
+                {
+                    var viewModel = new SessionExportViewModel()
+                    {
+                        SessionId = item.Id,
+                        StartTime = item.StartTime,
+                        AttendeeCode = record.Attendee.Code,
+                        AttendeeName = record.Attendee.Name,
+                        Present = record.Present
+                    };
+                    sessionExports.Add(viewModel);
+                }
+            }
+            using(var writer = new StreamWriter(this.myConfiguration.ExportFilePath + "\\" + fileName))
+            {
+                using(var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    csv.WriteRecords(sessionExports);
+                }
+            }
+            return sessionExports;
+        }
     }
 }
