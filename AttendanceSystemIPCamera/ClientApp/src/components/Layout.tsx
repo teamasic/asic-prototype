@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Container } from 'reactstrap';
 import NavMenu from './NavMenu';
-import { Layout, Menu, Breadcrumb, Icon } from 'antd';
+import { Layout, Menu, Breadcrumb, Icon, Badge } from 'antd';
 import classNames from 'classnames';
 import '../styles/Layout.css';
 import { Link } from 'react-router-dom';
@@ -42,6 +42,18 @@ class PageLayout extends React.Component<
 							</div>
 						</Menu.Item>
 						<Menu.Item key="2">
+							<Icon type="file-exclamation" />
+							<div className="link-container">
+								<Link to="/change-requests">
+									Change requests
+								</Link>
+								<Badge count={5} className="borderless-badge" style={{
+									marginLeft: '5px'
+								}}>
+									</Badge>
+							</div>
+						</Menu.Item>
+						<Menu.Item key="3">
 							<Icon type="sync" />
 							<span>Sync</span>
 						</Menu.Item>

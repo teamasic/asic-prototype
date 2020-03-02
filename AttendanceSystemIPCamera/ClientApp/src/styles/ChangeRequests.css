@@ -1,0 +1,11 @@
+﻿.comment-label {
+    font-weight: bold;
+    font-style: italic;
+    text-decoration: underline;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.actions button {
+    margin-right: 5px;
+}

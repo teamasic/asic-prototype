@@ -63,6 +63,7 @@
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
     <None Remove="ClientApp\src\models\Attendee.ts" />
     <None Remove="ClientApp\src\models\ChangeRequest.ts" />
+    <None Remove="ClientApp\src\models\CreateChangeRequest.ts" />
     <None Remove="ClientApp\src\models\Group - Copy.ts" />
     <None Remove="ClientApp\src\models\Group.ts" />
     <None Remove="ClientApp\src\models\Record.ts" />
@@ -97,6 +98,9 @@
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRConnection.ts" />
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\CreateChangeRequest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\ChangeRequest.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

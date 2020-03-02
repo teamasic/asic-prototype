@@ -1,10 +1,7 @@
-﻿import Attendee from "./Attendee";
-import Record from "./Record";
-
-export enum ChangeRequestStatus {
+﻿export enum ChangeRequestStatus {
     UNRESOLVED = 0,
     APPROVED = 1,
-    DENIED = 2
+    REJECTED = 2
 };
 
 export enum ChangeRequestStatusFilter {
@@ -15,8 +12,17 @@ export enum ChangeRequestStatusFilter {
 
 export default interface ChangeRequest {
     id: number;
-    record: Record;
-    commment: string;
+    // record: Record;
+    recordId: number;
+    attendeeCode: string;
+    attendeeName: string;
+    groupId: number;
+    groupName: string;
+    groupCode: string;
+    sessionId: number;
+    sessionTime: Date;
+    sessionName: string;
+    comment: string;
     oldState: boolean;
     newState: boolean;
     status: ChangeRequestStatus;

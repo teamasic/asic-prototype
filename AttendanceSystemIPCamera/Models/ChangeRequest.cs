@@ -11,7 +11,7 @@ namespace AttendanceSystemIPCamera.Models
     {
         UNRESOLVED = 0,
         APPROVED = 1,
-        DENIED = 2
+        REJECTED = 2
     }
     public class ChangeRequest: BaseEntity
     {

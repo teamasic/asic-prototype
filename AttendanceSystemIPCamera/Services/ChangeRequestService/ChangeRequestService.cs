@@ -20,6 +20,7 @@ namespace AttendanceSystemIPCamera.Services.RoomService
     public interface IChangeRequestService : IBaseService<ChangeRequest>
     {
         public Task<ChangeRequest> Add(CreateChangeRequestViewModel viewModel);
+        public Task<ChangeRequest> Process(ProcessChangeRequestViewModel viewModel);
         public Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel);
     }
 
@@ -63,6 +64,23 @@ namespace AttendanceSystemIPCamera.Services.RoomService
         public async Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel)
         {
             return await changeRequestRepository.GetAll(viewModel);
+        }
+
+        public async Task<ChangeRequest> Process(ProcessChangeRequestViewModel viewModel)
+        {
+            var changeRequest = await changeRequestRepository.GetByIdSimple(viewModel.ChangeRequestId);
+            if (viewModel.Approved)
+            {
+                changeRequest.Record.Present = changeRequest.NewState;
+                changeRequest.Status = ChangeRequestStatus.APPROVED;
+            }
+            else
+            {
+                changeRequest.Status = ChangeRequestStatus.REJECTED;
+            }
+            changeRequestRepository.Update(changeRequest);
+            unitOfWork.Commit();
+            return changeRequest;
         }
     }
 }

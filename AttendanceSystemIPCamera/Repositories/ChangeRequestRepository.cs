@@ -15,11 +15,19 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface IChangeRequestRepository : IRepository<ChangeRequest>
     {
         public Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel);
+        public Task<ChangeRequest> GetByIdSimple(object id);
     }
     public class ChangeRequestRepository : Repository<ChangeRequest>, IChangeRequestRepository
     {
         public ChangeRequestRepository(DbContext context) : base(context)
         {
+        }
+
+        public async Task<ChangeRequest> GetByIdSimple(object id)
+        {
+            return await dbSet
+                .Include(cr => cr.Record)
+                .FirstOrDefaultAsync(cr => cr.Id == (int)id);
         }
 
         public new async Task<ChangeRequest> GetById(object id)

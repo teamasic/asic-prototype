@@ -51,5 +51,15 @@ namespace AttendanceSystemIPCamera.Controllers
                 return mapper.Map<ChangeRequestSimpleViewModel>(newChangeRequest);
             });
         }
+
+        [HttpPut]
+        public Task<BaseResponse<ChangeRequestSimpleViewModel>> Process([FromBody] ProcessChangeRequestViewModel viewModel)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                var newChangeRequest = await changeRequestService.Process(viewModel);
+                return mapper.Map<ChangeRequestSimpleViewModel>(newChangeRequest);
+            });
+        }
     }
 }
