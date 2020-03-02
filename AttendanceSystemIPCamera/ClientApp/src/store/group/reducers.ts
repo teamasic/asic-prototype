@@ -82,6 +82,29 @@ const reducers: Reducer<GroupsState> = (
                 selectedGroup: action.groupDetail
 
             };
+        case ACTIONS.UPDATE_GROUP_NAME_SUCCESS:
+            return {
+                ...state,
+                selectedGroup: action.updatedGroup
+            }
+        case ACTIONS.DELETE_ATTENDEE_GROUP_SUCCESS:
+            var selectedGroup = {
+                ...state.selectedGroup,
+                attendees: state.selectedGroup.attendees.filter(a => a.id !== action.attendeeId)
+            };;
+            return {
+                ...state,
+                selectedGroup: selectedGroup
+            }
+        case ACTIONS.CREATE_ATTENDEE_IN_GROUP_SUCCESS:
+            var selectedGroup = {
+                ...state.selectedGroup,
+                attendees: state.selectedGroup.attendees.concat(action.newAttendee)
+            };;
+            return {
+                ...state,
+                selectedGroup: selectedGroup
+            }
 	}
 
 	return state;

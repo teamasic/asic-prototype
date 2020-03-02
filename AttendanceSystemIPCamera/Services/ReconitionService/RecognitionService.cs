@@ -23,8 +23,8 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
 
         public async Task StartRecognition(int durationStartIn, int durationMinutes, string rtspString)
         {
-            //await RecognitionByImageVLC(durationStartIn, durationMinutes, rtspString);
-            await RecognitionByOpenCV(durationStartIn, durationMinutes, rtspString);
+            await RecognitionByImageVLC(durationStartIn, durationMinutes, rtspString);
+            //await RecognitionByOpenCV(durationStartIn, durationMinutes, rtspString);
         }
         private async Task RecognitionByImageVLC(int durationStartIn, int durationMinutes, string rtspString)
         {
