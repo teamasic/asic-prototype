@@ -24,6 +24,8 @@ using System.Threading;
 using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using Microsoft.Extensions.DependencyInjection;
 using AttendanceSystemIPCamera.Services.RecognitionService;
+using System.Globalization;
+using CsvHelper;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -33,7 +35,10 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         public Task<ICollection<AttendeeRecordPair>> GetSessionAttendeeRecordMap(int sessionId);
         bool IsSessionRunning();
         Task<SessionViewModel> GetActiveSession();
-        Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
+        //Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
+        List<SessionExportViewModel> Export(int groupId, DateTime startDate, DateTime endDate);
+        Task<SessionViewModel> CreateSession(CreateSessionViewModel createSessionViewModel);
+        Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -118,36 +123,36 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             return sessionRepository.isSessionRunning();
         }
 
-        public async Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel)
-        {
-            var sessionAlreadyRunning = IsSessionRunning();
-            if (sessionAlreadyRunning)
-            {
-                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
-            }
-            else
-            {
-                var startTime = sessionStarterViewModel.StartTime;
-                var endTime = sessionStarterViewModel.EndTime;
-                var currentTime = DateTime.Now;
-                var timeDifferenceMilliseconds = startTime.Subtract(currentTime).TotalMilliseconds;
-                if (timeDifferenceMilliseconds <= -60 * 1000)
-                {
-                    throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
-                }
-                else if (timeDifferenceMilliseconds > -60 * 1000 & timeDifferenceMilliseconds < 0)
-                {
-                    timeDifferenceMilliseconds = 0;
-                }
-                var session = mapper.Map<Session>(sessionStarterViewModel);
-                session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
-                var sessionAdded = await Add(session);
-                var duration = (int)endTime.Subtract(startTime).TotalMinutes;
-                sessionRepository.SetActiveSession(session.Id);
-                recognitionService.StartRecognition(timeDifferenceMilliseconds, duration, sessionStarterViewModel.RtspString);
-                return mapper.Map<SessionViewModel>(sessionAdded);
-            }
-        }
+        //public async Task<SessionViewModel> StartNewSession(CreateSessionViewModel sessionStarterViewModel)
+        //{
+        //    var sessionAlreadyRunning = IsSessionRunning();
+        //    if (sessionAlreadyRunning)
+        //    {
+        //        throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
+        //    }
+        //    else
+        //    {
+        //        var startTime = sessionStarterViewModel.StartTime;
+        //        var endTime = sessionStarterViewModel.EndTime;
+        //        var currentTime = DateTime.Now;
+        //        var timeDifferenceMilliseconds = startTime.Subtract(currentTime).TotalMilliseconds;
+        //        if (timeDifferenceMilliseconds <= -60 * 1000)
+        //        {
+        //            throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
+        //        }
+        //        else if (timeDifferenceMilliseconds > -60 * 1000 & timeDifferenceMilliseconds < 0)
+        //        {
+        //            timeDifferenceMilliseconds = 0;
+        //        }
+        //        var session = mapper.Map<Session>(sessionStarterViewModel);
+        //        session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
+        //        var sessionAdded = await Add(session);
+        //        var duration = (int)endTime.Subtract(startTime).TotalMinutes;
+        //        sessionRepository.SetActiveSession(session.Id);
+        //        recognitionService.StartRecognition(timeDifferenceMilliseconds, duration, sessionStarterViewModel.RtspString);
+        //        return mapper.Map<SessionViewModel>(sessionAdded);
+        //    }
+        //}
 
 
         #region Support methods
@@ -204,5 +209,75 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             return groupSessions;
         }
 
+        public List<SessionExportViewModel> Export(int groupId, DateTime startDate, DateTime endDate)
+        {
+            var sessions = sessionRepository.GetSessionExport(groupId, startDate, endDate);
+            var sessionExports = new List<SessionExportViewModel>();
+            var fileName = "GroupNotExisted.csv";
+            var group = groupRepository.GetById(groupId).Result;
+            if (group != null)
+            {
+                fileName = group.Code + "-" + group.Name;
+            }
+            //Mapping session to exportViewModel
+            foreach (var item in sessions)
+            {
+                var records = recordService.GetRecordsBySessionId(item.Id);
+                foreach (var record in records)
+                {
+                    var viewModel = new SessionExportViewModel()
+                    {
+                        SessionId = item.Id,
+                        StartTime = item.StartTime,
+                        AttendeeCode = record.Attendee.Code,
+                        AttendeeName = record.Attendee.Name,
+                        Present = record.Present
+                    };
+                    sessionExports.Add(viewModel);
+                }
+            }
+            using (var writer = new StreamWriter(this.myConfiguration.ExportFilePath + "\\" + fileName))
+            {
+                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    csv.WriteRecords(sessionExports);
+                }
+            }
+            return sessionExports;
+        }
+
+        public async Task<SessionViewModel> CreateSession(CreateSessionViewModel sessionStarterViewModel)
+        {
+            var session = await sessionRepository.GetSessionWithGroupAndTime(sessionStarterViewModel.GroupId, sessionStarterViewModel.StartTime, sessionStarterViewModel.EndTime);
+            if (session != null)
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_AlREADY_EXISTED);
+            }
+            else
+            {
+                var newSession = mapper.Map<Session>(sessionStarterViewModel);
+                newSession.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
+                return mapper.Map<SessionViewModel>(await Add(newSession));
+            }
+        }
+
+        public async Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel)
+        {
+            if (sessionRepository.isSessionRunning())
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
+            }
+            var session = await GetById(viewModel.SessionId);
+            if (session == null)
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ID_NOT_EXISTED, viewModel.SessionId);
+            }
+            else
+            {
+                sessionRepository.SetActiveSession(viewModel.SessionId);
+                recognitionService.StartRecognition(viewModel.DurationBeforeStartInMinutes, viewModel.DurationInMinutes, session.RtspString);
+                return mapper.Map<SessionViewModel>(session);
+            }
+        }
     }
 }

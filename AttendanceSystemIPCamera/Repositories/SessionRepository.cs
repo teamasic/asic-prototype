@@ -20,6 +20,8 @@ namespace AttendanceSystemIPCamera.Repositories
         public void SetActiveSession(int sessionId);
         bool isSessionRunning();
         List<Session> GetSessionsWithRecords(List<int> groups);
+        List<Session> GetSessionExport(int groupId, DateTime startDate, DateTime endDate);
+        Task<Session> GetSessionWithGroupAndTime(int groupId, DateTime startTime, DateTime endTime);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
@@ -63,6 +65,17 @@ namespace AttendanceSystemIPCamera.Repositories
         public List<Session> GetSessionsWithRecords(List<int> groups)
         {
             return Get(s => groups.Contains(s.GroupId), null, includeProperties: "Records,Group").ToList();
+        }
+
+        public List<Session> GetSessionExport(int groupId, DateTime startDate, DateTime endDate)
+        {
+            return Get(s => s.GroupId == groupId && s.StartTime.CompareTo(startDate) > 0 && s.StartTime.CompareTo(endDate) < 0,
+                null, includeProperties: "Records,Group").ToList();
+        }
+
+        public Task<Session> GetSessionWithGroupAndTime(int groupId, DateTime startTime, DateTime endTime)
+        {
+            return dbSet.FirstOrDefaultAsync(s => s.GroupId.Equals(groupId) && s.StartTime.CompareTo(startTime) == 0 && s.EndTime.CompareTo(endTime) == 0);
         }
     }
 }

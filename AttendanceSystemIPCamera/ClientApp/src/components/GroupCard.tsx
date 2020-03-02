@@ -9,14 +9,15 @@ import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import * as moment from 'moment'
 import Room from '../models/Room';
-import { startSession } from '../services/session';
-import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker } from 'antd';
+import { createSession } from '../services/session';
+import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker, message } from 'antd';
 import { formatFullDateTimeString } from '../utils';
 import classNames from 'classnames';
 import { createBrowserHistory } from 'history';
 
 const { Title } = Typography;
 const { Option } = Select;
+const { confirm } = Modal;
 
 interface Props {
     roomList: Room[];
@@ -28,49 +29,66 @@ interface Props {
 
 // At runtime, Redux will merge together...
 type GroupProps = Props &
-	GroupsState & // ... state we've requested from the Redux store
-	typeof groupActionCreators & // ... plus action creators we've requested
-	RouteComponentProps<{}>; // ... plus incoming routing parameters
+    GroupsState & // ... state we've requested from the Redux store
+    typeof groupActionCreators & // ... plus action creators we've requested
+    RouteComponentProps<{}>; // ... plus incoming routing parameters
 
 class GroupCard extends React.PureComponent<GroupProps> {
     public state = {
         modelOpen: false,
-        sessionName: "",
-        startTime: moment(),
-        endTime: moment(),
-        roomName: "",
-        rtspString: ""
+        sessionIndex: -1,
+        roomId: -1,
+        isError: false
     };
 
     private takeAttendance = () => {
         this.setState({
             modelOpen: true,
-            startTime: moment()
+            isError: false, 
         })
+        
     };
 
     private handleModelOk = async () => {
-        this.setState({
-            modelOpen: false,
-        })
-        const { startTime, endTime, roomName, rtspString, sessionName } = { ...this.state };
-        const groupId = this.props.group.id;
-        let startTimeString = startTime.format('YYYY-MM-DD HH:mm');
-        let endTimeString = endTime.format('YYYY-MM-DD HH:mm');
-        const data = await startSession({
-            startTime: startTimeString,
-            endTime: endTimeString,
-            rtspString,
-            roomName,
-            groupId,
-            name: sessionName
-        });
-        if (data != null && data.data != null) {
-            const sessionId = data.data.id;
-            if (sessionId != null) {
-                this.props.redirect(`session/${sessionId}`);
+        
+        const { roomId, sessionIndex } = { ...this.state };
+        if (roomId == -1 || sessionIndex == -1) {
+            this.setState({
+                isError: true
+            })
+        }
+        else {
+            this.setState({
+                modelOpen: false,
+            })
+            const groupId = this.props.group.id;
+            let currentRoom = this.props.roomList.filter(r => r.id == roomId)[0];
+            let currentSession = this.props.units[sessionIndex];
+            const abc = {
+                startTime: currentSession.startTime,
+                endTime: currentSession.endTime,
+                rtspString: currentRoom.rtspString,
+                roomName: currentRoom.name,
+                groupId,
+                name: currentSession.name
+            };
+            console.log(abc);
+            const data = await createSession({
+                startTime: currentSession.startTime,
+                endTime: currentSession.endTime,
+                rtspString: currentRoom.rtspString,
+                roomName: currentRoom.name,
+                groupId,
+                name: currentSession.name
+            });
+            if (data != null && data.data != null) {
+                const sessionId = data.data.id;
+                if (sessionId != null) {
+                    this.props.redirect(`session/${sessionId}`);
+                }
             }
         }
+
     }
 
     private handleModelCancel = () => {
@@ -79,28 +97,19 @@ class GroupCard extends React.PureComponent<GroupProps> {
         })
     }
 
-    private handleChangeStartTime = (time: moment.Moment, timeString: any) => {
+    private onChangeRoom = (value: any) => {
         this.setState({
-            startTime: time,
+            roomId: value
         })
     }
-
-    private handleChangeEndTime = (time: moment.Moment, timeString: any) => {
+    private onChangeUnit = (value: any) => {
         this.setState({
-            endTime: time,
-        })
-    }
-
-    private onChange = (value: any) => {
-        let currentRoom = this.props.roomList.filter(c => c.id == value)[0];
-        this.setState({
-            roomName: currentRoom.name,
-            rtspString: currentRoom.rtspString
+            sessionIndex: value
         })
     }
     private renderRoomOptions = () => {
         const { roomList } = this.props;
-        const roomOptions = roomList.map(room => {
+        const roomOptions = roomList.map((room, index) => {
             return <Option key={room.id} value={room.id}>{room.name}</Option>
         })
         return roomOptions;
@@ -111,38 +120,37 @@ class GroupCard extends React.PureComponent<GroupProps> {
         })
         return roomOptions;
     }
-    private getDisableHours = () => {
-        let hours = [];
-        for (var i = 0; i < moment().hour(); i++) {
-            hours.push(i);
-        }
-        return hours;
+
+    private startDeactiveGroup = () => {
+        this.props.startDeactiveGroup
+            (this.props.group.id, this.props.groupSearch, this.successDeactive);
     }
-    private getDisableMinutes = () => {
-        let minutes = []
-        let currentHour = moment().hour();
-        let startTimeHour = this.state.startTime.hour();
-        if (currentHour == startTimeHour){
-            let currentMinute = moment().minute();
-            for (let i = 0; i < currentMinute; i++){
-                minutes.push(i);
-            }
-        }
-        return minutes;
+
+    private successDeactive = () => {
+        message.success("Delete group " + this.props.group.name + " success!");
+        Modal.destroyAll();
     }
+
+    private showConfirm = () => {
+        confirm({
+            title: "Do you want to delete group " + this.props.group.name + " ?",
+            okType: "danger",
+            okButtonProps: {
+                onClick: this.startDeactiveGroup
+            },
+            onCancel() { }
+        });
+    }
+
     public render() {
         var group = this.props.group;
-        const { startTime, endTime } = { ...this.state };
         const lastSessionTime =
-			group.sessions.length > 0
-				? group.sessions[group.sessions.length - 1].startTime
-				: null;
+            group.sessions.length > 0
+                ? group.sessions[group.sessions.length - 1].startTime
+                : null;
         const menu = (
             <Menu onClick={(click: any) => console.log(click)}>
-                <Menu.Item key="1">
-                    Edit
-                </Menu.Item>
-                <Menu.Item key="2">
+                <Menu.Item key="1" onClick={this.showConfirm}>
                     Delete
                 </Menu.Item>
             </Menu>
@@ -168,43 +176,32 @@ class GroupCard extends React.PureComponent<GroupProps> {
                     </div>
                     <div className="description">
                         <Icon type="history" />
-						<span>
-							Last session: {this.formatLastSessionTime(lastSessionTime)}
-						</span>
+                        <span>
+                            Last session: {this.formatLastSessionTime(lastSessionTime)}
+                        </span>
                     </div>
                 </div>
                 <div className="actions">
                     <Button className="past-button" type="link" onClick={this.props.viewDetail} id={group.id.toString()}>View Detail</Button>
-                    <Button className="take-attendance-button" type="primary" onClick={this.takeAttendance}>Take attendance</Button>
+                    <Button className="take-attendance-button" type="primary" onClick={this.takeAttendance}>New session</Button>
                     <Modal
-                        title="Input session for attendance"
+                        title="Create new session"
                         visible={this.state.modelOpen}
                         onOk={this.handleModelOk}
                         onCancel={this.handleModelCancel}
                         okText="Start"
                     >
                         <div>
-                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
-                                <Col span={4}>Start time</Col>
-                                <Col span={7}><TimePicker disabledMinutes={this.getDisableMinutes} disabledHours={this.getDisableHours} onChange={this.handleChangeStartTime} value={startTime} format={'HH:mm'} /></Col>
-                            </Row>
-                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
-                                <Col span={4}>End time</Col>
-                                <Col span={7}><TimePicker disabledMinutes={this.getDisableMinutes} disabledHours={this.getDisableHours} onChange={this.handleChangeEndTime} value={endTime} format={'HH:mm'} /></Col>
-                            </Row>
-                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
-                                <Col span={4}>End time</Col>
-                                <Col span={7}><TimePicker value={endTime} placeholder="" disabled format={'HH:mm'} /></Col>
-                            </Row>
-                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
-                                <Col span={4}>Choose room</Col>
+
+                            <Row type="flex" justify="start" align="top" gutter={[16, 16]}>
+                                <Col span={6}><p>Choose room</p></Col>
                                 <Col span={7}>
                                     <Select
                                         showSearch
                                         style={{ width: 130 }}
                                         placeholder="Select room"
                                         optionFilterProp="children"
-                                        onChange={this.onChange}
+                                        onChange={this.onChangeRoom}
                                         filterOption={(input: any, option: any) =>
                                             option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                         }
@@ -213,14 +210,15 @@ class GroupCard extends React.PureComponent<GroupProps> {
                                     </Select>
                                 </Col>
                             </Row>
-                            <Row type="flex" justify="start" align="middle" gutter={[16, 16]}>
-                                <Col span={4}>Choose unit</Col>
+                            <Row type="flex" justify="start" align="top" gutter={[16, 16]}>
+                                <Col span={6}>Choose unit</Col>
                                 <Col span={7}>
                                     <Select
                                         showSearch
                                         style={{ width: 130 }}
                                         placeholder="Select unit"
                                         optionFilterProp="children"
+                                        onChange={this.onChangeUnit}
                                         filterOption={(input: any, option: any) =>
                                             option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                         }
@@ -229,24 +227,28 @@ class GroupCard extends React.PureComponent<GroupProps> {
                                     </Select>
                                 </Col>
                             </Row>
+                            {this.state.isError ? <Row type="flex" justify="start" align="top" gutter={[16, 16]}>
+                                <Col span={14}><p style={{ color: "red" }}>Please choose room and unit</p></Col>
+                            </Row> : null}
+
                         </div>
                     </Modal>
                 </div>
             </Card>
         );
     }
-	private formatLastSessionTime(time: Date | null): string {
-		if (time != null) {
-			return formatFullDateTimeString(time);
-		}
-		return 'Never';
-	}
+    private formatLastSessionTime(time: Date | null): string {
+        if (time != null) {
+            return formatFullDateTimeString(time);
+        }
+        return 'Never';
+    }
 }
 
 export default connect(
-	(state: ApplicationState, ownProps: Props) => ({
-		...state.groups,
-		...ownProps
-	}), // Selects which state properties are merged into the component's props
-	dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
+    (state: ApplicationState, ownProps: Props) => ({
+        ...state.groups,
+        ...ownProps
+    }), // Selects which state properties are merged into the component's props
+    dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
 )(GroupCard as any);
