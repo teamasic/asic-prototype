@@ -159,6 +159,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		})
 	}
 	private onOkModel = async () => {
+		this.props.startRealTimeConnection();
 		const data = await takeAttendance({
 			sessionId: this.state.sessionId,
 			durationBeforeStartInMinutes: this.state.durationStartIn,

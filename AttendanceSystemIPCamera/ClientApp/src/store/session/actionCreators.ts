@@ -24,7 +24,8 @@ export const ACTIONS = {
 	RECEIVE_ATTENDEE_RECORDS_DATA: 'RECEIVE_ATTENDEE_RECORDS_DATA',
 	UPDATE_ATTENDEE_RECORD_SEARCH: 'UPDATE_ATTENDEE_RECORD_SEARCH',
 	UPDATE_ATTENDEE_RECORD: 'UPDATE_ATTENDEE_RECORD',
-	UPDATE_ATTENDEE_RECORD_REAL_TIME: 'UPDATE_ATTENDEE_RECORD_REAL_TIME'
+	UPDATE_ATTENDEE_RECORD_REAL_TIME: 'UPDATE_ATTENDEE_RECORD_REAL_TIME',
+	START_REAL_TIME_CONNECTION: 'START_REAL_TIME_CONNECTION'
 };
 
 function startRequestSession(sessionId: number) {
@@ -157,10 +158,17 @@ export const startExportSession = (groupId: number, startDate: Date, endDate: Da
 	}
 }
 
+function startRealTimeConnection() {
+	return {
+		type: ACTIONS.START_REAL_TIME_CONNECTION,
+	};
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
 	updateAttendeeRecordRealTime,
 	requestActiveSession,
-	startExportSession
+	startExportSession,
+	startRealTimeConnection
 };
