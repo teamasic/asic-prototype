@@ -176,6 +176,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 			})
 		}
 		else {
+			this.props.startRealTimeConnection();
 			const data = await takeAttendance({
 				sessionId: this.state.sessionId,
 				startTime: this.state.startTime.format('YYYY-MM-DD HH:mm'),
@@ -185,6 +186,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				isModelOpen: false
 			})
 		}
+
 	}
 	private onChangeStartTime = (time: moment.Moment) => {
 		this.setState({

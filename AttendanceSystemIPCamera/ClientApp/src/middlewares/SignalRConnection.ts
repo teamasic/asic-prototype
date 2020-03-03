@@ -1,22 +1,12 @@
 ﻿import * as signalR from "@microsoft/signalr";
 
-class SignalRConnection {
-    private conn: signalR.HubConnection | undefined;
-    get connection(): signalR.HubConnection {
-        if (this.conn == null) {
-            this.conn = new signalR.HubConnectionBuilder()
-                .withUrl("/hub")
-                .configureLogging(signalR.LogLevel.Information)
-                .build();
-            this.conn.serverTimeoutInMilliseconds = 100000; // 100 second
-        }
-        return this.conn;
-    }
-}
+const createSignalRConnection = () => {
+    const conn = new signalR.HubConnectionBuilder()
+        .withUrl("/hub")
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+    conn.serverTimeoutInMilliseconds = 100000; // 100 second
+    return conn;
+};
 
-/*
-const connectionSingleton = new SignalRConnection();
-export default connectionSingleton.connection;
-*/
-
-export default SignalRConnection;
+export default createSignalRConnection;

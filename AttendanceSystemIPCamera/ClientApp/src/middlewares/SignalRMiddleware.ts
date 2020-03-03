@@ -1,14 +1,28 @@
 ﻿import * as signalR from "@microsoft/signalr";
 import { MiddlewareAPI, Dispatch, Middleware } from "redux";
 import { ApplicationState } from "../store";
-import SignalRConnection from './SignalRConnection';
+import createSignalRConnection from './SignalRConnection';
 import { sessionActionCreators } from '../store/session/actionCreators';
+import { ACTIONS as SESSION_ACTIONS } from '../store/session/actionCreators';
+
+const ACTIONS = {
+    ...SESSION_ACTIONS
+};
+
+let connection: signalR.HubConnection;
 
 function createSignalRMiddleware() {
-    const middleware: Middleware = ({ getState }: MiddlewareAPI) => (
+    const middleware: Middleware = ({ dispatch, getState }: MiddlewareAPI) => (
         next: Dispatch
     ) => action => {
-        if (action.signalR) {
+        switch (action.type) {
+            case ACTIONS.START_REAL_TIME_CONNECTION:
+                connection = createSignalRConnection();
+                if (connection) {
+                    attachEvents(connection, dispatch);
+                    connection.start();
+                }
+                break;
         }
         return next(action);
     };
@@ -16,29 +30,26 @@ function createSignalRMiddleware() {
     return middleware;
 }
 
-function attachSignalREvents(connection: signalR.HubConnection, store: any) {
+function attachEvents(connection: signalR.HubConnection, dispatch: any) {
+    const interval = setInterval(() => {
+        if (connection.state === signalR.HubConnectionState.Connected) {
+            connection.send('heartbeat');
+        }
+    }, 10000);
+
     connection.on("attendeePresented", attendeeCode => {
-        store.dispatch(sessionActionCreators.updateAttendeeRecordRealTime(attendeeCode));
+        dispatch(sessionActionCreators.updateAttendeeRecordRealTime(attendeeCode));
     });
 
     connection.on("sessionEnded", sessionId => {
-        store.dispatch(sessionActionCreators.requestSession(sessionId));
+        clearInterval(interval);
+        connection.stop();
+        dispatch(sessionActionCreators.requestSession(sessionId));
     });
 
     connection.on("keepAlive", () => {
         console.log('kept alive');
     });
-}
-
-export function signalRStart(store: any) {
-    let connection = new SignalRConnection().connection;
-    attachSignalREvents(connection, store);
-    connection.on("disconnect", () => {
-        setTimeout(() => {
-            connection.start();
-        }, 2000); // wait 2 seconds to reconnect to avoid doing this too frequently
-    });
-    connection.start();
 }
 
 export default createSignalRMiddleware;
