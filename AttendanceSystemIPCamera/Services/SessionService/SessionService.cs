@@ -274,10 +274,29 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
             else
             {
+                var durationBeforeStartInMinutes = GetDurationBeforeStartInMinutes(viewModel.StartTime);
+                var durationWhileRunningInMinutes = GetDurationWhileRunningInMinutes(viewModel.StartTime, viewModel.EndTime);
                 sessionRepository.SetActiveSession(viewModel.SessionId);
-                recognitionService.StartRecognition(viewModel.DurationBeforeStartInMinutes, viewModel.DurationInMinutes, session.RtspString);
+                recognitionService.StartRecognition(durationBeforeStartInMinutes, durationWhileRunningInMinutes, session.RtspString);
                 return mapper.Map<SessionViewModel>(session);
             }
+        }
+
+        private int GetDurationWhileRunningInMinutes(DateTime startTime, DateTime endTime)
+        {
+            return (int)endTime.Subtract(startTime).TotalMinutes;
+        }
+
+        private int GetDurationBeforeStartInMinutes(DateTime startTime)
+        {
+            var currentTime = DateTime.Now;
+            var timeDifferenceInMinutes = (int)Math.Ceiling(startTime.Subtract(currentTime).TotalMinutes);
+            if (timeDifferenceInMinutes < 0)
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
+            }
+            return timeDifferenceInMinutes;
+
         }
     }
 }
