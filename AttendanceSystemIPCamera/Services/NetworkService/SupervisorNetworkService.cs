@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using static AttendanceSystemIPCamera.Framework.Constants;
 using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AttendanceSystemIPCamera.Services.NetworkService
 {
@@ -30,10 +31,13 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
         private IAttendeeService attendeeService;
         private IMapper mapper;
 
-        public SupervisorNetworkService(ISessionService sessionService, IAttendeeService attendeeService, IMapper mapper)
+        private IServiceScopeFactory serviceScopeFactory;
+
+        private Communicator communicator;
+
+        public SupervisorNetworkService(IServiceScopeFactory serviceScopeFactory, IMapper mapper)
         {
-            this.sessionService = sessionService;
-            this.attendeeService = attendeeService;
+            this.serviceScopeFactory = serviceScopeFactory;
             this.mapper = mapper;
         }
 
@@ -51,27 +55,44 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 {
                     remoteHostEP = this.remoteHostEP;
                 }
-                Communicator communicator = new Communicator(localServer, ref remoteHostEP);
+                communicator = new Communicator(localServer, ref remoteHostEP);
 
                 //receive
-                var msg = communicator.Receive();
-                //Console.WriteLine("Server: " + msg);
-                var attendanceData = ProcessRequest(msg);
+                var msg = communicator.Receive()?.ToString();
 
-                //send
-                var repsonse = JsonConvert.SerializeObject(attendanceData);
-                communicator.Send(Encoding.UTF8.GetBytes(repsonse));
+                using (var scope = serviceScopeFactory.CreateScope())
+                {
+                    this.sessionService = scope.ServiceProvider.GetService<ISessionService>();
+                    this.attendeeService = scope.ServiceProvider.GetService<IAttendeeService>();
+
+                    var networkRequest = JsonConvert.DeserializeObject<NetworkRequest<object>>(msg);
+                    switch (networkRequest.Route)
+                    {
+                        case NetworkRoute.LOGIN:
+                            Login(msg);
+                            break;
+                        case NetworkRoute.REFRESH_ATTENDANCE_DATA:
+                            Refresh(msg);
+                            break;
+                        case NetworkRoute.CHANGE_REQUEST:
+                            ChangeRequest(msg);
+                            break;
+                        default:
+                            //throw new exception
+                            break;
+                    }
+                }
             }
         }
 
-        public AttendanceNetworkViewModel ProcessRequest(object msg)
+        private void Login(string msg)
         {
-            (bool success, Attendee attendee) = ValidateMessage(msg.ToString());
+            var networkData = JsonConvert.DeserializeObject<NetworkRequest<LoginViewModel>>(msg);
+            (bool success, Attendee attendee) = ValidateAttendee(networkData.Request);
             var attendanceData = new AttendanceNetworkViewModel()
             {
                 Success = success
             };
-            
             if (success)
             {
                 attendanceData.AttendeeCode = attendee.Code;
@@ -79,15 +100,25 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 var groupIds = attendee.AttendeeGroups.Select(ag => ag.GroupId).ToList();
                 attendanceData.Groups = GetGroupNetworkViewModels(attendee);
             }
-            return attendanceData;
+            //send
+            var repsonse = JsonConvert.SerializeObject(attendanceData);
+            communicator.Send(Encoding.UTF8.GetBytes(repsonse));
         }
 
-        private (bool success, Attendee attendee) ValidateMessage(string message)
+        private void Refresh(string msg)
+        {
+            Login(msg);
+        }
+
+        private void ChangeRequest(string msg)
+        {
+
+        }
+
+        private (bool success, Attendee attendee) ValidateAttendee(LoginViewModel loginViewModel)
         {
             try
             {
-                var networkData = JsonConvert.DeserializeObject<NetworkMessageViewModel>(message.ToString());
-                var loginViewModel = networkData.Message;
                 Attendee attendee = null;
                 switch (loginViewModel.LoginMethod)
                 {
@@ -119,6 +150,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 {
                     session.Records.RemoveAll(r => r.AttendeeId != attendee.Id);
                 });
+                groupSession.Sessions.RemoveAll(s => s.Records.Count == 0);
             });
             return groupNetworks.ToList();
         }
