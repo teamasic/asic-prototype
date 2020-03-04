@@ -65,13 +65,13 @@ namespace AttendanceSystemIPCamera.Controllers
             });
         }
 
-        [HttpGet("export")]
-        public Task<BaseResponse<List<SessionExportViewModel>>> ExportSession
-            ([FromQuery] int groupId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        [HttpPost("export")]
+        public Task<BaseResponse<List<Object>>> ExportSession
+            ([FromBody] ExportRequestViewModel exportRequestViewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
-                return sessionService.Export(groupId, startDate, endDate);
+                return sessionService.Export(exportRequestViewModel);
             });
         }
 

@@ -10,6 +10,7 @@ import Session from '../../models/Session';
 import Record from '../../models/Record';
 import Attendee from '../../models/Attendee';
 import AttendeeRecordPair from '../../models/AttendeeRecordPair';
+import ExportRequest from '../../models/ExportRequest'
 import UpdateRecord from '../../models/UpdateRecord';
 import { updateRecord } from '../../services/record';
 
@@ -148,12 +149,14 @@ export const requestActiveSession = (): AppThunkAction => async (dispatch, getSt
 	dispatch(receiveActiveSession(apiResponse.data));
 };
 
-export const startExportSession = (groupId: number, startDate: Date, endDate: Date, success: Function): AppThunkAction => async (dispatch, getState) => {
-	const apiResponse: ApiResponse = await exportSession(groupId, startDate, endDate);
+export const startExportSession = (exportRequest: ExportRequest, success: Function, setData: Function): AppThunkAction => async (dispatch, getState) => {
+	const apiResponse: ApiResponse = await exportSession(exportRequest);
 	if (apiResponse.success) {
 		success();
+		setData(apiResponse.data);
+		console.log(apiResponse.data);
 	} else {
-		console.log("Error at export: " + apiResponse.errors.toString());
+		console.log(apiResponse.errors);
 	}
 }
 

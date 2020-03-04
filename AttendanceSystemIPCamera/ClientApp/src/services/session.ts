@@ -1,5 +1,6 @@
 ﻿import ApiResponse from "../models/ApiResponse";
 import axios from 'axios';
+import ExportRequest from "../models/ExportRequest";
 
 const baseRoute = 'api/session';
 const apify = (path: string) => `${baseRoute}/${path}`;
@@ -26,14 +27,8 @@ export const getActiveSession = async (): Promise<ApiResponse> => {
     return await response.data;
 }
 
-export const exportSession = async (groupId: number, startDate: Date, endDate: Date): Promise<ApiResponse> => {
-	const response = await axios.get(apify("export"), {
-		params: {
-			groupId: groupId,
-			startDate: startDate,
-			endDate: endDate
-		}
-	});
+export const exportSession = async (exportRequest: any): Promise<ApiResponse> => {
+	const response = await axios.post(apify("export"), exportRequest);
 	return await response.data;
 }
 
