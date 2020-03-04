@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using AttendanceSystemIPCamera.Framework;
+using AttendanceSystemIPCamera.Framework.ExeptionHandler;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -51,6 +52,14 @@ namespace AttendanceSystemIPCamera.Controllers
                     { "General", new List<string> { ex.Message } }
                 };
                 return BaseResponse<T>.GetErrorResponse(err);
+            }
+            catch (AppException ex)
+            {
+                var err = new Dictionary<string, IEnumerable<string>>
+                {
+                    { "General", new List<string> { ex.Message } }
+                };
+                return BaseResponse<T>.GetErrorResponseWithStatusCode(err, ex.StatusCode);
             }
             catch (Exception ex)
             {
