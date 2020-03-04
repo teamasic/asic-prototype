@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,12 +36,13 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             ProcessStartInfo startInfo = new ProcessStartInfo();
             var pythonFullPath = myConfiguration.PythonExeFullPath;
             var currentDirectory = Environment.CurrentDirectory;
-            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognizerProgramPathImage);
+            var parentDirectory = Directory.GetParent(currentDirectory).FullName;
+            var cmd = string.Format(@"{0}\{1}", parentDirectory, myConfiguration.RecognizerProgramPathImage);
             var args = "";
-            args += string.Format(@"--recognizer {0}\{1}", currentDirectory, myConfiguration.RecognizerPath);
-            args += string.Format(@" --le {0}\{1}", currentDirectory, myConfiguration.LePath);
+            args += string.Format(@"--recognizer {0}\{1}", parentDirectory, myConfiguration.RecognizerPath);
+            args += string.Format(@" --le {0}\{1}", parentDirectory, myConfiguration.LePath);
             args += string.Format(@" --rtsp {0}", rtspString);
-            args += string.Format(@" --image {0}\{1}", currentDirectory, myConfiguration.ImageRecognitionPath);
+            args += string.Format(@" --image {0}\{1}", parentDirectory, myConfiguration.ImageRecognitionPath);
             startInfo.FileName = pythonFullPath;
             startInfo.Arguments = string.Format("{0} {1}", cmd, args);
             startInfo.CreateNoWindow = false;
