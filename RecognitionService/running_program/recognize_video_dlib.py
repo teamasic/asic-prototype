@@ -10,7 +10,7 @@ import numpy as np
 import requests
 from imutils.video import FPS
 
-import WebcamVideoStream
+from helper import stream_video
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -29,7 +29,7 @@ rtspString = args["rtsp"]
 
 # initialize the video stream, then allow the camera sensor to warm up
 print("[INFO] starting video stream...")
-vs = WebcamVideoStream.WebcamVideoStream(src=rtspString).start()
+vs = stream_video.CustomVideoStream(src=rtspString).start()
 
 # start the FPS throughput estimator
 fps = FPS().start()
