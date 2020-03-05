@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,30 +36,37 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             ProcessStartInfo startInfo = new ProcessStartInfo();
             var pythonFullPath = myConfiguration.PythonExeFullPath;
             var currentDirectory = Environment.CurrentDirectory;
-            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognizerProgramPathImage);
+            var parentDirectory = Directory.GetParent(currentDirectory).FullName;
+            var cmd = myConfiguration.RecognitionProgramPathVLC;
             var args = "";
-            args += string.Format(@"--recognizer {0}\{1}", currentDirectory, myConfiguration.RecognizerPath);
-            args += string.Format(@" --le {0}\{1}", currentDirectory, myConfiguration.LePath);
+            args += string.Format(@"--recognizer {0}", myConfiguration.RecognizerPath);
+            args += string.Format(@" --le {0}", myConfiguration.LePath);
             args += string.Format(@" --rtsp {0}", rtspString);
-            args += string.Format(@" --image {0}\{1}", currentDirectory, myConfiguration.ImageRecognitionPath);
+            args += string.Format(@" --image {0}", myConfiguration.SnapshotPath);
             startInfo.FileName = pythonFullPath;
             startInfo.Arguments = string.Format("{0} {1}", cmd, args);
             startInfo.CreateNoWindow = false;
-            startInfo.UseShellExecute = true;
-            startInfo.RedirectStandardOutput = false;
-            startInfo.RedirectStandardError = false;
-            Process myProcess = new Process();
-            myProcess.StartInfo = startInfo;
-            myProcess.Start();
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            startInfo.WorkingDirectory = @"E:\capstone\asic-prototype\" + myConfiguration.RecognitionServiceName;
 
-            // Wait until done recognition process and update remain record
-            await Task.Delay(1000 * 60 * durationMinutes);
-            using (var scope = serviceScopeFactory.CreateScope())
+            var errors = "";
+            var results = "";
+            using (var myProcess = Process.Start(startInfo))
             {
-                var recordService = scope.ServiceProvider.GetRequiredService<IRecordService>();
-                await recordService.UpdateRecordsAfterEndSession();
-            }
-            myProcess.Kill();
+                await Task.Delay(1000 * 60 * durationMinutes);
+                using (var scope = serviceScopeFactory.CreateScope())
+                {
+                    var recordService = scope.ServiceProvider.GetRequiredService<IRecordService>();
+                    await recordService.UpdateRecordsAfterEndSession();
+                }
+                myProcess.Kill();
+                errors = myProcess.StandardError.ReadToEnd();
+                results = myProcess.StandardOutput.ReadToEnd();
+            }            
+            Console.WriteLine(errors);
+            Console.WriteLine(results);
         }
         private async Task RecognitionByOpenCV(int durationStartIn, int durationMinutes, string rtspString)
         {
@@ -69,7 +77,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             ProcessStartInfo startInfo = new ProcessStartInfo();
             var pythonFullPath = myConfiguration.PythonExeFullPath;
             var currentDirectory = Environment.CurrentDirectory;
-            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognizerProgramPath);
+            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognitionProgramPathOpenCV);
             var args = "";
             args += string.Format(@"--recognizer {0}\{1}", currentDirectory, myConfiguration.RecognizerPath);
             args += string.Format(@" --le {0}\{1}", currentDirectory, myConfiguration.LePath);
