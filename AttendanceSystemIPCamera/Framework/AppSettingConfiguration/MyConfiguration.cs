@@ -10,9 +10,10 @@ namespace AttendanceSystemIPCamera.Framework.AppSettingConfiguration
         public string PythonExeFullPath { get; set; }
         public string RecognizerPath { get; set; }
         public string LePath { get; set; }
-        public string RecognizerProgramPath { get; set; }        
-        public string ImageRecognitionPath { get; set; }
-        public string RecognizerProgramPathImage { get; set; }
+        public string RecognitionProgramPathOpenCV { get; set; }        
+        public string RecognitionProgramPathVLC { get; set; }
+        public string SnapshotPath { get; set; }
+        public string RecognitionServiceName { get; set; }
         public string ExportFilePath { get; set; }
     }
 }

@@ -162,7 +162,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             ProcessStartInfo startInfo = new ProcessStartInfo();
             var pythonFullPath = myConfiguration.PythonExeFullPath;
             var currentDirectory = Environment.CurrentDirectory;
-            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognizerProgramPath);
+            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognitionProgramPathOpenCV);
             var args = "";
             args += string.Format(@"--recognizer {0}\{1}", currentDirectory, myConfiguration.RecognizerPath);
             args += string.Format(@" --le {0}\{1}", currentDirectory, myConfiguration.LePath);

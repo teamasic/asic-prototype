@@ -10,11 +10,11 @@ import numpy as np
 
 
 def face_locations(image):
-    return _face_locations_hog(image)
+    return _face_locations_caffe(image)
 
 
 def _face_locations_caffe(image):
-    faceDetectionModelPath = "../model/face_detection_model"
+    faceDetectionModelPath = "model/face_detection_model"
     confidenceThreshold = 0.5
     (h,w) = image.shape[:2]
     # construct a blob from the image

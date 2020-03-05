@@ -1,7 +1,3 @@
-# USAGE
-# python extract_embeddings.py --dataset dataset --embeddings output/embeddings.pickle \
-#	--detector face_detection_model --embedding-model openface_nn4.small2.v1.t7
-
 import argparse
 import os
 import pickle
@@ -13,6 +9,8 @@ import imutils
 from imutils import paths
 
 # construct the argument parser and parse the arguments
+from helper import my_face_detection, my_face_recognition
+
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--dataset", default="dataset",
                 help="path to input directory of faces + images")
@@ -49,10 +47,13 @@ for (i, imagePath) in enumerate(imagePaths):
     (h, w) = image.shape[:2]
 
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    boxes = face_recognition.face_locations(rgb, model="hog")
-
+    boxes = my_face_detection.face_locations(image)
+    if len(boxes) > 1:
+        print(imagePath, "> 1")
+    if (len(boxes) == 0):
+        print(imagePath, "= 0")
     # compute the facial embedding for the face
-    vecs = face_recognition.face_encodings(rgb, boxes)
+    vecs = my_face_recognition.face_encodings(image, boxes)
     for vec in vecs:
         knownEmbeddings.append(vec.flatten())
         knownNames.append(name)
