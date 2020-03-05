@@ -39,6 +39,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         List<Object> Export(ExportRequestViewModel exportRequest);
         Task<SessionViewModel> CreateSession(CreateSessionViewModel createSessionViewModel);
         Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel);
+        List<Session> GetSessionByGroupId(int groupId);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -393,6 +394,11 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         .Cast<Object>().ToList();
                 }
             }
+        }
+
+        public List<Session> GetSessionByGroupId(int groupId)
+        {
+            return sessionRepository.GetSessionByGroupId(groupId);
         }
     }
 }

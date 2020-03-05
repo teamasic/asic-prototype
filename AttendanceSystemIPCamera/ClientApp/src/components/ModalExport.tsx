@@ -7,7 +7,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { ApplicationState } from '../store';
 import Group from '../models/Group';
-import ExportRequest from '../models/ExportRequest';
 import { CSVLink } from 'react-csv'
 
 const { RangePicker } = DatePicker

@@ -36,3 +36,12 @@ export const takeAttendance = async (data: any) => {
 	const response = await axios.post(apify("take-attendance"), data)
 	return await response.data;
 };
+
+export const getPastSession = async (groupId: number) => {
+	const response = await axios.get(apify("past"), {
+		params: {
+			groupId: groupId
+		}
+	});
+	return await response.data;
+}

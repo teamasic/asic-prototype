@@ -4,7 +4,8 @@ import {
 	getSession,
 	getSessionAttendeeRecordList,
 	getActiveSession,
-	exportSession
+	exportSession,
+	getPastSession
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -160,10 +161,20 @@ export const startExportSession = (exportRequest: ExportRequest, success: Functi
 	}
 }
 
+export const startGetPastSession = (groupId: number, loadSession: Function): AppThunkAction => async (dispatch, getState) => {
+	const apiResponse: ApiResponse = await getPastSession(groupId);
+	if (apiResponse.success) {
+		loadSession(apiResponse.data);
+	} else {
+		console.log(apiResponse.errors);
+	}
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
 	updateAttendeeRecordRealTime,
 	requestActiveSession,
-	startExportSession
+	startExportSession,
+	startGetPastSession
 };
