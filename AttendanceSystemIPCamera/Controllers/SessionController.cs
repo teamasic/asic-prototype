@@ -47,7 +47,7 @@ namespace AttendanceSystemIPCamera.Controllers
                 return mapper.ProjectTo<AttendeeRecordPair, AttendeeRecordPairViewModel>(attendeeRecordPairs);
             });
         }
-        
+
         [HttpPost]
         public Task<BaseResponse<SessionViewModel>> CreateSession([FromBody] CreateSessionViewModel createSessionViewModel)
         {
@@ -62,6 +62,16 @@ namespace AttendanceSystemIPCamera.Controllers
             return ExecuteInMonitoring(async () =>
             {
                 return await sessionService.StartTakingAttendance(viewModel);
+            });
+        }
+
+        [HttpGet("export")]
+        public Task<BaseResponse<List<SessionExportViewModel>>> ExportSession
+            ([FromQuery] int groupId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                return sessionService.Export(groupId, startDate, endDate);
             });
         }
 

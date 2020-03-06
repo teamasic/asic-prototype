@@ -28,13 +28,13 @@ namespace AttendanceSystemIPCamera.Controllers
             this.service = service;
             this.mapper = mapper;
         }
-        [HttpGet]
-        public dynamic Get(string message)
-        {
-            return ExecuteInMonitoring(() =>
-            {
-                return service.ProcessRequest(message);
-            });
-        }
+        //[HttpGet]
+        //public dynamic Get(string message)
+        //{
+        //    return ExecuteInMonitoring(() =>
+        //    {
+        //        return service.ProcessRequest(message);
+        //    });
+        //}
     }
 }

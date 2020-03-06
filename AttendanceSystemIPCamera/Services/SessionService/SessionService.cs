@@ -24,6 +24,8 @@ using System.Threading;
 using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using Microsoft.Extensions.DependencyInjection;
 using AttendanceSystemIPCamera.Services.RecognitionService;
+using System.Globalization;
+using CsvHelper;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -33,6 +35,8 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         public Task<ICollection<AttendeeRecordPair>> GetSessionAttendeeRecordMap(int sessionId);
         bool IsSessionRunning();
         Task<SessionViewModel> GetActiveSession();
+        //Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
+        List<SessionExportViewModel> Export(int groupId, DateTime startDate, DateTime endDate);
         Task<SessionViewModel> CreateSession(CreateSessionViewModel createSessionViewModel);
         Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel);
     }
@@ -158,7 +162,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             ProcessStartInfo startInfo = new ProcessStartInfo();
             var pythonFullPath = myConfiguration.PythonExeFullPath;
             var currentDirectory = Environment.CurrentDirectory;
-            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognizerProgramPath);
+            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognitionProgramPathOpenCV);
             var args = "";
             args += string.Format(@"--recognizer {0}\{1}", currentDirectory, myConfiguration.RecognizerPath);
             args += string.Format(@" --le {0}\{1}", currentDirectory, myConfiguration.LePath);
@@ -205,6 +209,43 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             return groupSessions;
         }
 
+        public List<SessionExportViewModel> Export(int groupId, DateTime startDate, DateTime endDate)
+        {
+            var sessions = sessionRepository.GetSessionExport(groupId, startDate, endDate);
+            var sessionExports = new List<SessionExportViewModel>();
+            var fileName = "GroupNotExisted.csv";
+            var group = groupRepository.GetById(groupId).Result;
+            if (group != null)
+            {
+                fileName = group.Code + "-" + group.Name;
+            }
+            //Mapping session to exportViewModel
+            foreach (var item in sessions)
+            {
+                var records = recordService.GetRecordsBySessionId(item.Id);
+                foreach (var record in records)
+                {
+                    var viewModel = new SessionExportViewModel()
+                    {
+                        SessionId = item.Id,
+                        StartTime = item.StartTime,
+                        AttendeeCode = record.Attendee.Code,
+                        AttendeeName = record.Attendee.Name,
+                        Present = record.Present
+                    };
+                    sessionExports.Add(viewModel);
+                }
+            }
+            using (var writer = new StreamWriter(this.myConfiguration.ExportFilePath + "\\" + fileName))
+            {
+                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    csv.WriteRecords(sessionExports);
+                }
+            }
+            return sessionExports;
+        }
+
         public async Task<SessionViewModel> CreateSession(CreateSessionViewModel sessionStarterViewModel)
         {
             var session = await sessionRepository.GetSessionWithGroupAndTime(sessionStarterViewModel.GroupId, sessionStarterViewModel.StartTime, sessionStarterViewModel.EndTime);
@@ -233,10 +274,29 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
             else
             {
+                var durationBeforeStartInMinutes = GetDurationBeforeStartInMinutes(viewModel.StartTime);
+                var durationWhileRunningInMinutes = GetDurationWhileRunningInMinutes(viewModel.StartTime, viewModel.EndTime);
                 sessionRepository.SetActiveSession(viewModel.SessionId);
-                recognitionService.StartRecognition(viewModel.DurationBeforeStartInMinutes, viewModel.DurationInMinutes, session.RtspString);
+                recognitionService.StartRecognition(durationBeforeStartInMinutes, durationWhileRunningInMinutes, session.RtspString);
                 return mapper.Map<SessionViewModel>(session);
             }
+        }
+
+        private int GetDurationWhileRunningInMinutes(DateTime startTime, DateTime endTime)
+        {
+            return (int)endTime.Subtract(startTime).TotalMinutes;
+        }
+
+        private int GetDurationBeforeStartInMinutes(DateTime startTime)
+        {
+            var currentTime = DateTime.Now;
+            var timeDifferenceInMinutes = (int)Math.Ceiling(startTime.Subtract(currentTime).TotalMinutes);
+            if (timeDifferenceInMinutes < 0)
+            {
+                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
+            }
+            return timeDifferenceInMinutes;
+
         }
     }
 }

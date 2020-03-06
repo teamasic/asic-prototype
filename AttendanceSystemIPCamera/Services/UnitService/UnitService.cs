@@ -45,6 +45,7 @@ namespace AttendanceSystemIPCamera.Services.UnitService
         {
             return Units.Select(u => new Unit
             {
+                Id = u.Id,
                 Name = u.Name,
                 StartTime = DateTime.Today + u.StartTime.TimeOfDay,
                 EndTime = DateTime.Today + u.EndTime.TimeOfDay

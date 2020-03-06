@@ -10,13 +10,14 @@ import { GroupsState } from '../store/group/state';
 import * as moment from 'moment'
 import Room from '../models/Room';
 import { createSession } from '../services/session';
-import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker } from 'antd';
+import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker, message } from 'antd';
 import { formatFullDateTimeString } from '../utils';
 import classNames from 'classnames';
 import { createBrowserHistory } from 'history';
 
 const { Title } = Typography;
 const { Option } = Select;
+const { confirm } = Modal;
 
 interface Props {
     roomList: Room[];
@@ -119,6 +120,28 @@ class GroupCard extends React.PureComponent<GroupProps> {
         })
         return roomOptions;
     }
+
+    private startDeactiveGroup = () => {
+        this.props.startDeactiveGroup
+            (this.props.group.id, this.props.groupSearch, this.successDeactive);
+    }
+
+    private successDeactive = () => {
+        message.success("Delete group " + this.props.group.name + " success!");
+        Modal.destroyAll();
+    }
+
+    private showConfirm = () => {
+        confirm({
+            title: "Do you want to delete group " + this.props.group.name + " ?",
+            okType: "danger",
+            okButtonProps: {
+                onClick: this.startDeactiveGroup
+            },
+            onCancel() { }
+        });
+    }
+
     public render() {
         var group = this.props.group;
         const lastSessionTime =
@@ -127,10 +150,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                 : null;
         const menu = (
             <Menu onClick={(click: any) => console.log(click)}>
-                <Menu.Item key="1">
-                    Edit
-                </Menu.Item>
-                <Menu.Item key="2">
+                <Menu.Item key="1" onClick={this.showConfirm}>
                     Delete
                 </Menu.Item>
             </Menu>

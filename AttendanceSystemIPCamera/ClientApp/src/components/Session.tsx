@@ -18,15 +18,18 @@ import {
 	Select,
 	Radio,
 	Modal,
-	Input
+	Input,
+	TimePicker,
+	Alert
 } from 'antd';
 import { Typography } from 'antd';
 import classNames from 'classnames';
 import '../styles/Session.css';
 import { SessionState } from '../store/session/state';
 import AttendeeRecordPair from '../models/AttendeeRecordPair';
-import { formatFullDateTimeString } from '../utils';
+import { formatFullDateTimeString, minutesOfDay } from '../utils';
 import { takeAttendance } from '../services/session';
+import moment from 'moment';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -52,8 +55,9 @@ interface SessionLocalState {
 		filter: FilterBy;
 	};
 	isModelOpen: boolean,
-	durationStartIn: number,
-	duration: number,
+	startTime: moment.Moment,
+	endTime: moment.Moment,
+	isError: boolean,
 }
 
 class Session extends React.PureComponent<SessionProps, SessionLocalState> {
@@ -66,8 +70,9 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				filter: FilterBy.ALL
 			},
 			isModelOpen: false,
-			durationStartIn: 1,
-			duration: 1,
+			startTime: moment(),
+			endTime: moment().add(1, "m"),
+			isError: false
 		};
 	}
 	// This method is called when the component is first added to the document
@@ -151,6 +156,9 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	private openModelTakingAttendance = () => {
 		this.setState({
 			isModelOpen: true,
+			startTime: moment(),
+			endTime: moment().add(1, "m"),
+			isError: false
 		})
 	}
 	private onCancelModel = () => {
@@ -158,25 +166,56 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 			isModelOpen: false,
 		})
 	}
+	
 	private onOkModel = async () => {
-		const data = await takeAttendance({
-			sessionId: this.state.sessionId,
-			durationBeforeStartInMinutes: this.state.durationStartIn,
-			durationInMinutes: this.state.duration
-		})
+		let startTime = this.state.startTime;
+		let endTime = this.state.endTime;
+		if (startTime.isSameOrAfter(endTime) || minutesOfDay(startTime) < minutesOfDay(moment())){
+			this.setState({
+				isError: true,
+			})
+		}
+		else {
+			this.props.startRealTimeConnection();
+			const data = await takeAttendance({
+				sessionId: this.state.sessionId,
+				startTime: this.state.startTime.format('YYYY-MM-DD HH:mm'),
+				endTime: this.state.endTime.format('YYYY-MM-DD HH:mm'),
+			})
+			this.setState({
+				isModelOpen: false
+			})
+		}
+
+	}
+	private onChangeStartTime = (time: moment.Moment) => {
 		this.setState({
-			isModelOpen: false
+			startTime: time,
 		})
 	}
-	private onChangeDurationStartIn = (e: any) => {
+	private onChangeEndTime = (time: moment.Moment) => {
 		this.setState({
-			durationStartIn: e.target.value,
+			endTime: time
 		})
 	}
-	private onChangeDuration = (e: any) => {
-		this.setState({
-			duration: e.target.value,
-		})
+	private getDisableHours = () => {
+		let hours = [];
+		for (var i = 0; i < moment().hour(); i++) {
+			hours.push(i);
+		}
+		return hours;
+	}
+	private getDisableMinutes = () => {
+		let minutes = []
+		let currentHour = moment().hour();
+		let startTimeHour = this.state.startTime.hour();
+		if (currentHour == startTimeHour) {
+			let currentMinute = moment().minute();
+			for (let i = 0; i < currentMinute; i++) {
+				minutes.push(i);
+			}
+		}
+		return minutes;
 	}
 	public render() {
 		return (
@@ -299,11 +338,23 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 						<Button type="primary" onClick={this.openModelTakingAttendance}>Start taking attendance</Button>
 					</Col>
 				</Row>
-				<Modal visible={this.state.isModelOpen} onCancel={this.onCancelModel} onOk={this.onOkModel} okText="Start">	
-					<p style={{ fontWeight: "bold" }}>Start in </p>
-					<Input style={{width: "100px"}} placeholder="" type="number" value={this.state.durationStartIn} onChange={this.onChangeDurationStartIn}/>
-					<p style={{ fontWeight: "bold" }}>Duration </p>
-					<Input style={{width: "100px"}} placeholder="" type="number" value={this.state.duration} onChange={this.onChangeDuration}/>
+				<Modal visible={this.state.isModelOpen} onCancel={this.onCancelModel} onOk={this.onOkModel} okText="Start">
+					<Row justify="start" style={{ marginTop: 5 }} type="flex" align="middle" gutter={[0, 0]}>
+						<Col span={12}>
+							<span style={{ marginRight: 5 }}>Start time</span>
+							<TimePicker onChange={this.onChangeStartTime} value={this.state.startTime} format="HH:mm" disabledHours={this.getDisableHours} disabledMinutes={this.getDisableMinutes} />
+						</Col>
+						<Col span={12}>
+							<span style={{ marginRight: 5 }}>End time</span>
+							<TimePicker onChange={this.onChangeEndTime} value={this.state.endTime} format="HH:mm" disabledHours={this.getDisableHours} disabledMinutes={this.getDisableMinutes} />
+						</Col>
+					</Row>
+					{this.state.isError ? 
+					<Row style={{marginTop: 15}} >
+						<Col>
+							<p style={{color: "red"}}>* Start time and end time is not suitable</p>
+						</Col>
+					</Row> : null}
 				</Modal>
 				<div
 					className={classNames({

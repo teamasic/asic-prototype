@@ -3,7 +3,8 @@ import { AppThunkAction } from '..';
 import {
 	getSession,
 	getSessionAttendeeRecordList,
-    getActiveSession
+	getActiveSession,
+	exportSession
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -23,7 +24,8 @@ export const ACTIONS = {
 	RECEIVE_ATTENDEE_RECORDS_DATA: 'RECEIVE_ATTENDEE_RECORDS_DATA',
 	UPDATE_ATTENDEE_RECORD_SEARCH: 'UPDATE_ATTENDEE_RECORD_SEARCH',
 	UPDATE_ATTENDEE_RECORD: 'UPDATE_ATTENDEE_RECORD',
-	UPDATE_ATTENDEE_RECORD_REAL_TIME: 'UPDATE_ATTENDEE_RECORD_REAL_TIME'
+	UPDATE_ATTENDEE_RECORD_REAL_TIME: 'UPDATE_ATTENDEE_RECORD_REAL_TIME',
+	START_REAL_TIME_CONNECTION: 'START_REAL_TIME_CONNECTION'
 };
 
 function startRequestSession(sessionId: number) {
@@ -147,9 +149,26 @@ export const requestActiveSession = (): AppThunkAction => async (dispatch, getSt
 	dispatch(receiveActiveSession(apiResponse.data));
 };
 
+export const startExportSession = (groupId: number, startDate: Date, endDate: Date, success: Function): AppThunkAction => async (dispatch, getState) => {
+	const apiResponse: ApiResponse = await exportSession(groupId, startDate, endDate);
+	if (apiResponse.success) {
+		success();
+	} else {
+		console.log("Error at export: " + apiResponse.errors.toString());
+	}
+}
+
+function startRealTimeConnection() {
+	return {
+		type: ACTIONS.START_REAL_TIME_CONNECTION,
+	};
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
 	updateAttendeeRecordRealTime,
-    requestActiveSession
+	requestActiveSession,
+	startExportSession,
+	startRealTimeConnection
 };
