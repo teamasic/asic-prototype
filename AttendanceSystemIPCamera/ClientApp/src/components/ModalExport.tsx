@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { Modal, DatePicker, message, Typography, Select, Row, Col, Input, InputNumber } from 'antd'
+import { Modal, DatePicker, message, Typography, Select, Row, Col, Input, InputNumber, Button } from 'antd'
 import { GroupsState } from '../store/group/state';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import { RouteComponentProps } from 'react-router';
@@ -47,8 +47,9 @@ interface ModalExportComponentStates {
     isGreaterThanOrEqual: string,
     attendancePercent: number,
     csvData: any,
-    generate: string,
-    isGenerated: boolean
+    exportStatus: string,
+    isGenerated: boolean,
+    isGenerating: boolean
 }
 
 // At runtime, Redux will merge together...
@@ -70,12 +71,16 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
         isGreaterThanOrEqual: ATTENDANCE_OPTIONS.GREATER_THAN_OR_EQUAL,
         attendancePercent: 100,
         csvData: [],
-        generate: "Generate",
-        isGenerated: false
+        exportStatus: "Generate",
+        isGenerated: false,
+        isGenerating: false
     }
 
     private export = () => {
         if (!this.state.isGenerated) {
+            this.setState({
+                isGenerating: true
+            })
             this.setFileName();
             var exportRequest = {
                 groupId: this.props.group.id,
@@ -98,18 +103,22 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 
     private exportSuccess = () => {
-        this.setState({
-            generate: "Export",
-            isGenerated: true
-        })
-        console.log(this.state.fileName);
+        setTimeout(() => {
+            this.setState({
+                isGenerated: true,
+                isGenerating: false,
+                exportStatus: "Export"
+            });
+        }, 1000);
+        
     }
 
     private handleCancel = () => {
         this.props.closeModal();
         this.setState({
-            generate: "Generate",
-            isGenerated: false
+            isGenerated: false,
+            isGenerating: false,
+            exportStatus: "Generate"
         });
     }
 
@@ -180,11 +189,11 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
             return;
         } else {
             var date = this.state.startDate;
-            updatedFileName += "_" +  date.toISOString().substring(0, 10);
+            updatedFileName += "_" + date.toISOString().substring(0, 10);
             date = this.state.endDate;
-            updatedFileName += "_" +  date.toISOString().substring(0, 10);
+            updatedFileName += "_" + date.toISOString().substring(0, 10);
             if (this.state.condition == CONDITION_OPTIONS.WITH_CONDITION) {
-                updatedFileName += "_" +  this.state.condition + "_" + this.state.attendancePercent + ".csv";
+                updatedFileName += "_" + this.state.condition + "_" + this.state.attendancePercent + ".csv";
             } else {
                 updatedFileName += ".csv";
             }
@@ -207,15 +216,17 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                 visible={this.props.modalVisible}
                 title={modalTitle}
                 centered
-                okText={
-                    <CSVLink data={this.state.csvData}
+                okText={this.state.isGenerating ?
+                    ("Generating") :
+                    (<CSVLink data={this.state.csvData}
                         filename={this.state.fileName}
                         enclosingCharacter={`'`}
                         onClick={this.export}
                     >
-                        {this.state.generate}
-                    </CSVLink>
+                        {this.state.exportStatus}
+                    </CSVLink>)
                 }
+                okButtonProps={{ loading: this.state.isGenerating}}
                 onCancel={this.handleCancel}
             >
                 <Row style={{ marginBottom: 10 }}>
