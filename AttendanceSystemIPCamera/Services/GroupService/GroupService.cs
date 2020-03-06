@@ -58,19 +58,6 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             return await groupRepository.GetAll(groupSearchViewModel);
         }
 
-        public async Task StartTakingAttendance(TakeAttendanceViewModel takeAttendanceViewModel)
-        {
-            var group = await groupRepository.GetById(takeAttendanceViewModel.GroupId);
-            group.Sessions.Add(new Session {
-                Group = group,
-                StartTime = DateTime.UtcNow,
-                Duration = takeAttendanceViewModel.Duration
-            });
-            groupRepository.Update(group);
-            unitOfWork.Commit();
-
-        }
-
         public Group UpdateName(int id, string newName)
         {
             var groupInDb = groupRepository.GetById(id).Result;
