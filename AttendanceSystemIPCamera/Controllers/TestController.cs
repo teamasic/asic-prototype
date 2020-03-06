@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using AutoMapper;
 using AttendanceSystemIPCamera.Services.RecordService;
 using AttendanceSystemIPCamera.Services.NetworkService;
+using AttendanceSystemIPCamera.Services.RecognitionService;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -22,11 +23,13 @@ namespace AttendanceSystemIPCamera.Controllers
     public class TestController : BaseController
     {
         private readonly SupervisorNetworkService service;
+        private readonly IRecognitionService recognitionService;
         private readonly IMapper mapper;
-        public TestController(SupervisorNetworkService service, IMapper mapper)
+        public TestController(SupervisorNetworkService service, IMapper mapper, IRecognitionService recognitionService)
         {
             this.service = service;
             this.mapper = mapper;
+            this.recognitionService = recognitionService;
         }
         //[HttpGet]
         //public dynamic Get(string message)
@@ -36,5 +39,14 @@ namespace AttendanceSystemIPCamera.Controllers
         //        return service.ProcessRequest(message);
         //    });
         //}
+        [HttpPost]
+        public ResponsePython Get([FromBody] StringOnly stringOnly)
+        {
+            return recognitionService.RecognitionImage(stringOnly.Value);
+        }
+        public class StringOnly
+        {
+            public string Value { get; set; }
+        }
     }
 }
