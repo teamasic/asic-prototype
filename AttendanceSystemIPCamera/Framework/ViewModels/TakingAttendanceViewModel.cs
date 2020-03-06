@@ -8,7 +8,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     public class TakingAttendanceViewModel
     {
         public int SessionId { get; set; }
-        public int DurationBeforeStartInMinutes { get; set; }
-        public int DurationInMinutes { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
     }
 }

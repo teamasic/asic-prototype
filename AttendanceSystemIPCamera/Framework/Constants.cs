@@ -20,5 +20,14 @@ namespace AttendanceSystemIPCamera.Framework
             public const string GROUP_NOT_FOUND = "This group cannot be found.";
             public const string GROUP_NAME_TOO_LONG = "Group name must be between 1 and 100 characters.";
         }
+
+        public class NetworkRoute
+        {
+            public const string LOGIN = "login";
+            public const string REFRESH_ATTENDANCE_DATA = "refresh";
+            public const string CHANGE_REQUEST = "change";
+
+
+        }
     }
 }
