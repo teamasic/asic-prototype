@@ -8,8 +8,6 @@ import numpy as np
 
 from helper import my_face_detection, my_face_recognition
 
-from helper import utils
-
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-r", "--recognizer", default="output_dlib/recognizer.pickle",
