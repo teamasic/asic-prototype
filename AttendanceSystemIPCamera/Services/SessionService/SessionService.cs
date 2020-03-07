@@ -36,9 +36,10 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         bool IsSessionRunning();
         Task<SessionViewModel> GetActiveSession();
         //Task<SessionViewModel> StartNewSession(SessionStarterViewModel sessionStarterViewModel);
-        List<SessionExportViewModel> Export(int groupId, DateTime startDate, DateTime endDate);
+        List<Object> Export(ExportRequestViewModel exportRequest);
         Task<SessionViewModel> CreateSession(CreateSessionViewModel createSessionViewModel);
         Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel);
+        List<Session> GetSessionByGroupId(int groupId);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -178,6 +179,131 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             await recordService.UpdateRecordsAfterEndSession();
             myProcess.Kill();
         }
+
+        private List<SessionExportViewModel> ExportSingleDate(int groupId, DateTime date, bool withCondition, bool isPresent)
+        {
+            var sessions = sessionRepository.GetSessionExport(groupId, date);
+            var sessionExport = new List<SessionExportViewModel>();
+            foreach (var session in sessions)
+            {
+                var records = recordService.GetRecordsBySessionId(session.Id);
+                if (withCondition)
+                {
+                    records.ToList().ForEach(r => r.Present = isPresent);
+                }
+                foreach (var record in records)
+                {
+                    var exportModel = new SessionExportViewModel()
+                    {
+                        SessionId = session.Id,
+                        StartTime = session.StartTime,
+                        AttendeeCode = record.Attendee.Code,
+                        AttendeeName = record.Attendee.Name,
+                        Present = record.Present.ToString()
+                    };
+                    sessionExport.Add(exportModel);
+                }
+            }
+            return sessionExport;
+        }
+
+        private class TempExport
+        {
+            public string Code { get; set; }
+            public string Name { get; set; }
+            public int Count { get; set; }
+        }
+
+        private List<SessionExportWithConditionViewModel> ExportRangeDateWithCondition
+            (int groupId, DateTime startDate, DateTime endDate, bool isGreaterOrEqual, float attendancePercent)
+        {
+            var group = groupRepository.GetById(groupId).Result;
+            if (group != null)
+            {
+                var sessions = sessionRepository.GetSessionExport(groupId, startDate, endDate);
+                var sessionExport = new List<SessionExportWithConditionViewModel>();
+                var temps = new Dictionary<string, TempExport>();
+                //Get all record in session insert into temps
+                foreach (var session in sessions)
+                {
+                    var records = recordService.GetRecordsBySessionId(session.Id);
+                    foreach (var record in records)
+                    {
+                        if (record.Present)
+                        {
+                            if (!temps.ContainsKey(record.Attendee.Code))
+                            {
+                                var tempAttendee = new TempExport
+                                {
+                                    Code = record.Attendee.Code,
+                                    Name = record.Attendee.Name,
+                                    Count = 1
+                                };
+                                temps.Add(tempAttendee.Code, tempAttendee);
+                            }
+                            else
+                            {
+                                var updatedAttendee = new TempExport();
+                                temps.TryGetValue(record.Attendee.Code, out updatedAttendee);
+                                updatedAttendee.Count++;
+                            }
+                        }
+                    }
+                }
+                //Filter values in temps that meet the condition
+                foreach (var item in temps.Values)
+                {
+                    float calculatedPercent = item.Count * 100 / group.MaxSessionCount;
+                    var exportData = new SessionExportWithConditionViewModel();
+                    if (isGreaterOrEqual && calculatedPercent >= attendancePercent)
+                    {
+                        exportData = new SessionExportWithConditionViewModel()
+                        {
+                            AttendeeCode = item.Code,
+                            AttendeeName = item.Name,
+                            AttendancePercent = calculatedPercent
+                        };
+                        sessionExport.Add(exportData);
+                    }
+                    else if (!isGreaterOrEqual && calculatedPercent <= attendancePercent)
+                    {
+                        exportData = new SessionExportWithConditionViewModel()
+                        {
+                            AttendeeCode = item.Code,
+                            AttendeeName = item.Name,
+                            AttendancePercent = calculatedPercent
+                        };
+                        sessionExport.Add(exportData);
+                    }
+                }
+                return sessionExport;
+            }
+            return new List<SessionExportWithConditionViewModel>();
+        }
+
+        private List<SessionExportViewModel> ExportRangeDateWithoutCondition(int groupId, DateTime startDate, DateTime endDate)
+        {
+            var sessions = sessionRepository.GetSessionExport(groupId, startDate, endDate);
+            var sessionExports = new List<SessionExportViewModel>();
+            //Mapping session to exportViewModel
+            foreach (var item in sessions)
+            {
+                var records = recordService.GetRecordsBySessionId(item.Id);
+                foreach (var record in records)
+                {
+                    var viewModel = new SessionExportViewModel()
+                    {
+                        SessionId = item.Id,
+                        StartTime = item.StartTime,
+                        AttendeeCode = record.Attendee.Code,
+                        AttendeeName = record.Attendee.Name,
+                        Present = record.Present.ToString()
+                    };
+                    sessionExports.Add(viewModel);
+                }
+            }
+            return sessionExports;
+        }
         #endregion
 
         public List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds, int attendeeId)
@@ -207,43 +333,6 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 }
             }
             return groupSessions;
-        }
-
-        public List<SessionExportViewModel> Export(int groupId, DateTime startDate, DateTime endDate)
-        {
-            var sessions = sessionRepository.GetSessionExport(groupId, startDate, endDate);
-            var sessionExports = new List<SessionExportViewModel>();
-            var fileName = "GroupNotExisted.csv";
-            var group = groupRepository.GetById(groupId).Result;
-            if (group != null)
-            {
-                fileName = group.Code + "-" + group.Name;
-            }
-            //Mapping session to exportViewModel
-            foreach (var item in sessions)
-            {
-                var records = recordService.GetRecordsBySessionId(item.Id);
-                foreach (var record in records)
-                {
-                    var viewModel = new SessionExportViewModel()
-                    {
-                        SessionId = item.Id,
-                        StartTime = item.StartTime,
-                        AttendeeCode = record.Attendee.Code,
-                        AttendeeName = record.Attendee.Name,
-                        Present = record.Present
-                    };
-                    sessionExports.Add(viewModel);
-                }
-            }
-            using (var writer = new StreamWriter(this.myConfiguration.ExportFilePath + "\\" + fileName))
-            {
-                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-                {
-                    csv.WriteRecords(sessionExports);
-                }
-            }
-            return sessionExports;
         }
 
         public async Task<SessionViewModel> CreateSession(CreateSessionViewModel sessionStarterViewModel)
@@ -282,6 +371,38 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
         }
 
+        public List<Object> Export(ExportRequestViewModel exportRequest)
+        {
+            if (exportRequest.IsSingleDate)
+            {
+                return ExportSingleDate
+                    (exportRequest.GroupId, exportRequest.SingleDate, exportRequest.WithCondition, exportRequest.IsPresent)
+                    .Cast<Object>().ToList();
+            }
+            else
+            {
+                if (exportRequest.WithCondition)
+                {
+                    return ExportRangeDateWithCondition
+                        (exportRequest.GroupId, exportRequest.StartDate,
+                        exportRequest.EndDate, exportRequest.IsGreaterThanOrEqual,
+                        exportRequest.AttendancePercent)
+                        .Cast<Object>().ToList();
+                }
+                else
+                {
+                    return ExportRangeDateWithoutCondition
+                        (exportRequest.GroupId, exportRequest.StartDate, exportRequest.EndDate)
+                        .Cast<Object>().ToList();
+                }
+            }
+        }
+
+        public List<Session> GetSessionByGroupId(int groupId)
+        {
+            return sessionRepository.GetSessionByGroupId(groupId);
+        }
+
         private int GetDurationWhileRunningInMinutes(DateTime startTime, DateTime endTime)
         {
             return (int)endTime.Subtract(startTime).TotalMinutes;
@@ -296,7 +417,6 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
             }
             return timeDifferenceInMinutes;
-
         }
     }
 }

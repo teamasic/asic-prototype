@@ -5,12 +5,10 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
-    public class SessionExportViewModel
+    public class SessionExportWithConditionViewModel
     {
-        public int SessionId { get; set; }
-        public DateTime StartTime { get; set; }
         public string AttendeeCode { get; set; }
         public string AttendeeName { get; set; }
-        public string Present { get; set; }
+        public float AttendancePercent { get; set; }
     }
 }
