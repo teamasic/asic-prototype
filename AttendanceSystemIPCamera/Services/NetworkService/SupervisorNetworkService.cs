@@ -125,6 +125,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                     case Constant.LOGIN_BY_USERNAME_PASSWORD:
                         break;
                     case Constant.LOGIN_BY_FACE:
+                        attendee = attendeeService.GetByAttendeeFaceForNetwork(loginViewModel.FaceData);
                         break;
                     case Constant.GET_DATA_BY_ATTENDEE_CODE:
                         attendee = attendeeService.GetByAttendeeCodeForNetwork(loginViewModel.AttendeeCode);

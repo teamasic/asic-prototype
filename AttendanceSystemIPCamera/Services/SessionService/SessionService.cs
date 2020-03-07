@@ -48,10 +48,10 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private readonly IGroupRepository groupRepository;
         private readonly IRecordService recordService;
         private readonly MyConfiguration myConfiguration;
-        private readonly RecognitionService.RecognitionService recognitionService;
+        private readonly IRecognitionService recognitionService;
         private readonly IMapper mapper;
 
-        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, MyConfiguration myConfiguration, IMapper mapper, RecognitionService.RecognitionService recognitionService) : base(unitOfWork)
+        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, MyConfiguration myConfiguration, IMapper mapper, IRecognitionService recognitionService) : base(unitOfWork)
         {
             sessionRepository = unitOfWork.SessionRepository;
             groupRepository = unitOfWork.GroupRepository;
