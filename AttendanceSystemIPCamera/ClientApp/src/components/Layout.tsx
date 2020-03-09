@@ -1,15 +1,28 @@
 import * as React from 'react';
+import { ApplicationState } from '../store';
+import { bindActionCreators } from 'redux';
 import { Container } from 'reactstrap';
+import { connect } from 'react-redux';
 import NavMenu from './NavMenu';
 import { Layout, Menu, Breadcrumb, Icon, Badge } from 'antd';
 import classNames from 'classnames';
 import '../styles/Layout.css';
 import { Link } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router';
+import { ChangeRequestState } from '../store/changeRequest/state';
+import { changeRequestActionCreators } from '../store/changeRequest/actionCreators';
+import { ChangeRequestStatusFilter } from '../models/ChangeRequest';
 
 const { Header, Sider, Content, Footer } = Layout;
 
+// At runtime, Redux will merge together...
+type LayoutProps = 
+	ChangeRequestState & // ... state we've requested from the Redux store
+	typeof changeRequestActionCreators &
+	RouteComponentProps<{}>; // ... plus incoming routing parameters
+
 class PageLayout extends React.Component<
-	any,
+	LayoutProps,
 	{
 		collapsed: boolean;
 	}
@@ -21,6 +34,12 @@ class PageLayout extends React.Component<
 	onCollapse = (collapsed: boolean) => {
 		this.setState({ collapsed });
 	};
+
+	componentDidMount() {
+		if (!this.props.successfullyLoaded) {
+			this.props.requestChangeRequests(ChangeRequestStatusFilter.UNRESOLVED);
+		}
+	}
 
 	render() {
 		return (
@@ -47,7 +66,8 @@ class PageLayout extends React.Component<
 								<Link to="/change-requests">
 									Change requests
 								</Link>
-								<Badge count={5} className="borderless-badge" style={{
+								<Badge count={this.props.unresolvedCount} showZero={false}
+									className="borderless-badge" style={{
 									marginLeft: '5px'
 								}}>
 									</Badge>
@@ -72,4 +92,14 @@ class PageLayout extends React.Component<
 	}
 }
 
-export default PageLayout;
+// export default PageLayout;
+
+
+export default connect(
+	(state: ApplicationState) => ({
+		...state.changeRequests
+	}), // Selects which state properties are merged into the component's props
+	dispatch => bindActionCreators({
+		...changeRequestActionCreators
+	}, dispatch) // Selects which action creators are merged into the component's props
+)(PageLayout as any);

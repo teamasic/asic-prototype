@@ -3,6 +3,7 @@ import { MiddlewareAPI, Dispatch, Middleware } from "redux";
 import { ApplicationState } from "../store";
 import createSignalRConnection from './SignalRConnection';
 import { sessionActionCreators } from '../store/session/actionCreators';
+import { changeRequestActionCreators } from '../store/changeRequest/actionCreators';
 import { ACTIONS as SESSION_ACTIONS } from '../store/session/actionCreators';
 
 const ACTIONS = {
@@ -49,6 +50,10 @@ function attachEvents(connection: signalR.HubConnection, dispatch: any) {
 
     connection.on("keepAlive", () => {
         console.log('kept alive');
+    });
+
+    connection.on("newChangeRequest", () => {
+        dispatch(changeRequestActionCreators.incrementUnresolvedCount());
     });
 }
 

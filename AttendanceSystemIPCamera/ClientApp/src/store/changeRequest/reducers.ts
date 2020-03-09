@@ -1,14 +1,16 @@
 ﻿import { Reducer, Action, AnyAction } from "redux";
 import { ChangeRequestState } from "./state";
 import { ACTIONS } from "./actionCreators";
-import { ChangeRequestStatus } from "../../models/ChangeRequest";
+import ChangeRequest, { ChangeRequestStatus, ChangeRequestStatusFilter } from "../../models/ChangeRequest";
 
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
 const unloadedState: ChangeRequestState = {
     changeRequests: [],
     isLoading: false,
-    successfullyLoaded: false
+    successfullyLoaded: false,
+    unresolvedCount: 0,
+    filterStatus: ChangeRequestStatusFilter.UNRESOLVED
 };
 
 const reducers: Reducer<ChangeRequestState> = (
@@ -35,16 +37,29 @@ const reducers: Reducer<ChangeRequestState> = (
                 ...state,
                 isLoading: false,
                 successfullyLoaded: true,
-                changeRequests: action.changeRequests
+                changeRequests: action.changeRequests,
+                unresolvedCount: action.changeRequests.filter((cr: ChangeRequest) => cr.status === ChangeRequestStatus.UNRESOLVED).length,
+                filterStatus: action.filterStatus
             };
         case ACTIONS.PROCESS_CHANGE_REQUEST:
-            return {
-                ...state,
-                changeRequests: state.changeRequests.map(cr => cr.id === action.id ? {
+            let crs = [];
+            if (state.filterStatus === ChangeRequestStatusFilter.UNRESOLVED) {
+                crs = state.changeRequests.filter(cr => cr.id !== action.id);
+            } else {
+                crs = state.changeRequests.map(cr => cr.id === action.id ? {
                     ...cr,
                     status: action.approved ? ChangeRequestStatus.APPROVED : ChangeRequestStatus.REJECTED
                 } : cr)
             }
+            return {
+                ...state,
+                changeRequests: crs
+            };
+        case ACTIONS.INCREMENT_RESOLVED_COUNT:
+            return {
+                ...state,
+                unresolvedCount: state.unresolvedCount+1
+            };
     }
 
     return state;

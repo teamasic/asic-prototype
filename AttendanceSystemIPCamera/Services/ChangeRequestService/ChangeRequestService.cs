@@ -14,8 +14,9 @@ using AttendanceSystemIPCamera.Repositories;
 using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using AttendanceSystemIPCamera.Framework.ExeptionHandler;
 using System.Net;
+using AttendanceSystemIPCamera.Services.RecordService;
 
-namespace AttendanceSystemIPCamera.Services.RoomService
+namespace AttendanceSystemIPCamera.Services.ChangeRequestService
 {
     public interface IChangeRequestService : IBaseService<ChangeRequest>
     {
@@ -29,12 +30,14 @@ namespace AttendanceSystemIPCamera.Services.RoomService
         private readonly IChangeRequestRepository changeRequestRepository;
         private readonly IAttendeeRepository attendeeRepository;
         private readonly IRecordRepository recordRepository;
+        private readonly IRealTimeService realTimeService;
 
-        public ChangeRequestService(MyUnitOfWork unitOfWork) : base(unitOfWork)
+        public ChangeRequestService(MyUnitOfWork unitOfWork, IRealTimeService realTimeService) : base(unitOfWork)
         {
             changeRequestRepository = unitOfWork.ChangeRequestRepository;
             attendeeRepository = unitOfWork.AttendeeRepository;
             recordRepository = unitOfWork.RecordRepository;
+            this.realTimeService = realTimeService;
         }
 
         public async Task<ChangeRequest> Add(CreateChangeRequestViewModel viewModel)
@@ -44,10 +47,12 @@ namespace AttendanceSystemIPCamera.Services.RoomService
             {
                 throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_RECORD_WITH_ID, viewModel.RecordId);
             }
+            /*
             if (record.Present == viewModel.Present)
             {
                 throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.CHANGE_REQUEST_INVALID);
             }
+            */
             var newRequest = new ChangeRequest
             {
                 Record = record,
@@ -58,6 +63,7 @@ namespace AttendanceSystemIPCamera.Services.RoomService
             };
             await changeRequestRepository.Add(newRequest);
             unitOfWork.Commit();
+            realTimeService.NewChangeRequestAdded();
             return newRequest;
         }
 

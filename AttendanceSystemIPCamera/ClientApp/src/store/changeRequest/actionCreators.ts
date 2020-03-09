@@ -7,7 +7,8 @@ export const ACTIONS = {
     RECEIVE_CHANGE_REQUEST_DATA: 'RECEIVE_CHANGE_REQUEST_DATA',
     START_REQUEST_CHANGE_REQUESTS: 'START_REQUEST_CHANGE_REQUESTS',
     STOP_REQUEST_CHANGE_REQUESTS_WITH_ERRORS: 'STOP_REQUEST_CHANGE_REQUESTS_WITH_ERRORS',
-    PROCESS_CHANGE_REQUEST: 'PROCESS_CHANGE_REQUEST'
+    PROCESS_CHANGE_REQUEST: 'PROCESS_CHANGE_REQUEST',
+    INCREMENT_RESOLVED_COUNT: 'INCREMENT_RESOLVED_COUNT'
 }
 
 function startRequestChangeRequests() {
@@ -23,10 +24,11 @@ function stopRequestChangeRequestsWithError(errors: any[]) {
     };
 }
 
-function receiveChangeRequests(changeRequests: ChangeRequest[]) {
+function receiveChangeRequests(changeRequests: ChangeRequest[], filterStatus: ChangeRequestStatusFilter) {
     return {
         type: ACTIONS.RECEIVE_CHANGE_REQUEST_DATA,
-        changeRequests
+        changeRequests,
+        filterStatus
     };
 }
 
@@ -35,7 +37,7 @@ export const requestChangeRequests = (status: ChangeRequestStatusFilter): AppThu
 
     const apiResponse: ApiResponse = await services.getChangeRequestList(status);
     if (apiResponse.success) {
-        dispatch(receiveChangeRequests(apiResponse.data));
+        dispatch(receiveChangeRequests(apiResponse.data, status));
     } else {
         dispatch(stopRequestChangeRequestsWithError(apiResponse.errors));
     }
@@ -49,7 +51,7 @@ function receiveProcessChangeRequest(id: number, approved: boolean) {
     };
 }
 
-export const processChangeRequest = (id: number, approved: boolean): AppThunkAction => async (dispatch, getState) => {
+const processChangeRequest = (id: number, approved: boolean): AppThunkAction => async (dispatch, getState) => {
     dispatch(receiveProcessChangeRequest(id, approved));
     const apiResponse: ApiResponse = await services.processChangeRequest(id, approved);
     if (apiResponse.success) {
@@ -57,7 +59,15 @@ export const processChangeRequest = (id: number, approved: boolean): AppThunkAct
     }
 };
 
+
+function incrementUnresolvedCount() {
+    return {
+        type: ACTIONS.INCREMENT_RESOLVED_COUNT
+    };
+}
+
 export const changeRequestActionCreators = {
     requestChangeRequests,
-    processChangeRequest
+    processChangeRequest,
+    incrementUnresolvedCount
 };

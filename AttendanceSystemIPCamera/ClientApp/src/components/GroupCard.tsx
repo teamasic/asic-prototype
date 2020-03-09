@@ -46,7 +46,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
             modelOpen: true,
             isError: false, 
         })
-        
+
     };
 
     private handleModelOk = async () => {
