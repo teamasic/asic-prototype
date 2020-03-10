@@ -14,7 +14,7 @@ from helper import my_face_detection, my_face_recognition, recognition_api
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image", default="images/thanh1.jpg",
+ap.add_argument("-i", "--image", default="dataset/gold/20.jpg",
                 help="path to input image")
 ap.add_argument("-r", "--recognizer", default="output_dlib/recognizer.pickle",
                 help="path to model trained to recognize faces")
@@ -41,7 +41,7 @@ while True:
     # load the image, resize it to have a width of 600 pixels (while
     # maintaining the aspect ratio), and then grab the image dimensions
     image = cv2.imread(args["image"])
-    image = imutils.resize(image, width=600)
+    image = imutils.resize(image, width=200)
     (h, w) = image.shape[:2]
 
     # detect images

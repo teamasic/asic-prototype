@@ -1,0 +1,55 @@
+import os
+import random
+import shutil
+from pathlib import Path
+
+from imutils import paths
+from sklearn import datasets
+
+fullDatasetDir = "dataset"
+testDir = "images"
+trainingDir = "training"
+
+
+# remove old data
+def copyFolderToTest():
+    if os.path.exists(trainingDir):
+        shutil.rmtree(trainingDir)
+    if os.path.exists(testDir):
+        shutil.rmtree(testDir)
+    a = datasets.fetch_olivetti_faces()
+    # start loop
+    for (rootDir, subDirs, files) in os.walk(fullDatasetDir):
+        for subDatasetDir in subDirs:
+            numOfTrain = 10
+            numOfTest = 5
+            if (subDatasetDir == "unknown"):
+                numOfTrain = 450
+                numOfTest = 50
+            # Get necessary paths
+            fullPathSubDatasetDir = os.path.join(fullDatasetDir, subDatasetDir)
+            print(fullPathSubDatasetDir)
+            fullPathSubTrainingDir = os.path.join(trainingDir, subDatasetDir)
+            fullPathSubTestingDir = os.path.join(testDir, subDatasetDir)
+
+            # Get random some image from each face to test and remain for training
+            imagePaths = list(paths.list_images(fullPathSubDatasetDir))
+            imagePathsToTrain = random.sample(imagePaths, numOfTrain)
+            if numOfTest is None:
+                imagePathsToTest = [x for x in imagePaths if x not in imagePathsToTrain]
+            else:
+                imagePathsToTest = random.sample([x for x in imagePaths if x not in imagePathsToTrain], numOfTest)
+
+            for imagePath in imagePathsToTest:
+                Path(fullPathSubTestingDir).mkdir(parents=True, exist_ok=True)
+                shutil.copy(imagePath, fullPathSubTestingDir)
+
+            for imagePath in imagePathsToTrain:
+                Path(fullPathSubTrainingDir).mkdir(parents=True, exist_ok=True)
+                shutil.copy(imagePath, fullPathSubTrainingDir)
+
+
+copyFolderToTest()
+os.system("python extract_embeddings.py --dataset training")
+os.system("python train_model.py")
+os.system("python test_result.py")

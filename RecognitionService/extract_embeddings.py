@@ -43,15 +43,22 @@ for (i, imagePath) in enumerate(imagePaths):
     # maintaining the aspect ratio), and then grab the image
     # dimensions
     image = cv2.imread(imagePath)
-    image = imutils.resize(image, width=600)
+    # image = imutils.resize(image, width=600)
     (h, w) = image.shape[:2]
 
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     boxes = my_face_detection.face_locations(image)
     if len(boxes) > 1:
         print(imagePath, "> 1")
-    if (len(boxes) == 0):
+        print(len(boxes))
+        continue
+    if len(boxes) == 0:
         print(imagePath, "= 0")
+        print(len(boxes))
+        continue
+
+    # face alignment
+    # image = my_face_detection.alignFace(image, boxes)
     # compute the facial embedding for the face
     vecs = my_face_recognition.face_encodings(image, boxes)
     for vec in vecs:

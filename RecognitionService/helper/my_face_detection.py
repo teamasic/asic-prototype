@@ -10,12 +10,12 @@ import numpy as np
 
 
 def face_locations(image):
-    return _face_locations_caffe(image)
+    return _face_locations_hog(image)
 
 
 def _face_locations_caffe(image):
     faceDetectionModelPath = "model/face_detection_model"
-    confidenceThreshold = 0.5
+    confidenceThreshold = 0.9
     (h,w) = image.shape[:2]
     # construct a blob from the image
     imageBlob = cv2.dnn.blobFromImage(
@@ -53,7 +53,6 @@ def _face_locations_caffe(image):
         boxes[i] = tuple(map(int, box))
     return boxes
 
-
 def _face_locations_hog(image):
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     boxes = face_recognition.face_locations(rgb, model="hog")
@@ -64,3 +63,5 @@ def _face_locations_cnn(image):
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     boxes = face_recognition.face_locations(rgb, model="cnn")
     return boxes
+def alignFace(image, boxes):
+    faceLandmarks =  face_recognition.face_landmarks(image, boxes)

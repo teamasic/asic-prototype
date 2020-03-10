@@ -1,7 +1,3 @@
-# USAGE
-# python train_model.py --embeddings output/embeddings.pickle \
-#	--recognizer output/recognizer.pickle --le output/le.pickle
-
 # import the necessary packages
 from sklearn.preprocessing import LabelEncoder
 from sklearn import svm

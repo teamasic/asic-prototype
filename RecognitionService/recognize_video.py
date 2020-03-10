@@ -29,7 +29,7 @@ rtspString = args["rtsp"]
 
 # initialize the video stream, then allow the camera sensor to warm up
 print("[INFO] starting video stream...")
-vs = stream_video.CustomVideoStream(src=rtspString).start()
+vs = stream_video.CustomVideoStream(src=0).start()
 
 # start the FPS throughput estimator
 fps = FPS().start()
@@ -72,8 +72,8 @@ while True:
     for ((top, right, bottom, left), name, proba) in zip(boxes, names, probas):
         text = "{}: {:.2f}%".format(name, proba * 100)
         print(text)
-        thread = Thread(target=threaded_request, args=(name, ))
-        thread.start()
+        # thread = Thread(target=threaded_request, args=(name, ))
+        # thread.start()
         cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 225), 2)
         y = top - 10 if top - 10 > 10 else top + 10
         cv2.putText(image, text, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
@@ -84,7 +84,7 @@ while True:
 
     # show the output frame
     cv2.imshow("Frame", image)
-    key = cv2.waitKey(1000) & 0xFF
+    key = cv2.waitKey(1) & 0xFF
 
     # if the `q` key was pressed, break from the loop
     if key == ord("q"):
