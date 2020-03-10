@@ -8,9 +8,14 @@ fullDatasetDir = "dataset"
 testDir = "images"
 trainingDir = "training"
 imagePathsToTest = list(paths.list_images(testDir))
-total = 0
-right = 0
-rightList =[]
+
+# Tổng số hình test mà có người test có trong db
+totalInDb = 0
+truePositive = 0
+
+# Tổng số hình test mà có người test không có trong db
+totalNotInDb = 0
+trueNegative = 0
 for imagePath in imagePathsToTest:
     print(imagePath)
     try:
@@ -20,10 +25,21 @@ for imagePath in imagePathsToTest:
         print(resultName + "-" + calculateName)
     except:
         continue
-    total+=1
-    if (resultName == calculateName):
-        rightList.append(resultName + "-" + imagePath)
-        right+=1
-print((right/total)*100, "%")
-for item in rightList:
-    print(item)
+    if resultName == "unknown":
+        totalNotInDb+=1
+        if resultName == calculateName:
+            trueNegative+=1
+    else:
+        totalInDb+=1
+        if resultName == calculateName:
+            truePositive+=1
+falseNegative = totalInDb - truePositive
+falsePositive = totalNotInDb - trueNegative
+print("Total true positive = {}", truePositive)
+print("Total false negative = {}", totalInDb - truePositive)
+print("Total true negative = {}", trueNegative)
+print("Total false positive = {}", totalNotInDb - trueNegative)
+
+print("Sensitivity [TP / (TP + FN)] = {}", truePositive/totalInDb)
+print("Precision [TP / (TP + FP)] = {}", truePositive/(truePositive + falsePositive))
+print("Accuracy [(TP + TN) / (TP + FP + TN + FN)] = {}", (truePositive + trueNegative)/(totalInDb + totalNotInDb))

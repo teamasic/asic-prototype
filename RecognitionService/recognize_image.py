@@ -17,7 +17,7 @@ from helper import my_face_detection, my_face_recognition, recognition_api, my_s
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image", default="dataset/gold/20.jpg",
+ap.add_argument("-i", "--image", default="test/111.jpg",
                 help="path to input image")
 args = vars(ap.parse_args())
 # Load arguments

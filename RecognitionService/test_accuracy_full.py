@@ -21,7 +21,7 @@ def copyFolderToTest():
     for (rootDir, subDirs, files) in os.walk(fullDatasetDir):
         for subDatasetDir in subDirs:
             numOfTrain = 10
-            numOfTest = 5
+            numOfTest = 3
             if (subDatasetDir == "unknown"):
                 numOfTrain = 450
                 numOfTest = 50
@@ -48,7 +48,7 @@ def copyFolderToTest():
                 shutil.copy(imagePath, fullPathSubTrainingDir)
 
 
-copyFolderToTest()
-os.system("python extract_embeddings.py --dataset training")
-os.system("python train_model.py")
+# copyFolderToTest()
+# os.system("python extract_embeddings.py --dataset training")
+# os.system("python train_model.py")
 os.system("python test_result.py")

@@ -76,7 +76,7 @@ def generate_more_embeddings(datasetPath):
 
 
 def generate_embeddings(datasetPath):
-    imagePaths = paths.list_images(datasetPath)
+    imagePaths = list(paths.list_images(datasetPath))
     knownEmbeddings = []
     knownNames = []
     totalAdded = 0

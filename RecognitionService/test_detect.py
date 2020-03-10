@@ -6,9 +6,10 @@ from helper import my_face_detection
 
 
 def testDetectFull():
-    datasetDir = "dataset"
+    datasetDir = "dataset/006"
     imagePaths = paths.list_images(datasetDir)
     for imagePath in imagePaths:
+        print(imagePath)
         image = cv2.imread(imagePath)
         boxes = my_face_detection.face_locations(image)
         if len(boxes) != 1:
@@ -22,5 +23,5 @@ def testDetectImamge(imagePath):
         print(imagePath)
         print(len(boxes))
 
-testDetectImamge("training/xuka/8.jpg")
+# testDetectImamge("training/xuka/8.jpg")
 testDetectFull()
