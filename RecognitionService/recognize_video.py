@@ -27,16 +27,18 @@ le = pickle.loads(open(my_constant.lePath, "rb").read())
 
 # initialize the video stream, then allow the camera sensor to warm up
 print("[INFO] starting video stream...")
-vs = stream_video.CustomVideoStream(src=0).start()
+vs = stream_video.CustomVideoStream(src=rtspString).start()
 
 # start the FPS throughput estimator
 fps = FPS().start()
 
 while True:
     # retrieve the frame from the threaded video stream
-    frame = vs.read()
-    result = my_service.recognize_image(frame)
+    image = vs.read()
+    image = imutils.resize(image, width=600)
+    (h, w) = image.shape[:2]
 
+    result = my_service.recognize_image_after_read(image)
     if result is not None:
         (box, name, proba) = result
         (top, right, bottom, left) = box
@@ -45,9 +47,6 @@ while True:
 
         # draw the predicted face name on the image
         text = "{}: {:.2f}%".format(name, proba * 100)
-        image = cv2.imread(my_constant.snapshotPath)
-        image = imutils.resize(image, width=600)
-        (h, w) = image.shape[:2]
 
         cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 225), 2)
         y = top - 10 if top - 10 > 10 else top + 10
@@ -55,3 +54,4 @@ while True:
                     0.45, (0, 0, 255), 2)
         # show the output image
         cv2.imshow("Image", image)
+        cv2.waitKey(1000)

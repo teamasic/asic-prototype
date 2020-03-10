@@ -23,3 +23,4 @@ def testDetectImamge(imagePath):
         print(len(boxes))
 
 testDetectImamge("training/xuka/8.jpg")
+testDetectFull()

@@ -26,7 +26,11 @@ while True:
     time.sleep(1)
     player.video_take_snapshot(0, my_constant.snapshotPath, 0, 0)
 
-    result = my_service.recognize_image(my_constant.snapshotPath)
+    image = cv2.imread(my_constant.snapshotPath)
+    image = imutils.resize(image, width=600)
+    (h, w) = image.shape[:2]
+
+    result = my_service.recognize_image_after_read(image)
     if result is not None:
         (box, name, proba) = result
         (top, right, bottom, left) = box
@@ -35,9 +39,6 @@ while True:
 
         # draw the predicted face name on the image
         text = "{}: {:.2f}%".format(name, proba * 100)
-        image = cv2.imread(my_constant.snapshotPath)
-        image = imutils.resize(image, width=600)
-        (h, w) = image.shape[:2]
 
         cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 225), 2)
         y = top - 10 if top - 10 > 10 else top + 10
