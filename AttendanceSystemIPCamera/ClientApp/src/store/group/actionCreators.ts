@@ -99,11 +99,10 @@ const requestGroups = (groupSearch: GroupSearch): AppThunkAction => async (dispa
     }
 }
 
-const requestGroupDetail = (id: number, renderDetailPage: Function): AppThunkAction => async (dispatch, getState) => {
+const requestGroupDetail = (id: number): AppThunkAction => async (dispatch, getState) => {
     const apiResponse: ApiResponse = await getGroupDetail(id);
     if (apiResponse.success) {
         dispatch(receiveGroupDetail(apiResponse.data));
-        renderDetailPage();
     } else {
         console.log("Get group detail error: " + apiResponse.errors);
     }
@@ -114,7 +113,7 @@ const postGroup = (newGroup: Group, renderDetailPage: Function): AppThunkAction 
     const apiResponse: ApiResponse = await createGroup(newGroup);
     if (apiResponse.success) {
         dispatch(createGroupSuccess(apiResponse.data));
-        renderDetailPage();
+        renderDetailPage(apiResponse.data.id);
     } else {
         console.log("Create group error: " + apiResponse.errors);
     }

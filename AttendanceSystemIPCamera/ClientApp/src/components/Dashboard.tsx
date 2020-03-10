@@ -97,7 +97,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         newGroup.code = this.state.groupCode;
         newGroup.attendees = this.state.importAttendees;
         console.log(newGroup);
-        this.props.postGroup(newGroup, this.renderGroupDetail);
+        this.props.postGroup(newGroup, this.redirectToGroupDetail);
     }
 
     public parseFileToTable = (file: File): Promise<void> => {
@@ -172,11 +172,11 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
     public viewDetail = (e: any) => {
         var id = e.target.id;
-        this.props.requestGroupDetail(id, this.renderGroupDetail);
+        this.redirectToGroupDetail(id);
     }
 
-    public renderGroupDetail = () => {
-        this.props.history.push("/group");
+    public redirectToGroupDetail = (id: number) => {
+        this.props.history.push(`/group/${id}`);
     }
 
     public render() {

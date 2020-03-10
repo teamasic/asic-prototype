@@ -23,7 +23,9 @@ const { TabPane } = Tabs;
 type GroupDetailProps =
     GroupsState // ... state we've requested from the Redux store
     & typeof groupActionCreators // ... plus action creators we've requested
-    & RouteComponentProps<{}>; // ... plus incoming routing parameters
+    & RouteComponentProps<{
+        id?: string;
+    }>; // ... plus incoming routing parameters
 
 
 class GroupDetail extends React.PureComponent<GroupDetailProps> {
@@ -102,7 +104,11 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
     }
 
     private ensureDataFetched() {
-        
+        var strId = this.props.match.params.id;
+        if (strId) {
+            var intId = parseInt(strId);
+            this.props.requestGroupDetail(intId);
+        }
     }
 
     private renderEmpty() {
