@@ -3,23 +3,16 @@ import os
 import pickle
 
 import cv2
-import face_recognition
-import imutils
-# import the necessary packages
 from imutils import paths
 
-# construct the argument parser and parse the arguments
+from config import my_constant
 from helper import my_face_detection, my_face_recognition
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--dataset", default="dataset",
                 help="path to input directory of faces + images")
-ap.add_argument("-e", "--embeddings", default="output_dlib/embeddings.pickle",
-                help="path to output serialized db of facial embeddings")
-
 args = vars(ap.parse_args())
 
-# grab the paths to the input images in our dataset
 print("[INFO] quantifying faces...")
 imagePaths = list(paths.list_images(args["dataset"]))
 
@@ -39,14 +32,8 @@ for (i, imagePath) in enumerate(imagePaths):
 
     name = imagePath.split(os.path.sep)[-2]
 
-    # load the image, resize it to have a width of 600 pixels (while
-    # maintaining the aspect ratio), and then grab the image
-    # dimensions
+    # load the image
     image = cv2.imread(imagePath)
-    # image = imutils.resize(image, width=600)
-    (h, w) = image.shape[:2]
-
-    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     boxes = my_face_detection.face_locations(image)
     if len(boxes) > 1:
         print(imagePath, "> 1")
@@ -56,23 +43,15 @@ for (i, imagePath) in enumerate(imagePaths):
         print(imagePath, "= 0")
         print(len(boxes))
         continue
-
-    # face alignment
-    # image = my_face_detection.alignFace(image, boxes)
-    # compute the facial embedding for the face
     vecs = my_face_recognition.face_encodings(image, boxes)
-    for vec in vecs:
-        knownEmbeddings.append(vec.flatten())
-        knownNames.append(name)
-        total += 1
-
-# add the name of the person + corresponding face
-# embedding to their respective lists
-
+    vec = vecs[0]
+    knownEmbeddings.append(vec.flatten())
+    knownNames.append(name)
+    total += 1
 
 # dump the facial embeddings + names to disk
 print("[INFO] serializing {} encodings...".format(total))
 data = {"embeddings": knownEmbeddings, "names": knownNames}
-f = open(args["embeddings"], "wb")
+f = open(my_constant.embeddingsPath, "wb")
 f.write(pickle.dumps(data))
 f.close()

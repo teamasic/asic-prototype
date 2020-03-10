@@ -16,18 +16,7 @@ from helper import my_face_detection, my_face_recognition, recognition_api
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", default="dataset/gold/20.jpg",
                 help="path to input image")
-ap.add_argument("-r", "--recognizer", default="output_dlib/recognizer.pickle",
-                help="path to model trained to recognize faces")
-ap.add_argument("-l", "--le", default="output_dlib/le.pickle",
-                help="path to label encoder")
 args = vars(ap.parse_args())
-def _recognize_face(name):
-    headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    payload = {"code": name}
-    r = requests.post("https://localhost:44359/api/record", json=payload, verify=False, headers=headers)
-    print(r)
-
-
 def recognize_face_new_thread(name):
     thread = Thread(target=_recognize_face, args=(name,))
     thread.start()

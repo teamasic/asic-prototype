@@ -1,30 +1,30 @@
 import pickle
 
 import cv2
-import face_recognition
-import imutils
 import numpy as np
 
+from config import my_constant
 from helper import my_face_detection, my_face_recognition
 
 
-def recognize_image(imagePath, threshold = 0.4):
-    recognizer = pickle.loads(open("output_dlib/recognizer.pickle", "rb").read())
-    le = pickle.loads(open("output_dlib/le.pickle", "rb").read())
-
+def recognize_image(imagePath, threshold = 0):
     image = cv2.imread(imagePath)
-
-    # detect faces
     boxes = my_face_detection.face_locations(image)
-
-    # check so ensure there is only 1 face
     if len(boxes) == 1:
-        # compute the facial embedding for the face
         vec = my_face_recognition.face_encodings(image, boxes)[0]
-        preds = recognizer.predict_proba([vec])[0]
-        j = np.argmax(preds)
-        proba = preds[j]
-        name = le.classes_[j]
-        print(proba)
-        return name
+        name, proba = get_label(vec, threshold)
+        return boxes[0], name, proba
     return None
+
+
+def get_label(vec, threshold = 0):
+    recognizer = pickle.loads(open(my_constant.recognizerPath, "rb").read())
+    le = pickle.loads(open(my_constant.lePath, "rb").read())
+    preds = recognizer.predict_proba([vec])[0]
+    j = np.argmax(preds)
+    proba = preds[j]
+    name = le.classes_[j]
+    if (proba > threshold):
+        return name, proba
+    return "Unknown", None
+

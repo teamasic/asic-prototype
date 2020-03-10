@@ -17,7 +17,6 @@ def copyFolderToTest():
         shutil.rmtree(trainingDir)
     if os.path.exists(testDir):
         shutil.rmtree(testDir)
-    a = datasets.fetch_olivetti_faces()
     # start loop
     for (rootDir, subDirs, files) in os.walk(fullDatasetDir):
         for subDatasetDir in subDirs:
