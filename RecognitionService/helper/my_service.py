@@ -100,10 +100,11 @@ def generate_embeddings(datasetPath):
             print(len(boxes))
             continue
 
-        image = my_face_detection.align_face(image, boxes[0])
+        aligned_image = my_face_detection.align_face(image, boxes[0])
 
-        vecs = my_face_recognition.face_encodings(image)
+        vecs = my_face_recognition.face_encodings(aligned_image)
         vec = vecs[0]
+
         knownEmbeddings.append(vec.flatten())
         knownNames.append(name)
         totalAdded += 1

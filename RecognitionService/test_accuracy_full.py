@@ -51,8 +51,8 @@ def copyFolderToTest():
                 shutil.copy(imagePath, fullPathSubTrainingDir)
 
 
-# copyFolderToTest()
-# os.system("python augment.py --dataset training")
+copyFolderToTest()
+os.system("python augment.py --dataset training")
 os.system("python extract_embeddings.py --dataset augmented")
-# os.system("python train_model.py")
-# os.system("python test_result.py")
+os.system("python train_model.py")
+os.system("python test_result.py")
