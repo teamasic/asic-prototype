@@ -71,7 +71,7 @@ def generate_more_embeddings(datasetPath):
     print("[INFO] serializing more {} encodings...".format(totalAdded))
     print("[INFO] serializing total {} encodings...".format(len(knownEmbeddings)))
     data = {"embeddings": knownEmbeddings, "names": knownNames}
-    f = open(my_constant.embeddingsPath, "wb")
+    f = open(my_constant.embeddingsPath, "wb+")
     f.write(pickle.dumps(data))
     f.close()
 
@@ -112,7 +112,7 @@ def generate_embeddings(datasetPath):
     # dump the facial embeddings + names to disk
     print("[INFO] serializing total {} encodings...".format(totalAdded))
     data = {"embeddings": knownEmbeddings, "names": knownNames}
-    f = open(my_constant.embeddingsPath, "wb")
+    f = open(my_constant.embeddingsPath, "wb+")
     f.write(pickle.dumps(data))
     f.close()
 
@@ -133,11 +133,11 @@ def generate_train_model():
     recognizer.fit(data["embeddings"], labels)
 
     # write the actual face recognition model to disk
-    f = open(my_constant.recognizerPath, "wb")
+    f = open(my_constant.recognizerPath, "wb+")
     f.write(pickle.dumps(recognizer))
     f.close()
 
     # write the label encoder to disk
-    f = open(my_constant.lePath, "wb")
+    f = open(my_constant.lePath, "wb+")
     f.write(pickle.dumps(le))
     f.close()

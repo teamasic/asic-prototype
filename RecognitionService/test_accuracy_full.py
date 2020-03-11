@@ -10,7 +10,7 @@ fullDatasetDir = "dataset"
 testDir = "images"
 trainingDir = "training"
 augmentedDir = "augmented"
-
+outputDlibDir = "output_dlib"
 
 # remove old data
 def copyFolderToTest():
@@ -20,10 +20,12 @@ def copyFolderToTest():
         shutil.rmtree(testDir)
     if os.path.exists(augmentedDir):
         shutil.rmtree(augmentedDir)
+    if not os.path.exists(outputDlibDir):
+        os.mkdir(outputDlibDir)
     # start loop
     for (rootDir, subDirs, files) in os.walk(fullDatasetDir):
         for subDatasetDir in subDirs:
-            numOfTrain = 4
+            numOfTrain = 3
             numOfTest = None
             if (subDatasetDir == "unknown"):
                 numOfTrain = 450
