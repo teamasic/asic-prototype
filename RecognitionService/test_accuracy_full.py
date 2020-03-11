@@ -9,6 +9,7 @@ from sklearn import datasets
 fullDatasetDir = "dataset"
 testDir = "images"
 trainingDir = "training"
+augmentedDir = "augmented"
 
 
 # remove old data
@@ -17,11 +18,13 @@ def copyFolderToTest():
         shutil.rmtree(trainingDir)
     if os.path.exists(testDir):
         shutil.rmtree(testDir)
+    if os.path.exists(augmentedDir):
+        shutil.rmtree(augmentedDir)
     # start loop
     for (rootDir, subDirs, files) in os.walk(fullDatasetDir):
         for subDatasetDir in subDirs:
-            numOfTrain = 10
-            numOfTest = 3
+            numOfTrain = 4
+            numOfTest = None
             if (subDatasetDir == "unknown"):
                 numOfTrain = 450
                 numOfTest = 50
@@ -49,6 +52,7 @@ def copyFolderToTest():
 
 
 # copyFolderToTest()
-# os.system("python extract_embeddings.py --dataset training")
+# os.system("python augment.py --dataset training")
+os.system("python extract_embeddings.py --dataset augmented")
 # os.system("python train_model.py")
-os.system("python test_result.py")
+# os.system("python test_result.py")
