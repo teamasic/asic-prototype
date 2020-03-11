@@ -6,7 +6,7 @@ import face_recognition
 """
 
 
-def face_encodings(image, boxes):
+def face_encodings(image, boxes=None):
     return _face_encodings_dlib(image, boxes)
 
 

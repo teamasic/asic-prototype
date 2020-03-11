@@ -18,7 +18,8 @@ def recognize_image(imagePath, threshold=0):
 def recognize_image_after_read(image, threshold=0):
     boxes = my_face_detection.face_locations(image)
     if len(boxes) == 1:
-        vec = my_face_recognition.face_encodings(image, boxes)[0]
+        image = my_face_detection.align_face(image, boxes[0])
+        vec = my_face_recognition.face_encodings(image)[0]
         name, proba = _get_label(vec, threshold)
         return boxes[0], name, proba
     return None
@@ -98,7 +99,10 @@ def generate_embeddings(datasetPath):
             print(imagePath, "= 0")
             print(len(boxes))
             continue
-        vecs = my_face_recognition.face_encodings(image, boxes)
+
+        image = my_face_detection.align_face(image, boxes[0])
+
+        vecs = my_face_recognition.face_encodings(image)
         vec = vecs[0]
         knownEmbeddings.append(vec.flatten())
         knownNames.append(name)

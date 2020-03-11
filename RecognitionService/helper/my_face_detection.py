@@ -3,6 +3,10 @@ import os
 import cv2
 import face_recognition
 import numpy as np
+from imutils.face_utils import FaceAligner
+from imutils.face_utils import rect_to_bb
+import dlib
+import imutils
 
 """
 :return a list with multiple tuple, each tuple have size 4 - describe boudary of face
@@ -63,5 +67,32 @@ def _face_locations_cnn(image):
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     boxes = face_recognition.face_locations(rgb, model="cnn")
     return boxes
-def alignFace(image, boxes):
-    faceLandmarks =  face_recognition.face_landmarks(image, boxes)
+
+
+def align_face(image, box):
+    facialLandmarksModelPath = "model/facial_landmarks_model"
+    # create the facial landmark predictor and the face aligner
+    predictor_path = os.path.sep.join([facialLandmarksModelPath, "shape_predictor_68_face_landmarks.dat"])
+    predictor = dlib.shape_predictor(predictor_path)
+    fa = FaceAligner(predictor, desiredFaceWidth=256)
+
+    # resize and convert the image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    rect = _css_to_rect(box)
+    face_aligned = fa.align(image, gray, rect)
+    return face_aligned
+
+    # faceLandmarks =  face_recognition.face_landmarks(image, boxes)
+    # the implementation of this calls the same 68-point facial landmarks model. We manually fetch our predictor
+    # so the FaceAligner class in dlib can automatically predict and align everything for us.
+
+
+def _css_to_rect(css):
+    """
+    Convert a tuple in (top, right, bottom, left) order to a dlib `rect` object
+    :param css:  plain tuple representation of the rect in (top, right, bottom, left) order
+    :return: a dlib `rect` object
+    """
+    return dlib.rectangle(css[3], css[0], css[1], css[2])
+
