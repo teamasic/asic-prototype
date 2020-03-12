@@ -99,10 +99,11 @@ const requestGroups = (groupSearch: GroupSearch): AppThunkAction => async (dispa
     }
 }
 
-const requestGroupDetail = (id: number): AppThunkAction => async (dispatch, getState) => {
+const requestGroupDetail = (id: number, stopLoadingTable: Function): AppThunkAction => async (dispatch, getState) => {
     const apiResponse: ApiResponse = await getGroupDetail(id);
     if (apiResponse.success) {
         dispatch(receiveGroupDetail(apiResponse.data));
+        stopLoadingTable();
     } else {
         console.log("Get group detail error: " + apiResponse.errors);
     }

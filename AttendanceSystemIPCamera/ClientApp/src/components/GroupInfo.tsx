@@ -9,11 +9,13 @@ import { ApplicationState } from '../store';
 import { bindActionCreators } from 'redux';
 import Attendee from '../models/Attendee';
 import '../styles/Table.css';
+import { renderStripedTable } from '../utils'
 
 const { Text } = Typography
 
 interface Props {
-    attendees?: Attendee[]
+    attendees?: Attendee[],
+    attendeeLoading: boolean
 }
 
 interface GroupInfoComponentstate {
@@ -114,14 +116,6 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
         })
     } 
 
-    public renderOnRow = (record: any, index: number) => {
-        if (index % 2 == 0) {
-            return 'default';
-        } else {
-            return 'striped';
-        }
-    }
-
     public onPageChange = (page: number) => {
         this.setState({
             page: page
@@ -193,13 +187,14 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                     columns={columns}
                     rowKey="$id"
                     bordered
+                    loading={this.props.attendeeLoading}
                     pagination={{
                         pageSize: 5,
                         total: this.props.attendees != undefined ? this.props.attendees.length : 0,
                         showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} attendees`,
                         onChange: this.onPageChange
                     }}
-                    rowClassName={this.renderOnRow}
+                    rowClassName={renderStripedTable}
                 />
             </div>
             

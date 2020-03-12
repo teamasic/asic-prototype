@@ -19,6 +19,11 @@ const { Title } = Typography;
 const { Paragraph } = Typography
 const { TabPane } = Tabs;
 
+interface GroupDetailComponentState {
+    modalExportVisible: boolean,
+    attendeeLoading: boolean
+}
+
 // At runtime, Redux will merge together...
 type GroupDetailProps =
     GroupsState // ... state we've requested from the Redux store
@@ -28,9 +33,10 @@ type GroupDetailProps =
     }>; // ... plus incoming routing parameters
 
 
-class GroupDetail extends React.PureComponent<GroupDetailProps> {
+class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailComponentState> {
     state = {
-        modalExportVisible: false
+        modalExportVisible: false,
+        attendeeLoading: true
     }
     // This method is called when the component is first added to the document
     public componentDidMount() {
@@ -62,7 +68,9 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
     }
 
     private redirect(url: string) {
-        this.props.history.push(url);
+        console.log(url);
+        console.log(this.props.location);
+        this.props.history.replace(url);
     }
 
     public render() {
@@ -90,7 +98,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
                 </div>
                 <Tabs defaultActiveKey="1" type="card" tabBarExtraContent={exportModal}>
                     <TabPane tab="Group Information" key="1">
-                        <GroupInfo attendees={this.props.selectedGroup.attendees} />
+                        <GroupInfo attendees={this.props.selectedGroup.attendees} attendeeLoading={this.state.attendeeLoading} />
                     </TabPane>
                     <TabPane tab="Past Session" key="2">
                         <PastSession group={this.props.selectedGroup} redirect={url => this.redirect(url)} />
@@ -107,13 +115,12 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
         var strId = this.props.match.params.id;
         if (strId) {
             var intId = parseInt(strId);
-            this.props.requestGroupDetail(intId);
+            this.props.requestGroupDetail(intId, () => {
+                this.setState({
+                    attendeeLoading: false
+                });
+            });
         }
-    }
-
-    private renderEmpty() {
-        return <Empty>
-        </Empty>;
     }
 }
 

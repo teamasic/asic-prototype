@@ -10,6 +10,7 @@ import { bindActionCreators } from 'redux';
 import Session from '../models/Session';
 import SessionViewModel from '../models/SessionViewModel';
 import '../styles/Table.css';
+import { renderStripedTable } from '../utils'
 
 interface Props {
     group: Group
@@ -61,14 +62,6 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
         return n
     }
 
-    private renderOnRow = (record: any, index: number) => {
-        if (index % 2 == 0) {
-            return 'default';
-        } else {
-            return 'striped';
-        }
-    }
-
     private onPageChange = (page: number) => {
         this.setState({
             page: page
@@ -118,7 +111,7 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
                 dataIndex: 'action',
                 width: '10%',
                 render: (text: any, record: any) =>
-                    <Button type="primary" onClick={() => this.props.redirect(`session/${record.id}`)}>
+                    <Button type="primary" onClick={() => this.props.redirect(`session/${record.id}`)} >
                         Detail
                     </Button>
                 ,
@@ -135,7 +128,7 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
                     showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} sessions`,
                     onChange: this.onPageChange
                 }}
-                rowClassName={this.renderOnRow}
+                rowClassName={renderStripedTable}
             />
         );
     }
