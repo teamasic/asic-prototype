@@ -132,11 +132,11 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPut("{id}")]
-        public Task<BaseResponse<GroupViewModel>> Update(int id, [FromQuery] string groupName)
+        public Task<BaseResponse<GroupViewModel>> Update(int id, [FromBody] GroupViewModel updatedGroup)
         {
             return ExecuteInMonitoring(async () =>
             {
-                var group = service.UpdateName(id, groupName);
+                var group = service.Update(id, updatedGroup);
                 var attendeeGroup = attendeeGroupService.GetByGroupId(group.Id);
                 group.AttendeeGroups = attendeeGroup.ToList();
                 return mapper.Map<GroupViewModel>(group);

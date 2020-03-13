@@ -38,9 +38,9 @@ export const deactiveGroup = async (id: number): Promise<ApiResponse> => {
 };
 
 
-export const updateGroup = async (id: number, newName: string): Promise<ApiResponse> => {
-    var url = baseRoute + '/' + id + '?groupName=' + newName;
-    const response = await axios.put(url);
+export const updateGroup = async (id: number, updatedGroup: Group): Promise<ApiResponse> => {
+    var url = baseRoute + '/' + id;
+    const response = await axios.put(url, updatedGroup);
     return await response.data;
 };
 

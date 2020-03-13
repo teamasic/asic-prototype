@@ -7,13 +7,12 @@ import Attendee from '../models/Attendee';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
-import { Breadcrumb, Icon, Button, Empty, message } from 'antd';
-import { Typography } from 'antd';
-import { Tabs } from 'antd'
-import GroupInfo from './GroupInfo'
-import PastSession from './PastSession'
-import ModalExport from './ModalExport'
+import { Breadcrumb, Icon, Button, Empty, message, Typography, Tabs, Row, Col, InputNumber } from 'antd';
+import GroupInfo from './GroupInfo';
+import PastSession from './PastSession';
+import ModalExport from './ModalExport';
 import classNames from 'classnames';
+import { EditTwoTone } from '@ant-design/icons';
 
 const { Title } = Typography;
 const { Paragraph } = Typography
@@ -21,7 +20,8 @@ const { TabPane } = Tabs;
 
 interface GroupDetailComponentState {
     modalExportVisible: boolean,
-    attendeeLoading: boolean
+    attendeeLoading: boolean,
+    editMaxSession: boolean
 }
 
 // At runtime, Redux will merge together...
@@ -36,7 +36,8 @@ type GroupDetailProps =
 class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailComponentState> {
     state = {
         modalExportVisible: false,
-        attendeeLoading: true
+        attendeeLoading: true,
+        editMaxSession: false
     }
     // This method is called when the component is first added to the document
     public componentDidMount() {
@@ -73,6 +74,25 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
         this.props.history.replace(url);
     }
 
+    private onEditMaxSession = () => {
+        this.setState({
+            editMaxSession: true
+        });
+    }
+
+    private onMaxSessionBlur = (e: any) => {
+        console.log(JSON.parse(e.target.value));
+        var group = {
+            ...this.props.selectedGroup,
+            maxSessionCount: JSON.parse(e.target.value)
+        };
+        console.log(group);
+        this.props.startUpdateGroup(group, this.updateGroupSuccess);
+        this.setState({
+            editMaxSession: false
+        });
+    }
+
     public render() {
         const exportModal = <Button type="default" onClick={this.openModalExport} icon="export">Export</Button>
         return (
@@ -92,9 +112,29 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                     </Breadcrumb>
                 </div>
                 <div className="title-container">
-                    <Title className="title" level={3}>
-                        <Paragraph editable={{ onChange: this.editGroupName }}>{this.props.selectedGroup.name}</Paragraph>
-                    </Title>
+                    <Row>
+                        <Col>
+                            <Title className="title" level={3}>
+                                <Paragraph editable={{ onChange: this.editGroupName }}>{this.props.selectedGroup.name}</Paragraph>
+                            </Title>
+                        </Col>
+                        <Col>
+                            <Title className="title" level={3}>
+                                <Paragraph>Max sessions : {this.state.editMaxSession ?
+                                    (<InputNumber
+                                        defaultValue={this.props.selectedGroup.maxSessionCount}
+                                        min={0}
+                                        max={100}
+                                        onBlur={this.onMaxSessionBlur}
+                                    />
+                                    ) :
+                                    (
+                                        <span>{this.props.selectedGroup.maxSessionCount} < EditTwoTone onClick={this.onEditMaxSession} /></span>
+                                    )
+                                }</Paragraph>
+                            </Title>
+                        </Col>
+                    </Row>
                 </div>
                 <Tabs defaultActiveKey="1" type="card" tabBarExtraContent={exportModal}>
                     <TabPane tab="Group Information" key="1">

@@ -136,7 +136,7 @@ const startDeactiveGroup = (id: number, groupSearch: GroupSearch, success: Funct
 }
 
 const startUpdateGroup = (group: Group, success: Function): AppThunkAction => async (dispatch, getState) => {
-    const apiResponse: ApiResponse = await updateGroup(group.id, group.name);
+    const apiResponse: ApiResponse = await updateGroup(group.id, group);
     if (apiResponse.success) {
         dispatch(updateGroupNameSuccess(apiResponse.data));
     } else {

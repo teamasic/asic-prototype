@@ -42,6 +42,7 @@ interface DashboardComponentState {
     importAttendees: any, 
     groupCode: string,
     groupName: string,
+    maxSession: number,
     page: number
 }
 
@@ -53,6 +54,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         importAttendees: [],
         groupCode: "",
         groupName: "",
+        maxSession: 0,
         page: 1
     }
 
@@ -99,8 +101,17 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         newGroup.name = this.state.groupName;
         newGroup.code = this.state.groupCode;
         newGroup.attendees = this.state.importAttendees;
+        newGroup.maxSessionCount = this.state.maxSession;
         console.log(newGroup);
         this.props.postGroup(newGroup, this.redirectToGroupDetail);
+    }
+
+    public onMaxSessionChane = (value: number | undefined) => {
+        if (value != undefined) {
+            this.setState({
+                maxSession: JSON.parse(value.toString())
+            });
+        }
     }
 
     public parseFileToTable = (file: File): Promise<void> => {
@@ -257,7 +268,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                 <InputNumber
                                     defaultValue={30}
                                     min={0}
-                                    max={100} />
+                                    max={100}
+                                    onChange={this.onMaxSessionChane} />
                             </Col>
                         </Row>
                         <Divider orientation="left">List Attendees</Divider>

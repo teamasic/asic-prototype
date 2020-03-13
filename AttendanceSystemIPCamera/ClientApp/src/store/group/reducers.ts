@@ -17,6 +17,7 @@ const unloadedState: GroupsState = {
         id: 0,
         code: 'Loading',
         name: 'Loading',
+        maxSessionCount: 0,
         attendees: [],
         sessions: [{
             id: 0,
