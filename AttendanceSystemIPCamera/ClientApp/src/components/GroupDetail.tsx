@@ -59,6 +59,10 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
         })
     }
 
+    private redirect(url: string) {
+        this.props.history.push(url);
+    }
+
     public render() {
         const exportModal = <Button type="default" onClick={this.openModalExport} icon="export">Export</Button>
         return (
@@ -87,7 +91,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps> {
                         <GroupInfo attendees={this.props.selectedGroup.attendees} />
                     </TabPane>
                     <TabPane tab="Past Session" key="2">
-                        <PastSession/>
+                        <PastSession group={this.props.selectedGroup} redirect={url => this.redirect(url)} />
                     </TabPane>
                 </Tabs>
                 <ModalExport modalVisible={this.state.modalExportVisible}

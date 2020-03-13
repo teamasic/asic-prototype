@@ -172,7 +172,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<IAttendeeGroupService, AttendeeGroupService>();
             services.AddScoped<SupervisorNetworkService>();
-            services.AddScoped<RecognitionService, RecognitionService>();
+            services.AddScoped<IRecognitionService, RecognitionService>();
             services.AddScoped<IChangeRequestService, ChangeRequestService>();
         }
         private void SetupRepositories(IServiceCollection services)
