@@ -422,7 +422,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                             filename={this.state.fileName}
                             onClick={this.onExport}
                         >
-                            {this.state.exportStatus}
+                            Export
                         </CSVLink>}
                     onCancel={() => this.setState({ isGenerated: false })}
                 >

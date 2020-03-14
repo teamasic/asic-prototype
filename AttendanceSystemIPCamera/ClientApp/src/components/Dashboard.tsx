@@ -243,7 +243,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                         title="Create New Group"
                         onOk={this.handleOk}
                         onCancel={this.handleCancel}
-                        style={{ top: 20 }}
+                        centered
                         width='80%'
                         footer={[
                             <Button key="back" onClick={this.handleCancel}>
