@@ -2,9 +2,9 @@
     groupId: number,
     isSingleDate: boolean,
     withCondition: boolean,
-    singleDate: Date,
-    startDate: Date, 
-    endDate: Date,
+    singleDate: string,
+    startDate: string, 
+    endDate: string,
     isPresent: boolean,
     isGreaterThanOrEqual: boolean,
     attendancePercent: number

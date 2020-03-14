@@ -67,6 +67,7 @@
     <None Remove="ClientApp\src\models\Group.ts" />
     <None Remove="ClientApp\src\models\Record.ts" />
     <None Remove="ClientApp\src\models\Session.ts" />
+    <None Remove="ClientApp\src\models\SessionViewModel.ts" />
     <None Remove="ClientApp\src\models\UpdateRecord.ts" />
     <None Remove="ClientApp\src\services\attendee.ts" />
     <None Remove="ClientApp\src\services\group.ts" />
@@ -109,6 +110,7 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\Group.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\SessionViewModel.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\UpdateRecord.ts" />
     <TypeScriptCompile Include="ClientApp\src\services\attendee.ts" />
     <TypeScriptCompile Include="ClientApp\src\services\record.ts">

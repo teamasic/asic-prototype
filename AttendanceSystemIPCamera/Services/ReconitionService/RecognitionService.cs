@@ -76,10 +76,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             // Get start info
             var cmd = myConfiguration.RecognitionProgramPathVLC;
             var args = "";
-            args += string.Format(@"--recognizer {0}", myConfiguration.RecognizerPath);
-            args += string.Format(@" --le {0}", myConfiguration.LePath);
-            args += string.Format(@" --rtsp {0}", rtspString);
-            args += string.Format(@" --image {0}", myConfiguration.SnapshotPath);
+            args += string.Format(@"--rtsp {0}", rtspString);
             var startInfo = GetProcessStartInfo(cmd, args);
 
             // Start process
@@ -105,9 +102,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             // Get start info
             var cmd = myConfiguration.RecognitionProgramPathOpenCV;
             var args = "";
-            args += string.Format(@"--recognizer {0}", myConfiguration.RecognizerPath);
-            args += string.Format(@" --le {0}", myConfiguration.LePath);
-            args += string.Format(@" --rtsp {0}", rtspString);
+            args += string.Format(@"--rtsp {0}", rtspString);
             var startInfo = GetProcessStartInfo(cmd, args);
 
             // Start process

@@ -14,25 +14,18 @@ const unloadedState: GroupsState = {
         pageSize: 15
     },
     selectedGroup: { // temporary, might be restructured
-        id: 1,
-        code: 'None',
-        name: 'None',
+        id: 0,
+        code: 'Loading',
+        name: 'Loading',
+        maxSessionCount: 0,
         attendees: [],
         sessions: [{
-            id: 1,
+            id: 0,
             active: false,
             name: 'Slot 1',
             startTime: new Date(),
             endTime: new Date(),
-            attendees: [{
-                id: 1,
-                code: 'SE63147',
-                name: 'Strawberry'
-            }, {
-                id: 2,
-                code: 'SE63147',
-                name: 'Blackberry'
-            }]
+            attendees: []
         }]
     }
 };

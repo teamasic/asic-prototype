@@ -30,6 +30,7 @@ import AttendeeRecordPair from '../models/AttendeeRecordPair';
 import { formatFullDateTimeString, minutesOfDay } from '../utils';
 import { takeAttendance } from '../services/session';
 import moment from 'moment';
+import '../styles/Table.css';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -58,6 +59,7 @@ interface SessionLocalState {
 	startTime: moment.Moment,
 	endTime: moment.Moment,
 	isError: boolean,
+	page: number
 }
 
 class Session extends React.PureComponent<SessionProps, SessionLocalState> {
@@ -72,7 +74,8 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 			isModelOpen: false,
 			startTime: moment(),
 			endTime: moment().add(1, "m"),
-			isError: false
+			isError: false,
+			page: 1
 		};
 	}
 	// This method is called when the component is first added to the document
@@ -250,8 +253,22 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		);
 	}
 
+	private renderOnRow = (record: any, index: number) => {
+		if (index % 2 == 0) {
+			return 'default';
+		} else {
+			return 'striped';
+		}
+	}
+
 	private renderSessionSection() {
 		const columns = [
+			{
+				title: "#",
+				key: "index",
+				width: '5%',
+				render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
+			},
 			{
 				title: 'Id',
 				key: 'id',
@@ -376,8 +393,10 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 							<Table
 								columns={columns}
 								dataSource={processedList}
+								bordered
 								pagination={false}
 								rowKey={record => record.attendee.id.toString()}
+								rowClassName={this.renderOnRow}
 							/>
 						)}
 				</div>

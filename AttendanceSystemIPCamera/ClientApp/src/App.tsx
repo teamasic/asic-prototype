@@ -11,6 +11,7 @@ export default () => (
 	<Layout>
 		<Route exact path="/" component={Dashboard} />
 		<Route exact path="/session/:id" component={Session} />
-		<Route exact path="/group" component={GroupDetail} />
+		<Route exact path="/group/session/:id" component={Session} />
+		<Route exact path="/group/:id" component={GroupDetail} />
 	</Layout>
 );
