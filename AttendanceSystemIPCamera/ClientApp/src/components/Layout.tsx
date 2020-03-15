@@ -7,7 +7,7 @@ import NavMenu from './NavMenu';
 import { Layout, Menu, Breadcrumb, Icon, Badge } from 'antd';
 import classNames from 'classnames';
 import '../styles/Layout.css';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import { ChangeRequestState } from '../store/changeRequest/state';
 import { changeRequestActionCreators } from '../store/changeRequest/actionCreators';
@@ -24,11 +24,13 @@ type LayoutProps =
 class PageLayout extends React.Component<
 	LayoutProps,
 	{
-		collapsed: boolean;
+	collapsed: boolean;
+	selectedKeys: string[];
 	}
 > {
 	state = {
-		collapsed: false
+		collapsed: false,
+		selectedKeys: ['groups']
 	};
 
 	onCollapse = (collapsed: boolean) => {
@@ -39,6 +41,15 @@ class PageLayout extends React.Component<
 		if (!this.props.successfullyLoaded) {
 			this.props.requestChangeRequests(ChangeRequestStatusFilter.UNRESOLVED);
 		}
+		const nonDefaultPathnames = ['change-requests'];
+		const currentPath = this.props.location.pathname.substring(1);
+		nonDefaultPathnames.forEach(path => {
+			if (currentPath.includes(path)) {
+				this.setState({
+					selectedKeys: [path]
+				});
+			}
+		})
 	}
 
 	render() {
@@ -51,8 +62,13 @@ class PageLayout extends React.Component<
 					onCollapse={this.onCollapse}
 				>
 					<div className="logo">ASIC</div>
-					<Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
-						<Menu.Item key="1">
+					<Menu theme="dark"
+						selectedKeys={this.state.selectedKeys}
+						onSelect={item => this.setState({
+							selectedKeys: [item.key]
+						})}
+						mode="inline">
+						<Menu.Item key="groups">
 							<Icon type="hdd" />
 							<div className="link-container">
 								<Link to="/">
@@ -60,7 +76,7 @@ class PageLayout extends React.Component<
 								</Link>
 							</div>
 						</Menu.Item>
-						<Menu.Item key="2">
+						<Menu.Item key="change-requests">
 							<Icon type="file-exclamation" />
 							<div className="link-container">
 								<Link to="/change-requests">
@@ -95,11 +111,11 @@ class PageLayout extends React.Component<
 // export default PageLayout;
 
 
-export default connect(
+export default withRouter(connect(
 	(state: ApplicationState) => ({
 		...state.changeRequests
 	}), // Selects which state properties are merged into the component's props
 	dispatch => bindActionCreators({
 		...changeRequestActionCreators
 	}, dispatch) // Selects which action creators are merged into the component's props
-)(PageLayout as any);
+)(PageLayout as any));

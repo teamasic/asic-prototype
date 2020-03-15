@@ -11,7 +11,7 @@ import { Typography } from 'antd';
 import { Input, Modal, Upload, Table, Divider, message } from 'antd';
 import classNames from 'classnames';
 import '../styles/ChangeRequests.css';
-import { formatDateString } from '../utils';
+import { formatDateString, renderStripedTable } from '../utils';
 import GroupCard from './GroupCard';
 import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
 import { ChangeRequestState } from '../store/changeRequest/state';
@@ -21,6 +21,7 @@ import { parse } from 'papaparse';
 import ChangeRequest, { ChangeRequestStatusFilter, ChangeRequestStatus } from '../models/ChangeRequest';
 import { Link } from 'react-router-dom';
 import ChangeRequestModal from './ChangeRequestModal';
+import '../styles/Table.css';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -159,6 +160,7 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
             columns={columns}
             dataSource={this.props.changeRequests.sort((a, b) => b.id - a.id)}
             rowKey={cr => cr.id.toString()}
+            rowClassName={renderStripedTable}
         />;
     }
 

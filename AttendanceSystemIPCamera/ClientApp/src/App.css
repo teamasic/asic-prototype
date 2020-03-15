@@ -35,3 +35,8 @@ code {
 .ant-modal-title, .ant-modal-close-x {
 	color: #ffffff
 }
+
+.borderless-badge .ant-badge-count {
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
+}
