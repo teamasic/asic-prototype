@@ -24,5 +24,13 @@ namespace AttendanceSystemIPCamera.Framework.ExeptionHandler
         public static string NOT_FOUND_RECORD_WITH_ID = "Not found record with id {0}";
 
         public static string CHANGE_REQUEST_INVALID = "Change request invalid";
+
+        public static string NOT_FOUND_GROUP_WITH_ID = "Not found group with id {0}";
+
+        public static string GROUP_ALREADY_EXISTED = "Group with code {0} is already existed";
+
+        public static string INVALID_GROUP = "Group is invalid: {0}";
+
+        public static string ATTENDEE_ALREADY_EXISTED_IN_GROUP = "Attendee with code {0} is already existed in group with code {1}";
     }
 }
