@@ -58,6 +58,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\components\ChangeRequestModal.tsx" />
     <None Remove="ClientApp\src\components\GroupCard.tsx" />
     <None Remove="ClientApp\src\components\ModalExport.tsx" />
     <None Remove="ClientApp\src\middlewares\SignalRConnection.ts" />
@@ -98,6 +99,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\components\ChangeRequestModal.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\components\GroupCard.tsx" />
     <TypeScriptCompile Include="ClientApp\src\components\ModalExport.tsx" />
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRConnection.ts" />

@@ -19,10 +19,9 @@ namespace AttendanceSystemIPCamera.Models
         public int Id { get; set; }
         public Record Record { get; set; }
         public string Comment { get; set; }
-        public bool OldState { get; set; }
-        public bool NewState { get; set; }
         public ChangeRequestStatus Status { get; set; } = ChangeRequestStatus.UNRESOLVED;
         [NotMapped]
         public bool IsResolved => Status != ChangeRequestStatus.UNRESOLVED;
+        public int RecordId { get; set; }
     }
 }

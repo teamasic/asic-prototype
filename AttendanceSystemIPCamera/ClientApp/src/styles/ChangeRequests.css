@@ -9,3 +9,39 @@
 .actions button {
     margin-right: 5px;
 }
+
+
+.change-request-modal .info-wrapper {
+    margin-bottom: 15px;
+}
+
+.change-request-modal .label {
+    display: inline-block;
+    font-weight: bold;
+}
+
+.change-request-modal .label.shifted-down {
+    padding-top: 5px;
+}
+
+.change-request-modal .info-wrapper .info {
+    display: inline-block;
+    border-bottom: 0.5px solid rgba(0,0,0,0.12);
+    padding: 5px;
+}
+
+.change-request-modal .status {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.comment-wrapper {
+    border: 1px solid rgba(0,0,0,0.12);
+    padding: 5px;
+    min-height: 120px;
+    border-radius: 4px;
+}
+
+.to-session-button {
+    padding: 0 !important;
+}

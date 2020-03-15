@@ -8,7 +8,7 @@ export const ACTIONS = {
     START_REQUEST_CHANGE_REQUESTS: 'START_REQUEST_CHANGE_REQUESTS',
     STOP_REQUEST_CHANGE_REQUESTS_WITH_ERRORS: 'STOP_REQUEST_CHANGE_REQUESTS_WITH_ERRORS',
     PROCESS_CHANGE_REQUEST: 'PROCESS_CHANGE_REQUEST',
-    INCREMENT_RESOLVED_COUNT: 'INCREMENT_RESOLVED_COUNT'
+    INCREMENT_UNRESOLVED_COUNT: 'INCREMENT_UNRESOLVED_COUNT'
 }
 
 function startRequestChangeRequests() {
@@ -51,18 +51,27 @@ function receiveProcessChangeRequest(id: number, approved: boolean) {
     };
 }
 
-const processChangeRequest = (id: number, approved: boolean): AppThunkAction => async (dispatch, getState) => {
+const processChangeRequest = (id: number, approved: boolean,
+    successCallback?: () => void,
+    errorCallback?: () => void): AppThunkAction => async (dispatch, getState) => {
     dispatch(receiveProcessChangeRequest(id, approved));
     const apiResponse: ApiResponse = await services.processChangeRequest(id, approved);
-    if (apiResponse.success) {
-        dispatch(receiveProcessChangeRequest(id, approved));
-    }
+        if (apiResponse.success) {
+            dispatch(receiveProcessChangeRequest(id, approved));
+            if (successCallback) {
+                successCallback();
+            }
+        } else {
+            if (errorCallback) {
+                errorCallback();
+            }
+        }
 };
 
 
 function incrementUnresolvedCount() {
     return {
-        type: ACTIONS.INCREMENT_RESOLVED_COUNT
+        type: ACTIONS.INCREMENT_UNRESOLVED_COUNT
     };
 }
 

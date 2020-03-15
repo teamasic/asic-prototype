@@ -20,6 +20,7 @@ import { log, isNullOrUndefined } from 'util';
 import { parse } from 'papaparse';
 import ChangeRequest, { ChangeRequestStatusFilter, ChangeRequestStatus } from '../models/ChangeRequest';
 import { Link } from 'react-router-dom';
+import ChangeRequestModal from './ChangeRequestModal';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -33,14 +34,18 @@ type ChangeRequestsComponentProps =
 
 interface ChangeRequestsComponentState {
     modalVisible: boolean,
+    activeChangeRequest?: ChangeRequest,
     filter: ChangeRequestStatusFilter;
 }
 
 class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, ChangeRequestsComponentState> {
 
-    state = {
-        modalVisible: false,
-        filter: ChangeRequestStatusFilter.UNRESOLVED
+    constructor(props: ChangeRequestsComponentProps) {
+        super(props);
+        this.state = {
+            modalVisible: false,
+            filter: ChangeRequestStatusFilter.UNRESOLVED
+        };
     }
 
     // This method is called when the component is first added to the document
@@ -50,14 +55,6 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
 
     private ensureDataFetched() {
         this.props.requestChangeRequests(ChangeRequestStatusFilter.UNRESOLVED);
-    }
-
-    private approveChangeRequest(id: number) {
-        this.props.processChangeRequest(id, true);
-    }
-
-    private rejectChangeRequest(id: number) {
-        this.props.processChangeRequest(id, false);
     }
 
     public filterBy = (value: ChangeRequestStatusFilter) => {
@@ -99,6 +96,13 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
                         </div>
                     </Col>
                 </Row>
+                {
+                    this.state.activeChangeRequest != null && 
+                    <ChangeRequestModal
+                        visible={this.state.modalVisible}
+                        changeRequest={this.state.activeChangeRequest}
+                        onClose={() => this.closeModal()} />
+                }
                 <div className={classNames('group-container', {
                     'empty': !hasChangeRequests,
                     'loading': this.props.isLoading
@@ -115,19 +119,24 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
     private renderTable() {
         const columns = [
             {
+                title: 'No.',
+                key: 'no',
+                render: (text: string, cr: ChangeRequest, i: number) => (i+1)
+            },
+            {
                 title: 'Group',
                 key: 'group',
-                render: (text: string, cr: ChangeRequest) => <Link to={`group/${cr.groupId}`}>{cr.groupCode + " " + cr.groupName}</Link>
+                render: (text: string, cr: ChangeRequest) => cr.groupCode + " " + cr.groupName
             },
             {
                 title: 'Session',
                 key: 'session',
-                render: (text: string, cr: ChangeRequest) => <Link to={`session/${cr.sessionId}`}>{cr.sessionName}</Link>
+                render: (text: string, cr: ChangeRequest) => cr.sessionName
             },
             {
                 title: 'Date',
                 key: 'date',
-                render: (text: string, cr: ChangeRequest) => <Link to={`session/${cr.sessionId}`}>{formatDateString(cr.sessionTime)}</Link>
+                render: (text: string, cr: ChangeRequest) => formatDateString(cr.sessionTime)
             },
             {
                 title: 'Attendee code',
@@ -140,26 +149,30 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
                 render: (text: string, cr: ChangeRequest) => cr.attendeeName
             },
             {
-                title: 'Actions',
-                key: 'name',
-                render: (text: string, cr: ChangeRequest) => cr.status === ChangeRequestStatus.UNRESOLVED ?
-                    <div className="actions">
-                        <Button type="primary" onClick={() => this.approveChangeRequest(cr.id)} >Approve</Button>
-                        <Button type="danger" onClick={() => this.rejectChangeRequest(cr.id)}>Reject</Button>
-                    </div>
-                    : (<Button disabled>{cr.status === ChangeRequestStatus.REJECTED ? 'Rejected' : 'Approved' }</Button>)
+                title: 'Review',
+                key: 'review',
+                render: (text: string, cr: ChangeRequest) =>
+                    <Button type="link" onClick={() => this.showModal(cr)}>Review</Button>
             }
         ];
         return <Table
             columns={columns}
             dataSource={this.props.changeRequests.sort((a, b) => b.id - a.id)}
             rowKey={cr => cr.id.toString()}
-            expandedRowRender={cr => <p style={{ margin: 0 }}>
-                <span className="comment-label">Comment:</span>
-                {cr.comment}
-            </p>}
-        />
-;
+        />;
+    }
+
+    private showModal(cr: ChangeRequest) {
+        this.setState({
+            modalVisible: true,
+            activeChangeRequest: cr
+        });
+    }
+
+    private closeModal() {
+        this.setState({
+            modalVisible: false
+        });
     }
 
     private renderEmpty() {

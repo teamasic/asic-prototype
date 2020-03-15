@@ -23,7 +23,5 @@ export default interface ChangeRequest {
     sessionTime: Date;
     sessionName: string;
     comment: string;
-    oldState: boolean;
-    newState: boolean;
     status: ChangeRequestStatus;
 };

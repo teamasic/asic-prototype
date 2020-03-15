@@ -11,8 +11,6 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public int Id { get; set; }
         public RecordViewModel Record { get; set; }
         public string Comment { get; set; }
-        public bool OldState { get; set; }
-        public bool NewState { get; set; }
         public ChangeRequestStatus Status { get; set; } = ChangeRequestStatus.UNRESOLVED;
     }
 }

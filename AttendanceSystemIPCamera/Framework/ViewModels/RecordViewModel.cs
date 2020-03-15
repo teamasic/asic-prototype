@@ -30,6 +30,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         [JsonIgnore]
         public int AttendeeId { get; set; }
         public bool Present { get; set; }
+        public ChangeRequestSimpleViewModel ChangeRequest { get; set; }
     }
 
 }

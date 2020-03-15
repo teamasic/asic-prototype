@@ -55,7 +55,7 @@ const reducers: Reducer<ChangeRequestState> = (
                 ...state,
                 changeRequests: crs
             };
-        case ACTIONS.INCREMENT_RESOLVED_COUNT:
+        case ACTIONS.INCREMENT_UNRESOLVED_COUNT:
             return {
                 ...state,
                 unresolvedCount: state.unresolvedCount+1
