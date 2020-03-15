@@ -18,5 +18,13 @@ namespace AttendanceSystemIPCamera.Framework.ExeptionHandler
         public static string WRONG_SESSION_START_TIME = "Session start time is not suitable";
 
         public static string SESSION_ID_NOT_EXISTED = "Session id not existed: {0}";
+
+        public static string NOT_FOUND_GROUP_WITH_ID = "Not found group with id {0}";
+
+        public static string GROUP_ALREADY_EXISTED = "Group with code {0} is already existed";
+
+        public static string INVALID_GROUP = "Group is invalid: {0}";
+
+        public static string ATTENDEE_ALREADY_EXISTED_IN_GROUP = "Attendee with code {0} is already existed in group with code {1}";
     }
 }
