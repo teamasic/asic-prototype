@@ -189,14 +189,15 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 var records = recordService.GetRecordsBySessionId(session.Id);
                 if (withCondition)
                 {
-                    records.ToList().ForEach(r => r.Present = isPresent);
+                    records = records.Where(r => r.Present == isPresent).ToList();
                 }
                 foreach (var record in records)
                 {
                     var exportModel = new SessionExportViewModel()
                     {
-                        SessionId = session.Id,
+                        SessionName = session.Name,
                         StartTime = session.StartTime,
+                        EndTime = session.EndTime,
                         AttendeeCode = record.Attendee.Code,
                         AttendeeName = record.Attendee.Name,
                         Present = record.Present.ToString()
@@ -293,8 +294,9 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 {
                     var viewModel = new SessionExportViewModel()
                     {
-                        SessionId = item.Id,
+                        SessionName = item.Name,
                         StartTime = item.StartTime,
+                        EndTime = item.EndTime,
                         AttendeeCode = record.Attendee.Code,
                         AttendeeName = record.Attendee.Name,
                         Present = record.Present.ToString()

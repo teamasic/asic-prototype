@@ -24,8 +24,14 @@ code {
 	align-items: center;
 }
 
-.borderless-badge .ant-badge-count {
-	box-shadow: none !important;
-	-webkit-box-shadow: none !important;
-	border: none !important;
+.ant-select-selection, .ant-input, .ant-input-number {
+	border-color: #40A9FF
+}
+
+.ant-modal-header {
+	background-color: #1890ff
+}
+
+.ant-modal-title, .ant-modal-close-x {
+	color: #ffffff
 }

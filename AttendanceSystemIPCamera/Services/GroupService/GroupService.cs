@@ -19,7 +19,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
         public Task<PaginatedList<Group>> GetAll(GroupSearchViewModel groupSearchViewModel);
         public Task<Group> AddIfNotInDb(Group group);
         public Group DeactiveGroup(int groupId);
-        public Group UpdateName(int id, string newName);
+        public Group Update(int id, GroupViewModel updatedGroup);
     }
 
     public class GroupService : BaseService<Group>, IGroupService
@@ -58,12 +58,13 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             return await groupRepository.GetAll(groupSearchViewModel);
         }
 
-        public Group UpdateName(int id, string newName)
+        public Group Update(int id, GroupViewModel updatedGroup)
         {
             var groupInDb = groupRepository.GetById(id).Result;
-            if(groupInDb != null)
+            if (groupInDb != null)
             {
-                groupInDb.Name = newName;
+                groupInDb.Name = updatedGroup.Name;
+                groupInDb.MaxSessionCount = updatedGroup.MaxSessionCount;
                 Update(groupInDb);
             }
             return groupInDb;

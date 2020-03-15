@@ -6,7 +6,7 @@ import Group from '../models/Group';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
-import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination } from 'antd';
+import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination, InputNumber } from 'antd';
 import { Typography } from 'antd';
 import { Input, Modal, Upload, Table, Divider, message } from 'antd';
 import classNames from 'classnames';
@@ -18,6 +18,7 @@ import { UnitsState } from '../store/unit/state';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import { unitActionCreators } from '../store/unit/actionCreators';
 import { log, isNullOrUndefined } from 'util';
+import { renderStripedTable } from '../utils'
 import { parse } from 'papaparse';
 
 const { Search } = Input;
@@ -40,7 +41,9 @@ interface DashboardComponentState {
     modalLoading: boolean,
     importAttendees: any, 
     groupCode: string,
-    groupName: string
+    groupName: string,
+    maxSession: number,
+    page: number
 }
 
 class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState> {
@@ -50,7 +53,9 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         modalLoading: false,
         importAttendees: [],
         groupCode: "",
-        groupName: ""
+        groupName: "",
+        maxSession: 0,
+        page: 1
     }
 
     // This method is called when the component is first added to the document
@@ -96,8 +101,17 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         newGroup.name = this.state.groupName;
         newGroup.code = this.state.groupCode;
         newGroup.attendees = this.state.importAttendees;
+        newGroup.maxSessionCount = this.state.maxSession;
         console.log(newGroup);
-        this.props.postGroup(newGroup, this.renderGroupDetail);
+        this.props.postGroup(newGroup, this.redirectToGroupDetail);
+    }
+
+    public onMaxSessionChane = (value: number | undefined) => {
+        if (value != undefined) {
+            this.setState({
+                maxSession: JSON.parse(value.toString())
+            });
+        }
     }
 
     public parseFileToTable = (file: File): Promise<void> => {
@@ -172,20 +186,27 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
     public viewDetail = (e: any) => {
         var id = e.target.id;
-        this.props.requestGroupDetail(id, this.renderGroupDetail);
+        this.redirectToGroupDetail(id);
     }
 
-    public renderGroupDetail = () => {
-        this.props.history.push("/group");
+    public redirectToGroupDetail = (id: number) => {
+        this.props.history.push(`/group/${id}`);
+    }
+
+    public onPageChange = (page: number) => {
+        this.setState({
+            page: page
+        })
     }
 
     public render() {
         var hasGroups = this.hasGroups();
         const columns = [
             {
-                title: 'No.',
-                key: 'No',
-                dataIndex: 'No'
+                title: "#",
+                key: "index",
+                width: '5%',
+                render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
             },
             {
                 title: 'Code',
@@ -222,8 +243,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                         title="Create New Group"
                         onOk={this.handleOk}
                         onCancel={this.handleCancel}
-                        style={{ top: 20 }}
-                        width={900}
+                        centered
+                        width='80%'
                         footer={[
                             <Button key="back" onClick={this.handleCancel}>
                                 Cancel
@@ -234,15 +255,21 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                         ]}
                     >
                         <Row>
-                            <Col span={8}><Text strong>Group Code:</Text></Col>
-                            <Col span={4} offset={2}><Text strong>Group Name:</Text></Col>
-                        </Row>
-                        <Row>
-                            <Col span={8}>
+                            <Col span={2} style={{ padding: '5px 0' }}><Text strong>Group Code:</Text></Col>
+                            <Col span={5}>
                                 <Input placeholder="Enter group code" onChange={this.onGroupCodeChange} />
                             </Col>
-                            <Col span={12} offset={2}>
+                            <Col span={2} offset={1} style={{ padding: '5px 0' }}><Text strong>Group Name:</Text></Col>
+                            <Col span={8}>
                                 <Input placeholder="Enter group name" onChange={this.onGroupNameChange} />
+                            </Col>
+                            <Col span={2} offset={1} style={{ padding: '5px 0' }}><Text strong>Max Session:</Text></Col>
+                            <Col span={3}>
+                                <InputNumber
+                                    defaultValue={30}
+                                    min={0}
+                                    max={100}
+                                    onChange={this.onMaxSessionChane} />
                             </Col>
                         </Row>
                         <Divider orientation="left">List Attendees</Divider>
@@ -261,8 +288,16 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                             </Col>
                         </Row>
                         <Row>
-                            <Table dataSource={this.state.importAttendees} columns={columns} rowKey="No"
-                                pagination={{ pageSize: 5 }}
+                            <Table dataSource={this.state.importAttendees}
+                                columns={columns} rowKey="code"
+                                bordered
+                                rowClassName={renderStripedTable}
+                                pagination={{
+                                    pageSize: 5,
+                                    total: this.state.importAttendees != undefined ? this.state.importAttendees.length : 0,
+                                    showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} attendees`,
+                                    onChange: this.onPageChange
+                                }}
                             />;
                         </Row>
                     </Modal>

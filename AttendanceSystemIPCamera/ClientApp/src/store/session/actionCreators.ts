@@ -151,12 +151,11 @@ export const requestActiveSession = (): AppThunkAction => async (dispatch, getSt
 	dispatch(receiveActiveSession(apiResponse.data));
 };
 
-export const startExportSession = (exportRequest: ExportRequest, success: Function, setData: Function): AppThunkAction => async (dispatch, getState) => {
+export const startGenerateExport = (exportRequest: ExportRequest, success: Function, setData: Function): AppThunkAction => async (dispatch, getState) => {
 	const apiResponse: ApiResponse = await exportSession(exportRequest);
 	if (apiResponse.success) {
-		success();
+		success(exportRequest);
 		setData(apiResponse.data);
-		console.log(apiResponse.data);
 	} else {
 		console.log(apiResponse.errors);
 	}
@@ -182,7 +181,7 @@ export const sessionActionCreators = {
 	createOrUpdateRecord,
 	updateAttendeeRecordRealTime,
 	requestActiveSession,
-	startExportSession,
+	startGenerateExport,
 	startGetPastSession,
 	startRealTimeConnection
 };
