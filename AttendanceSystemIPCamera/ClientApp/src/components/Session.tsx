@@ -5,6 +5,7 @@ import { bindActionCreators } from 'redux';
 import Group from '../models/Group';
 import Attendee from '../models/Attendee';
 import { ApplicationState } from '../store';
+import { Link, withRouter } from 'react-router-dom';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import {
 	Breadcrumb,
@@ -19,6 +20,7 @@ import {
 	Radio,
 	Modal,
 	Input,
+	Badge,
 	TimePicker,
 	Alert
 } from 'antd';
@@ -31,14 +33,14 @@ import { formatFullDateTimeString, minutesOfDay } from '../utils';
 import { takeAttendance } from '../services/session';
 import moment from 'moment';
 import '../styles/Table.css';
-
+import TopBar from './TopBar';
 const { Search } = Input;
 const { Title } = Typography;
 
 // At runtime, Redux will merge together...
 type SessionProps = SessionState & // ... state we've requested from the Redux store
-	typeof sessionActionCreators & // ... plus action creators we've requested
-	RouteComponentProps<{
+	typeof sessionActionCreators // ... plus action creators we've requested
+	& RouteComponentProps<{
 		id?: string;
 	}>; // ... plus incoming routing parameters
 
@@ -179,7 +181,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 			})
 		}
 		else {
-			this.props.startRealTimeConnection();
+			// this.props.startRealTimeConnection();
 			const data = await takeAttendance({
 				sessionId: this.state.sessionId,
 				startTime: this.state.startTime.format('YYYY-MM-DD HH:mm'),
@@ -223,21 +225,21 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	public render() {
 		return (
 			<React.Fragment>
-				<div className="breadcrumb-container">
-					<Breadcrumb>
-						<Breadcrumb.Item href="">
-							<Icon type="home" />
-						</Breadcrumb.Item>
+				<TopBar>
+					{
+						this.props.activeSession &&
 						<Breadcrumb.Item>
-							<Icon type="hdd" />
-							<span>Group</span>
+							<Link to={`groups/${this.props.activeSession.groupId}`}>
+								<Icon type="hdd" />
+								<span>Group</span>
+							</Link>
 						</Breadcrumb.Item>
-						<Breadcrumb.Item>
-							<Icon type="calendar" />
-							<span>Session</span>
-						</Breadcrumb.Item>
-					</Breadcrumb>
-				</div>
+					}
+					<Breadcrumb.Item>
+						<Icon type="calendar" />
+						<span>Session</span>
+					</Breadcrumb.Item>
+				</TopBar>
 				<div className={classNames('session-container', {
 					'is-loading': this.props.isLoadingSession
 				})}>
@@ -246,8 +248,8 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					) : this.props.activeSession ? (
 						this.renderSessionSection()
 					) : (
-								this.renderEmpty()
-							)}
+							this.renderEmpty()
+						)}
 				</div>
 			</React.Fragment>
 		);
@@ -351,11 +353,21 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					</Col>
 				</Row>
 				<Row style={{ marginTop: 5 }} type="flex" gutter={[4, 4]} align="bottom">
-					<Col span={3}>
-						<Button type="primary" onClick={this.openModelTakingAttendance}>Start taking attendance</Button>
+					<Col span={4}>
+						<Button type="primary"
+							onClick={this.openModelTakingAttendance}>
+							Start taking attendance
+							</Button>
+					</Col>
+					<Col span={12}>
+						<Badge color={"orange"} text="Taking attendance until 20:45" />
 					</Col>
 				</Row>
-				<Modal visible={this.state.isModelOpen} onCancel={this.onCancelModel} onOk={this.onOkModel} okText="Start">
+				<Modal
+					title="Start taking attendance"
+					visible={this.state.isModelOpen}
+					onCancel={this.onCancelModel}
+					onOk={this.onOkModel} okText="Start">
 					<Row justify="start" style={{ marginTop: 5 }} type="flex" align="middle" gutter={[0, 0]}>
 						<Col span={12}>
 							<span style={{ marginRight: 5 }}>Start time</span>
@@ -401,10 +413,10 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	}
 }
 
-export default connect(
+export default withRouter(connect(
 	(state: ApplicationState, ownProps: SessionProps) => ({
 		...state.sessions,
 		...ownProps
 	}), // Selects which state properties are merged into the component's props
 	dispatch => bindActionCreators(sessionActionCreators, dispatch) // Selects which action creators are merged into the component's props
-)(Session as any);
+)(Session as any));

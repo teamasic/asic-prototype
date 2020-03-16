@@ -4,6 +4,7 @@ import { RouteComponentProps } from 'react-router';
 import { bindActionCreators } from 'redux';
 import Group from '../models/Group';
 import { ApplicationState } from '../store';
+import { Link, withRouter } from 'react-router-dom';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination, InputNumber } from 'antd';
@@ -20,6 +21,7 @@ import { unitActionCreators } from '../store/unit/actionCreators';
 import { log, isNullOrUndefined } from 'util';
 import { renderStripedTable } from '../utils'
 import { parse } from 'papaparse';
+import TopBar from './TopBar';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -222,17 +224,11 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
         return (
             <React.Fragment>
-                <div className="breadcrumb-container">
-                    <Breadcrumb>
-                        <Breadcrumb.Item href="">
-                            <Icon type="home" />
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>
-                            <Icon type="hdd" />
-                            <span>Your groups</span>
-                        </Breadcrumb.Item>
-                    </Breadcrumb>
-                </div>
+                <TopBar showHome={false}>
+                    <span>
+                        Dashboard
+                    </span>
+                </TopBar>
                 <div className="title-container">
                     <Title className="title" level={3}>Your groups</Title>
                     <Button className="new-button" type="primary" icon="plus" onClick={this.showModal}>
@@ -249,8 +245,9 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                             <Button key="back" onClick={this.handleCancel}>
                                 Cancel
                             </Button>,
-                            <Button key="submit" type="primary" loading={this.state.modalLoading} onClick={this.handleOk}>
-                                            Save
+                            <Button key="submit" type="primary"
+                                loading={this.state.modalLoading} onClick={this.handleOk}>
+                                Save
                             </Button>,
                         ]}
                     >
@@ -389,7 +386,7 @@ const mapDispatchToProps = {
     ...roomActionCreators, ...groupActionCreators, ...sessionActionCreators,
     ...unitActionCreators
 }
-export default connect(
+export default withRouter(connect(
     mapStateToProps, // Selects which state properties are merged into the component's props
     mapDispatchToProps // Selects which action creators are merged into the component's props
-)(Dashboard as any);
+)(Dashboard as any));

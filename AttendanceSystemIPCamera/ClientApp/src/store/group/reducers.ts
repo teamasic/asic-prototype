@@ -25,7 +25,8 @@ const unloadedState: GroupsState = {
             name: 'Slot 1',
             startTime: new Date(),
             endTime: new Date(),
-            attendees: []
+            attendees: [],
+            groupId: 0
         }]
     }
 };

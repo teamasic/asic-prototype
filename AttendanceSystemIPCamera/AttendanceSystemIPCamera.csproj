@@ -62,6 +62,7 @@
     <None Remove="ClientApp\src\components\ChangeRequestModal.tsx" />
     <None Remove="ClientApp\src\components\GroupCard.tsx" />
     <None Remove="ClientApp\src\components\ModalExport.tsx" />
+    <None Remove="ClientApp\src\components\StartSessionModal.tsx" />
     <None Remove="ClientApp\src\middlewares\SignalRConnection.ts" />
     <None Remove="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
@@ -102,6 +103,9 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="ClientApp\src\components\ChangeRequestModal.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\components\StartSessionModal.tsx">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\components\GroupCard.tsx" />

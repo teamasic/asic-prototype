@@ -40,3 +40,22 @@ code {
 	box-shadow: none !important;
 	-webkit-box-shadow: none !important;
 }
+
+.row {
+	display: flex;
+	flex-direction: row;
+}
+
+.breadcrumb-container {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.breadcrumb-container i {
+	color: gray;
+}
+
+.tab-bar-extra button {
+	margin: 0 5px;
+}

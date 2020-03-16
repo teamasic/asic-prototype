@@ -2,6 +2,7 @@
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators } from 'redux';
+import { Link, withRouter } from 'react-router-dom';
 import Group from '../models/Group';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
@@ -19,9 +20,9 @@ import { changeRequestActionCreators } from '../store/changeRequest/actionCreato
 import { log, isNullOrUndefined } from 'util';
 import { parse } from 'papaparse';
 import ChangeRequest, { ChangeRequestStatusFilter, ChangeRequestStatus } from '../models/ChangeRequest';
-import { Link } from 'react-router-dom';
 import ChangeRequestModal from './ChangeRequestModal';
 import '../styles/Table.css';
+import TopBar from './TopBar';
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -71,17 +72,12 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
         const hasChangeRequests = this.props.changeRequests != null && this.props.changeRequests.length > 0;
         return (
             <React.Fragment>
-                <div className="breadcrumb-container">
-                    <Breadcrumb>
-                        <Breadcrumb.Item href="">
-                            <Icon type="home" />
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>
-                            <Icon type="hdd" />
-                            <span>Your change requests</span>
-                        </Breadcrumb.Item>
-                    </Breadcrumb>
-                </div>
+                <TopBar>
+                    <Breadcrumb.Item>
+                        <Icon type="calendar" />
+                        <span>Your change requests</span>
+                    </Breadcrumb.Item>
+                </TopBar>
                 <div className="title-container">
                     <Title className="title" level={3}>Your change requests</Title>                    
                 </div>
