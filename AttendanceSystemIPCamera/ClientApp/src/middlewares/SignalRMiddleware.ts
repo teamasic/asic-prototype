@@ -52,6 +52,7 @@ export function attachEvents(connection: signalR.HubConnection, dispatch: any) {
         // clearInterval(interval);
         // connection.stop();
         dispatch(sessionActionCreators.requestSession(sessionId));
+        dispatch(sessionActionCreators.endTakingAttendance());
     });
 
     connection.on("keepAlive", () => {

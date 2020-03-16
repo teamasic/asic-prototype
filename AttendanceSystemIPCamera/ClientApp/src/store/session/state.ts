@@ -9,6 +9,7 @@ export interface SessionState {
 	isLoadingSession: boolean;
 	successfullyLoadedSession: boolean;
 	activeSession?: Session;
+	currentlyOngoingSession?: Session;
 	isLoadingAttendeeRecords: boolean;
 	successfullyLoadedAttendeeRecords: boolean;
 	attendeeRecords: AttendeeRecordPair[];

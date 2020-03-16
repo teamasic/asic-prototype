@@ -46,6 +46,10 @@ code {
 	flex-direction: row;
 }
 
+.row.centered {
+	align-items: center;
+}
+
 .breadcrumb-container {
 	display: flex;
 	flex-direction: row;

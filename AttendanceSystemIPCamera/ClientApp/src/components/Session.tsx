@@ -187,6 +187,9 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				startTime: this.state.startTime.format('YYYY-MM-DD HH:mm'),
 				endTime: this.state.endTime.format('YYYY-MM-DD HH:mm'),
 			})
+			if (this.props.activeSession != null) {
+				this.props.startTakingAttendance(this.props.activeSession);
+			}
 			this.setState({
 				isModelOpen: false
 			})
@@ -229,7 +232,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					{
 						this.props.activeSession &&
 						<Breadcrumb.Item>
-							<Link to={`groups/${this.props.activeSession.groupId}`}>
+							<Link to={`/groups/${this.props.activeSession.groupId}`}>
 								<Icon type="hdd" />
 								<span>Group</span>
 							</Link>
@@ -353,14 +356,20 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					</Col>
 				</Row>
 				<Row style={{ marginTop: 5 }} type="flex" gutter={[4, 4]} align="bottom">
-					<Col span={4}>
-						<Button type="primary"
-							onClick={this.openModelTakingAttendance}>
-							Start taking attendance
+					<Col>
+						<div className="row centered">
+							<Button type="primary"
+								className="take-attendance-button"
+								disabled={this.props.currentlyOngoingSession != null}
+								onClick={this.openModelTakingAttendance}>
+								Start taking attendance
 							</Button>
-					</Col>
-					<Col span={12}>
-						<Badge color={"orange"} text="Taking attendance until 20:45" />
+							{
+								this.props.currentlyOngoingSession && 
+								this.props.currentlyOngoingSession.id === this.props.activeSession!.id &&
+								<Badge color={"orange"} text="Currently taking attendance" />
+							}
+						</div>
 					</Col>
 				</Row>
 				<Modal

@@ -330,7 +330,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     private ensureDataFetched() {
         this.props.requestGroups(this.props.groupSearch);
         this.props.requestRooms();
-        this.props.requestActiveSession();
+        // this.props.requestActiveSession();
         this.props.requestUnits();
     }
 

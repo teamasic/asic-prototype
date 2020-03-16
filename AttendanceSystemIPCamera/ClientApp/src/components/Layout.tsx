@@ -11,6 +11,7 @@ import { Link, withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 import { ChangeRequestState } from '../store/changeRequest/state';
 import { changeRequestActionCreators } from '../store/changeRequest/actionCreators';
+import { sessionActionCreators } from '../store/session/actionCreators';
 import { ChangeRequestStatusFilter } from '../models/ChangeRequest';
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -19,6 +20,7 @@ const { Header, Sider, Content, Footer } = Layout;
 type LayoutProps = 
 	ChangeRequestState & // ... state we've requested from the Redux store
 	typeof changeRequestActionCreators &
+	typeof sessionActionCreators &
 	RouteComponentProps<{}>; // ... plus incoming routing parameters
 
 class PageLayout extends React.Component<
@@ -38,6 +40,7 @@ class PageLayout extends React.Component<
 	};
 
 	componentDidMount() {
+		this.props.requestActiveSession();
 		if (!this.props.successfullyLoaded) {
 			this.props.requestChangeRequests(ChangeRequestStatusFilter.UNRESOLVED);
 		}
@@ -116,6 +119,7 @@ export default withRouter(connect(
 		...state.changeRequests
 	}), // Selects which state properties are merged into the component's props
 	dispatch => bindActionCreators({
-		...changeRequestActionCreators
+		...changeRequestActionCreators,
+		...sessionActionCreators
 	}, dispatch) // Selects which action creators are merged into the component's props
 )(PageLayout as any));
