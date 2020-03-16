@@ -4,12 +4,14 @@ import {
 	getSession,
 	getSessionAttendeeRecordList,
 	getActiveSession,
-	exportSession
+	exportSession,
+	getPastSession
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
 import Attendee from '../../models/Attendee';
 import AttendeeRecordPair from '../../models/AttendeeRecordPair';
+import ExportRequest from '../../models/ExportRequest'
 import UpdateRecord from '../../models/UpdateRecord';
 import { updateRecord } from '../../services/record';
 
@@ -25,7 +27,9 @@ export const ACTIONS = {
 	UPDATE_ATTENDEE_RECORD_SEARCH: 'UPDATE_ATTENDEE_RECORD_SEARCH',
 	UPDATE_ATTENDEE_RECORD: 'UPDATE_ATTENDEE_RECORD',
 	UPDATE_ATTENDEE_RECORD_REAL_TIME: 'UPDATE_ATTENDEE_RECORD_REAL_TIME',
-	START_REAL_TIME_CONNECTION: 'START_REAL_TIME_CONNECTION'
+	START_REAL_TIME_CONNECTION: 'START_REAL_TIME_CONNECTION',
+	START_TAKING_ATTENDANCE: 'START_TAKING_ATTENDANCE',
+	END_TAKING_ATTENDANCE: 'END_TAKING_ATTENDANCE'
 };
 
 function startRequestSession(sessionId: number) {
@@ -149,12 +153,22 @@ export const requestActiveSession = (): AppThunkAction => async (dispatch, getSt
 	dispatch(receiveActiveSession(apiResponse.data));
 };
 
-export const startExportSession = (groupId: number, startDate: Date, endDate: Date, success: Function): AppThunkAction => async (dispatch, getState) => {
-	const apiResponse: ApiResponse = await exportSession(groupId, startDate, endDate);
+export const startGenerateExport = (exportRequest: ExportRequest, success: Function, setData: Function): AppThunkAction => async (dispatch, getState) => {
+	const apiResponse: ApiResponse = await exportSession(exportRequest);
 	if (apiResponse.success) {
-		success();
+		success(exportRequest);
+		setData(apiResponse.data);
 	} else {
-		console.log("Error at export: " + apiResponse.errors.toString());
+		console.log(apiResponse.errors);
+	}
+}
+
+export const startGetPastSession = (groupId: number, loadSession: Function): AppThunkAction => async (dispatch, getState) => {
+	const apiResponse: ApiResponse = await getPastSession(groupId);
+	if (apiResponse.success) {
+		loadSession(apiResponse.data);
+	} else {
+		console.log(apiResponse.errors);
 	}
 }
 
@@ -164,11 +178,27 @@ function startRealTimeConnection() {
 	};
 }
 
+function endTakingAttendance() {
+	return {
+		type: ACTIONS.END_TAKING_ATTENDANCE
+	};
+}
+
+function startTakingAttendance(session: Session) {
+	return {
+		type: ACTIONS.START_TAKING_ATTENDANCE,
+		session
+	};
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
 	updateAttendeeRecordRealTime,
 	requestActiveSession,
-	startExportSession,
-	startRealTimeConnection
+	startGenerateExport,
+	startGetPastSession,
+	startRealTimeConnection,
+	startTakingAttendance,
+	endTakingAttendance
 };

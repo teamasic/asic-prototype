@@ -15,6 +15,7 @@ namespace AttendanceSystemIPCamera.Models
         public string Code { get; set; }
         public String Name { get; set; }
         public DateTime DateTimeCreated { get; set; }
+        public int MaxSessionCount { get; set; }
         public virtual ICollection<AttendeeGroup> AttendeeGroups { get; set; } = new List<AttendeeGroup>();
         [NotMapped]
         public ICollection<Attendee> Attendees => AttendeeGroups.Select(ag => ag.Attendee).ToList();

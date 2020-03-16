@@ -5,6 +5,7 @@ import { bindActionCreators } from 'redux';
 import Group from '../models/Group';
 import Attendee from '../models/Attendee';
 import { ApplicationState } from '../store';
+import { Link, withRouter } from 'react-router-dom';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import {
 	Breadcrumb,
@@ -19,6 +20,7 @@ import {
 	Radio,
 	Modal,
 	Input,
+	Badge,
 	TimePicker,
 	Alert
 } from 'antd';
@@ -30,14 +32,15 @@ import AttendeeRecordPair from '../models/AttendeeRecordPair';
 import { formatFullDateTimeString, minutesOfDay } from '../utils';
 import { takeAttendance } from '../services/session';
 import moment from 'moment';
-
+import '../styles/Table.css';
+import TopBar from './TopBar';
 const { Search } = Input;
 const { Title } = Typography;
 
 // At runtime, Redux will merge together...
 type SessionProps = SessionState & // ... state we've requested from the Redux store
-	typeof sessionActionCreators & // ... plus action creators we've requested
-	RouteComponentProps<{
+	typeof sessionActionCreators // ... plus action creators we've requested
+	& RouteComponentProps<{
 		id?: string;
 	}>; // ... plus incoming routing parameters
 
@@ -58,6 +61,7 @@ interface SessionLocalState {
 	startTime: moment.Moment,
 	endTime: moment.Moment,
 	isError: boolean,
+	page: number
 }
 
 class Session extends React.PureComponent<SessionProps, SessionLocalState> {
@@ -72,7 +76,8 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 			isModelOpen: false,
 			startTime: moment(),
 			endTime: moment().add(1, "m"),
-			isError: false
+			isError: false,
+			page: 1
 		};
 	}
 	// This method is called when the component is first added to the document
@@ -176,12 +181,15 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 			})
 		}
 		else {
-			this.props.startRealTimeConnection();
+			// this.props.startRealTimeConnection();
 			const data = await takeAttendance({
 				sessionId: this.state.sessionId,
 				startTime: this.state.startTime.format('YYYY-MM-DD HH:mm'),
 				endTime: this.state.endTime.format('YYYY-MM-DD HH:mm'),
 			})
+			if (this.props.activeSession != null) {
+				this.props.startTakingAttendance(this.props.activeSession);
+			}
 			this.setState({
 				isModelOpen: false
 			})
@@ -220,21 +228,21 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	public render() {
 		return (
 			<React.Fragment>
-				<div className="breadcrumb-container">
-					<Breadcrumb>
-						<Breadcrumb.Item href="">
-							<Icon type="home" />
-						</Breadcrumb.Item>
+				<TopBar>
+					{
+						this.props.activeSession &&
 						<Breadcrumb.Item>
-							<Icon type="hdd" />
-							<span>Group</span>
+							<Link to={`/group/${this.props.activeSession.groupId}`}>
+								<Icon type="hdd" />
+								<span>Group</span>
+							</Link>
 						</Breadcrumb.Item>
-						<Breadcrumb.Item>
-							<Icon type="calendar" />
-							<span>Session</span>
-						</Breadcrumb.Item>
-					</Breadcrumb>
-				</div>
+					}
+					<Breadcrumb.Item>
+						<Icon type="calendar" />
+						<span>Session</span>
+					</Breadcrumb.Item>
+				</TopBar>
 				<div className={classNames('session-container', {
 					'is-loading': this.props.isLoadingSession
 				})}>
@@ -243,15 +251,29 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					) : this.props.activeSession ? (
 						this.renderSessionSection()
 					) : (
-								this.renderEmpty()
-							)}
+							this.renderEmpty()
+						)}
 				</div>
 			</React.Fragment>
 		);
 	}
 
+	private renderOnRow = (record: any, index: number) => {
+		if (index % 2 == 0) {
+			return 'default';
+		} else {
+			return 'striped';
+		}
+	}
+
 	private renderSessionSection() {
 		const columns = [
+			{
+				title: "#",
+				key: "index",
+				width: '5%',
+				render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
+			},
 			{
 				title: 'Id',
 				key: 'id',
@@ -263,32 +285,24 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.name
 			},
 			{
-				title: <div className="actions">
-					Present
-					<div className="buffer"></div>
-					Absent
-				</div>,
+				title: 'Present',
 				key: 'present',
+				width: '12%',
 				render: (text: string, pair: AttendeeRecordPair) =>
-					<div className="actions">
-						<Radio
-							checked={pair.record != null && pair.record.present}
-							onChange={() => this.markAsPresent(pair.attendee.id)}></Radio>
-						<div className="big-buffer"></div>
-						<Radio
-							checked={pair.record != null && !pair.record.present}
-							onChange={() => this.markAsAbsent(pair.attendee.id)}></Radio>
-					</div>
+					<Radio
+					checked={pair.record != null && pair.record.present}
+						onChange={() => this.markAsPresent(pair.attendee.id)}>
+					</Radio>
 			},
-			/*
 			{
 				title: 'Absent',
 				key: 'absent',
+				width: '20%',
 				render: (text: string, pair: AttendeeRecordPair) =>
 					<Radio
 						checked={pair.record != null && !pair.record.present}
 						onChange={() => this.markAsAbsent(pair.attendee.id)}></Radio>
-			}*/
+			}
 		];
 		const processedList = this.searchAttendeeList(
 			this.filterAttendeeList(
@@ -342,11 +356,27 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					</Col>
 				</Row>
 				<Row style={{ marginTop: 5 }} type="flex" gutter={[4, 4]} align="bottom">
-					<Col span={3}>
-						<Button type="primary" onClick={this.openModelTakingAttendance}>Start taking attendance</Button>
+					<Col>
+						<div className="row centered">
+							<Button type="primary"
+								className="take-attendance-button"
+								disabled={this.props.currentlyOngoingSession != null}
+								onClick={this.openModelTakingAttendance}>
+								Start taking attendance
+							</Button>
+							{
+								this.props.currentlyOngoingSession && 
+								this.props.currentlyOngoingSession.id === this.props.activeSession!.id &&
+								<Badge color={"orange"} text="Currently taking attendance" />
+							}
+						</div>
 					</Col>
 				</Row>
-				<Modal visible={this.state.isModelOpen} onCancel={this.onCancelModel} onOk={this.onOkModel} okText="Start">
+				<Modal
+					title="Start taking attendance"
+					visible={this.state.isModelOpen}
+					onCancel={this.onCancelModel}
+					onOk={this.onOkModel} okText="Start">
 					<Row justify="start" style={{ marginTop: 5 }} type="flex" align="middle" gutter={[0, 0]}>
 						<Col span={12}>
 							<span style={{ marginRight: 5 }}>Start time</span>
@@ -376,8 +406,10 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 							<Table
 								columns={columns}
 								dataSource={processedList}
+								bordered
 								pagination={false}
 								rowKey={record => record.attendee.id.toString()}
+								rowClassName={this.renderOnRow}
 							/>
 						)}
 				</div>
@@ -390,10 +422,10 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	}
 }
 
-export default connect(
+export default withRouter(connect(
 	(state: ApplicationState, ownProps: SessionProps) => ({
 		...state.sessions,
 		...ownProps
 	}), // Selects which state properties are merged into the component's props
 	dispatch => bindActionCreators(sessionActionCreators, dispatch) // Selects which action creators are merged into the component's props
-)(Session as any);
+)(Session as any));

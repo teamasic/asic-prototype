@@ -18,8 +18,8 @@ namespace AttendanceSystemIPCamera.BackgroundServices
         {
             Thread myThread = new Thread(() =>
             {
-                //var application = new App();
-                //application.Run(new MainWindow());  // add Window if you want a window.
+                var application = new App();
+                application.Run(new MainWindow());  // add Window if you want a window.
             });
             myThread.SetApartmentState(ApartmentState.STA);
             myThread.Start();

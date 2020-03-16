@@ -23,6 +23,7 @@ namespace SupervisorApp
         public MainWindow()
         {
             InitializeComponent();
+            Browser.DownloadHandler = new DownloadHandler();
         }
     }
 }

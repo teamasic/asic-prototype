@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { Table, Popconfirm, Button, message, Modal, Form, Input } from 'antd'
+import { Table, Popconfirm, Button, message, Modal, Form, Input, Typography } from 'antd'
 import { GroupsState } from '../store/group/state';
 import Group from '../models/Group';
 import { groupActionCreators } from '../store/group/actionCreators';
@@ -8,14 +8,20 @@ import { connect } from 'react-redux';
 import { ApplicationState } from '../store';
 import { bindActionCreators } from 'redux';
 import Attendee from '../models/Attendee';
+import '../styles/Table.css';
+import { renderStripedTable } from '../utils'
+
+const { Text } = Typography
 
 interface Props {
-    attendees?: Attendee[]
+    attendees?: Attendee[],
+    attendeeLoading: boolean
 }
 
 interface GroupInfoComponentstate {
     modalVisible: boolean,
-    newAttendee: Attendee
+    newAttendee: Attendee,
+    page: number
 }
 
 // At runtime, Redux will merge together...
@@ -32,7 +38,8 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
             id: 0,
             code: '',
             name: ''
-        }
+        },
+        page: 1
     }
 
     public handleDelete = (attendeeId: number) => {
@@ -109,12 +116,24 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
         })
     } 
 
+    public onPageChange = (page: number) => {
+        this.setState({
+            page: page
+        })
+    }
+
     public duplicateAttendee = () => {
         message.error("Attendee " + this.state.newAttendee.code + " is already in this group!");
     }
 
     public render() {
         const columns = [
+            {
+                title: "#",
+                key: "index",
+                width: '5%',
+                render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
+            },
             {
                 title: 'Code',
                 key: 'code',
@@ -126,13 +145,14 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                 dataIndex: 'name'
             },
             {
-                title: 'Action',
+                title: '',
                 dataIndex: 'action',
+                width: '5%',
                 render: (text: any, record: any) => 
                     this.props.attendees != undefined && this.props.attendees.length >= 1 ? (
                         <Popconfirm title="Are you sure to delete this attendee?"
                             onConfirm={() => this.handleDelete(record.id)}>
-                            <Button type="danger">Delete</Button>
+                            <Button type="danger" icon="delete"></Button>
                         </Popconfirm>
                     ): null
                 ,
@@ -141,7 +161,12 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
         
         return (
             <div>
-                <Button type="primary" icon="user-add" onClick={this.openModal}>Add an attendee</Button>
+                <Button type="primary"
+                    icon="user-add"
+                    onClick={this.openModal}
+                    style={{ marginBottom: 10 }}>
+                    Add an attendee
+                    </Button>
                 <Modal
                     visible={this.state.modalVisible}
                     title="Add new attendee"
@@ -161,7 +186,15 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                 <Table dataSource={this.props.attendees}
                     columns={columns}
                     rowKey="$id"
-                    pagination={{ pageSize: 5 }}
+                    bordered
+                    loading={this.props.attendeeLoading}
+                    pagination={{
+                        pageSize: 5,
+                        total: this.props.attendees != undefined ? this.props.attendees.length : 0,
+                        showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} attendees`,
+                        onChange: this.onPageChange
+                    }}
+                    rowClassName={renderStripedTable}
                 />
             </div>
             

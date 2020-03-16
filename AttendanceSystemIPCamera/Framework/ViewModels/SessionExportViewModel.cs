@@ -7,10 +7,11 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
     public class SessionExportViewModel
     {
-        public int SessionId { get; set; }
+        public string SessionName { get; set; }
         public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public string AttendeeCode { get; set; }
         public string AttendeeName { get; set; }
-        public bool Present { get; set; }
+        public string Present { get; set; }
     }
 }

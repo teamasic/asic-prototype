@@ -14,6 +14,7 @@ import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typo
 import { formatFullDateTimeString } from '../utils';
 import classNames from 'classnames';
 import { createBrowserHistory } from 'history';
+import StartSessionModal from './StartSessionModal';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -46,79 +47,13 @@ class GroupCard extends React.PureComponent<GroupProps> {
             modelOpen: true,
             isError: false, 
         })
-        
+
     };
-
-    private handleModelOk = async () => {
-        
-        const { roomId, sessionIndex } = { ...this.state };
-        if (roomId == -1 || sessionIndex == -1) {
-            this.setState({
-                isError: true
-            })
-        }
-        else {
-            this.setState({
-                modelOpen: false,
-            })
-            const groupId = this.props.group.id;
-            let currentRoom = this.props.roomList.filter(r => r.id == roomId)[0];
-            let currentSession = this.props.units[sessionIndex];
-            const abc = {
-                startTime: currentSession.startTime,
-                endTime: currentSession.endTime,
-                rtspString: currentRoom.rtspString,
-                roomName: currentRoom.name,
-                groupId,
-                name: currentSession.name
-            };
-            console.log(abc);
-            const data = await createSession({
-                startTime: currentSession.startTime,
-                endTime: currentSession.endTime,
-                rtspString: currentRoom.rtspString,
-                roomName: currentRoom.name,
-                groupId,
-                name: currentSession.name
-            });
-            if (data != null && data.data != null) {
-                const sessionId = data.data.id;
-                if (sessionId != null) {
-                    this.props.redirect(`session/${sessionId}`);
-                }
-            }
-        }
-
-    }
 
     private handleModelCancel = () => {
         this.setState({
             modelOpen: false,
         })
-    }
-
-    private onChangeRoom = (value: any) => {
-        this.setState({
-            roomId: value
-        })
-    }
-    private onChangeUnit = (value: any) => {
-        this.setState({
-            sessionIndex: value
-        })
-    }
-    private renderRoomOptions = () => {
-        const { roomList } = this.props;
-        const roomOptions = roomList.map((room, index) => {
-            return <Option key={room.id} value={room.id}>{room.name}</Option>
-        })
-        return roomOptions;
-    }
-    private renderUnitOptions = () => {
-        const roomOptions = this.props.units.map((unit, index) => {
-            return <Option key={unit.name} value={index}>{unit.name}</Option>
-        })
-        return roomOptions;
     }
 
     private startDeactiveGroup = () => {
@@ -184,55 +119,14 @@ class GroupCard extends React.PureComponent<GroupProps> {
                 <div className="actions">
                     <Button className="past-button" type="link" onClick={this.props.viewDetail} id={group.id.toString()}>View Detail</Button>
                     <Button className="take-attendance-button" type="primary" onClick={this.takeAttendance}>New session</Button>
-                    <Modal
-                        title="Create new session"
-                        visible={this.state.modelOpen}
-                        onOk={this.handleModelOk}
-                        onCancel={this.handleModelCancel}
-                        okText="Start"
-                    >
-                        <div>
-
-                            <Row type="flex" justify="start" align="top" gutter={[16, 16]}>
-                                <Col span={6}><p>Choose room</p></Col>
-                                <Col span={7}>
-                                    <Select
-                                        showSearch
-                                        style={{ width: 130 }}
-                                        placeholder="Select room"
-                                        optionFilterProp="children"
-                                        onChange={this.onChangeRoom}
-                                        filterOption={(input: any, option: any) =>
-                                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                        }
-                                    >
-                                        {this.renderRoomOptions()}
-                                    </Select>
-                                </Col>
-                            </Row>
-                            <Row type="flex" justify="start" align="top" gutter={[16, 16]}>
-                                <Col span={6}>Choose unit</Col>
-                                <Col span={7}>
-                                    <Select
-                                        showSearch
-                                        style={{ width: 130 }}
-                                        placeholder="Select unit"
-                                        optionFilterProp="children"
-                                        onChange={this.onChangeUnit}
-                                        filterOption={(input: any, option: any) =>
-                                            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                        }
-                                    >
-                                        {this.renderUnitOptions()}
-                                    </Select>
-                                </Col>
-                            </Row>
-                            {this.state.isError ? <Row type="flex" justify="start" align="top" gutter={[16, 16]}>
-                                <Col span={14}><p style={{ color: "red" }}>Please choose room and unit</p></Col>
-                            </Row> : null}
-
-                        </div>
-                    </Modal>
+                    <StartSessionModal
+                        group={group}
+                        hideModal={() => this.handleModelCancel()}
+                        modelOpen={this.state.modelOpen}
+                        redirect={this.props.redirect}
+                        roomList={this.props.roomList}
+                        units={this.props.units}
+                    />
                 </div>
             </Card>
         );

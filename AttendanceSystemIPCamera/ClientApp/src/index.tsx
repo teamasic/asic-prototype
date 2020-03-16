@@ -6,6 +6,8 @@ import { createBrowserHistory } from 'history';
 import configureStore from './store/configureStore';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
+import createSignalRConnection from './middlewares/SignalRConnection';
+import { attachEvents } from './middlewares/SignalRMiddleware';
 
 // Create browser history to use in the Redux store
 const baseUrl = document
@@ -15,6 +17,9 @@ const history = createBrowserHistory({ basename: baseUrl });
 
 // Get the application-wide store instance, prepopulating with state from the server where available.
 const store = configureStore(history);
+const connection = createSignalRConnection();
+attachEvents(connection, store.dispatch);
+connection.start();
 
 ReactDOM.render(
 	<Provider store={store}>

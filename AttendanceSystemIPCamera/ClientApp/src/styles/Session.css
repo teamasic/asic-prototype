@@ -50,15 +50,6 @@
 	padding-top: 7px;
 }
 
-.actions {
-	display: flex;
-	flex-direction: row;
-}
-
-.actions .buffer {
-	width: 50px;
-}
-
-.actions .big-buffer {
-	width: 80px;
+.take-attendance-button {
+	margin-right: 10px;
 }
