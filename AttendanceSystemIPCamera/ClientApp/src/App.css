@@ -35,3 +35,31 @@ code {
 .ant-modal-title, .ant-modal-close-x {
 	color: #ffffff
 }
+
+.borderless-badge .ant-badge-count {
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
+}
+
+.row {
+	display: flex;
+	flex-direction: row;
+}
+
+.row.centered {
+	align-items: center;
+}
+
+.breadcrumb-container {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.breadcrumb-container i {
+	color: gray;
+}
+
+.tab-bar-extra button {
+	margin: 0 5px;
+}

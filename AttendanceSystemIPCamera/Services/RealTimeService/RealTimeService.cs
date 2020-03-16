@@ -20,6 +20,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
     {
         public Task MarkAttendeeAsPresent(string attendeeCode);
         public Task SessionEnded(int sessionId);
+        public Task NewChangeRequestAdded();
     }
 
     public class HubMethods
@@ -27,6 +28,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public static string ATTENDEE_PRESENTED = "attendeePresented";
         public static string SESSION_ENDED = "sessionEnded";
         public static string KEEP_ALIVE = "keepAlive";
+        public static string NEW_CHANGE_REQUEST = "newChangeRequest";
     }
 
     public class RealTimeService : Hub, IRealTimeService
@@ -46,6 +48,10 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public async Task MarkAttendeeAsPresent(string attendeeCode)
         {
             await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_PRESENTED, attendeeCode);
+        }
+        public async Task NewChangeRequestAdded()
+        {
+            await hubContext.Clients.All.SendAsync(HubMethods.NEW_CHANGE_REQUEST);
         }
 
         public async Task SessionEnded(int sessionId)

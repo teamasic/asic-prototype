@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using AutoMapper;
 using AttendanceSystemIPCamera.Services.AttendeeService;
 using AttendanceSystemIPCamera.Services.AttendeeGroupService;
+using AttendanceSystemIPCamera.Framework.ExeptionHandler;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -57,7 +58,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var group = await service.GetById(id);
+                var group = await service.GetByGroupId(id);
                 var attendeeGroups = attendeeGroupService.GetByGroupId(group.Id);
                 group.AttendeeGroups = attendeeGroups.ToList();
                 return mapper.Map<GroupViewModel>(group);
@@ -69,9 +70,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var group = mapper.Map<Group>(groupViewModel);
-
-                var addedGroup = await service.AddIfNotInDb(group);
+                var addedGroup = await service.AddIfNotInDb(groupViewModel);
 
                 var attendeeGroups = new List<AttendeeGroup>();
                 foreach (var item in groupViewModel.Attendees)
@@ -98,36 +97,8 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var attendeeInDb = attendeeService.GetByAttendeeCode(attendee.Code);
-                if (attendeeInDb == null)
-                {
-                    var newAttendee = mapper.Map<Attendee>(attendee);
-                    attendeeInDb = attendeeService.Add(newAttendee).Result;
-                    var attendeeGroup = new AttendeeGroup()
-                    {
-                        Attendee = attendeeInDb,
-                        AttendeeId = attendeeInDb.Id,
-                        GroupId = id
-                    };
-                    await attendeeGroupService.AddAsync(attendeeGroup);
-                    return mapper.Map<AttendeeViewModel>(attendeeInDb);
-                } else
-                {
-                    var attendeeGroup = attendeeGroupService.GetByAttendeeIdAndGroupId(attendeeInDb.Id, id);
-                    if(attendeeGroup == null)
-                    {
-                        attendeeGroup = new AttendeeGroup()
-                        {
-                            Attendee = attendeeInDb,
-                            AttendeeId = attendeeInDb.Id,
-                            GroupId = id
-                        };
-                        await attendeeGroupService.AddAsync(attendeeGroup);
-                        return mapper.Map<AttendeeViewModel>(attendeeInDb);
-                    }
-                    return null;
-                }
-                
+                var addedAttendee = await service.AddAttendeeInGroup(id, attendee);
+                return mapper.Map<AttendeeViewModel>(addedAttendee);
             });
         }
 

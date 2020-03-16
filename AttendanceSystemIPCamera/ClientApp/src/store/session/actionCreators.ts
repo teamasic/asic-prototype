@@ -27,7 +27,9 @@ export const ACTIONS = {
 	UPDATE_ATTENDEE_RECORD_SEARCH: 'UPDATE_ATTENDEE_RECORD_SEARCH',
 	UPDATE_ATTENDEE_RECORD: 'UPDATE_ATTENDEE_RECORD',
 	UPDATE_ATTENDEE_RECORD_REAL_TIME: 'UPDATE_ATTENDEE_RECORD_REAL_TIME',
-	START_REAL_TIME_CONNECTION: 'START_REAL_TIME_CONNECTION'
+	START_REAL_TIME_CONNECTION: 'START_REAL_TIME_CONNECTION',
+	START_TAKING_ATTENDANCE: 'START_TAKING_ATTENDANCE',
+	END_TAKING_ATTENDANCE: 'END_TAKING_ATTENDANCE'
 };
 
 function startRequestSession(sessionId: number) {
@@ -176,6 +178,19 @@ function startRealTimeConnection() {
 	};
 }
 
+function endTakingAttendance() {
+	return {
+		type: ACTIONS.END_TAKING_ATTENDANCE
+	};
+}
+
+function startTakingAttendance(session: Session) {
+	return {
+		type: ACTIONS.START_TAKING_ATTENDANCE,
+		session
+	};
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
@@ -183,5 +198,7 @@ export const sessionActionCreators = {
 	requestActiveSession,
 	startGenerateExport,
 	startGetPastSession,
-	startRealTimeConnection
+	startRealTimeConnection,
+	startTakingAttendance,
+	endTakingAttendance
 };

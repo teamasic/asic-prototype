@@ -8,6 +8,7 @@ export const formatDateDDMMYYYYHHmm = (time: Date | string) => format(new Date(t
 export const minutesOfDay = (time: moment.Moment) => {
     return time.minutes() + time.hours() * 60;
 }
+export const formatDateString = (time: Date | string) => format(new Date(time), 'dd/MM/yyyy');
 
 export const renderStripedTable = (record: any, index: number) => {
     if (index % 2 == 0) {

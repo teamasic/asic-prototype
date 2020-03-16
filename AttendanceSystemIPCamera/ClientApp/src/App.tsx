@@ -6,6 +6,7 @@ import Session from './components/Session';
 import GroupDetail from './components/GroupDetail'
 
 import './App.css';
+import ChangeRequests from './components/ChangeRequests';
 
 export default () => (
 	<Layout>
@@ -13,5 +14,6 @@ export default () => (
 		<Route exact path="/session/:id" component={Session} />
 		<Route exact path="/group/session/:id" component={Session} />
 		<Route exact path="/group/:id" component={GroupDetail} />
+		<Route exact path="/change-requests" component={ChangeRequests} />
 	</Layout>
 );

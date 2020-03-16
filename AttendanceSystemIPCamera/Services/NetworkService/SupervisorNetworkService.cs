@@ -10,6 +10,7 @@ using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
 using AttendanceSystemIPCamera.Repositories.UnitOfWork;
 using AttendanceSystemIPCamera.Services.AttendeeService;
+using AttendanceSystemIPCamera.Services.ChangeRequestService;
 using AttendanceSystemIPCamera.Services.SessionService;
 using AttendanceSystemIPCamera.Utils;
 using AutoMapper;
@@ -27,6 +28,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
         protected UdpClient localServer;
         protected IPEndPoint remoteHostEP;
 
+        private IChangeRequestService changeRequestService;
         private ISessionService sessionService;
         private IAttendeeService attendeeService;
         private IMapper mapper;
@@ -64,22 +66,30 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 {
                     this.sessionService = scope.ServiceProvider.GetService<ISessionService>();
                     this.attendeeService = scope.ServiceProvider.GetService<IAttendeeService>();
+                    this.changeRequestService = scope.ServiceProvider.GetService<IChangeRequestService>();
 
-                    var networkRequest = JsonConvert.DeserializeObject<NetworkRequest<object>>(msg);
-                    switch (networkRequest.Route)
+                    try
                     {
-                        case NetworkRoute.LOGIN:
-                            Login(msg);
-                            break;
-                        case NetworkRoute.REFRESH_ATTENDANCE_DATA:
-                            Refresh(msg);
-                            break;
-                        case NetworkRoute.CHANGE_REQUEST:
-                            ChangeRequest(msg);
-                            break;
-                        default:
-                            //throw new exception
-                            break;
+                        var networkRequest = JsonConvert.DeserializeObject<NetworkRequest<object>>(msg);
+                        switch (networkRequest.Route)
+                        {
+                            case NetworkRoute.LOGIN:
+                                Login(msg);
+                                break;
+                            case NetworkRoute.REFRESH_ATTENDANCE_DATA:
+                                Refresh(msg);
+                                break;
+                            case NetworkRoute.CHANGE_REQUEST:
+                                ChangeRequest(msg);
+                                break;
+                            default:
+                                //throw new exception
+                                break;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        var trace = e.StackTrace;
                     }
                 }
             }
@@ -101,7 +111,12 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 attendanceData.Groups = GetGroupNetworkViewModels(attendee);
             }
             //send
-            var repsonse = JsonConvert.SerializeObject(attendanceData);
+            Send(attendanceData);
+        }
+
+        private void Send(object data)
+        {
+            var repsonse = JsonConvert.SerializeObject(data);
             communicator.Send(Encoding.UTF8.GetBytes(repsonse));
         }
 
@@ -110,9 +125,20 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             Login(msg);
         }
 
-        private void ChangeRequest(string msg)
+        private async void ChangeRequest(string msg)
         {
-
+            var networkData = JsonConvert.DeserializeObject<NetworkRequest<CreateChangeRequestViewModel>>(msg);
+            var createChangeRequest = networkData.Request;
+            try
+            {
+                var newChangeRequest = await changeRequestService.Add(createChangeRequest);
+                newChangeRequest.Record = null;
+                Send(newChangeRequest);
+            }
+            catch (Exception e)
+            {
+                Send(ErrorMessage.CREATE_REQUEST_ERROR);
+            }
         }
 
         private (bool success, Attendee attendee) ValidateAttendee(LoginViewModel loginViewModel)

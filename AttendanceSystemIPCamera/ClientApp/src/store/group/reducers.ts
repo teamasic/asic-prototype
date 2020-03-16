@@ -25,7 +25,8 @@ const unloadedState: GroupsState = {
             name: 'Slot 1',
             startTime: new Date(),
             endTime: new Date(),
-            attendees: []
+            attendees: [],
+            groupId: 0
         }]
     }
 };
@@ -73,7 +74,6 @@ const reducers: Reducer<GroupsState> = (
             return {
                 ...state,
                 selectedGroup: action.groupDetail
-
             };
         case ACTIONS.UPDATE_GROUP_NAME_SUCCESS:
             return {

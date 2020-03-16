@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AttendanceSystemIPCamera.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20200214113824_Update1")]
-    partial class Update1
+    [Migration("20200227132209_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,6 +50,33 @@ namespace AttendanceSystemIPCamera.Migrations
                     b.ToTable("AttendeeGroups");
                 });
 
+            modelBuilder.Entity("AttendanceSystemIPCamera.Models.ChangeRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AttendeeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Present")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("RecordId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttendeeId");
+
+                    b.HasIndex("RecordId");
+
+                    b.ToTable("ChangeRequests");
+                });
+
             modelBuilder.Entity("AttendanceSystemIPCamera.Models.Group", b =>
                 {
                     b.Property<int>("Id")
@@ -79,13 +106,13 @@ namespace AttendanceSystemIPCamera.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("AttendeeId")
+                    b.Property<int>("AttendeeId")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("Present")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("SessionId")
+                    b.Property<int>("SessionId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -97,20 +124,43 @@ namespace AttendanceSystemIPCamera.Migrations
                     b.ToTable("Records");
                 });
 
+            modelBuilder.Entity("AttendanceSystemIPCamera.Models.Room", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RtspString")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Rooms");
+                });
+
             modelBuilder.Entity("AttendanceSystemIPCamera.Models.Session", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("Active")
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("GroupId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Duration")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int?>("GroupId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("RoomName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RtspString")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("TEXT");
@@ -137,22 +187,39 @@ namespace AttendanceSystemIPCamera.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("AttendanceSystemIPCamera.Models.ChangeRequest", b =>
+                {
+                    b.HasOne("AttendanceSystemIPCamera.Models.Attendee", "Attendee")
+                        .WithMany()
+                        .HasForeignKey("AttendeeId");
+
+                    b.HasOne("AttendanceSystemIPCamera.Models.Record", "Record")
+                        .WithMany()
+                        .HasForeignKey("RecordId");
+                });
+
             modelBuilder.Entity("AttendanceSystemIPCamera.Models.Record", b =>
                 {
                     b.HasOne("AttendanceSystemIPCamera.Models.Attendee", "Attendee")
                         .WithMany("Records")
-                        .HasForeignKey("AttendeeId");
+                        .HasForeignKey("AttendeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("AttendanceSystemIPCamera.Models.Session", "Session")
                         .WithMany("Records")
-                        .HasForeignKey("SessionId");
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("AttendanceSystemIPCamera.Models.Session", b =>
                 {
                     b.HasOne("AttendanceSystemIPCamera.Models.Group", "Group")
                         .WithMany("Sessions")
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

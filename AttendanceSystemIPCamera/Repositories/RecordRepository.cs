@@ -41,5 +41,15 @@ namespace AttendanceSystemIPCamera.Repositories
                 .Include(r => r.Attendee)
                 .Where(r => r.Session.Id == sessionId).ToListAsync();
         }
+
+        public new async Task<Record> GetById(object id)
+        {
+            return await dbSet
+                .Include(r => r.Attendee)
+                .Include(r => r.Session)
+                    .ThenInclude(s => s.Group)
+                .Where(r => r.Id == (int) id)
+                .FirstOrDefaultAsync();
+        }
     }
 }
