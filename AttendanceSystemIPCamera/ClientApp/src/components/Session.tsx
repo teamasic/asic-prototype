@@ -232,7 +232,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					{
 						this.props.activeSession &&
 						<Breadcrumb.Item>
-							<Link to={`/groups/${this.props.activeSession.groupId}`}>
+							<Link to={`/group/${this.props.activeSession.groupId}`}>
 								<Icon type="hdd" />
 								<span>Group</span>
 							</Link>
