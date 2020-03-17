@@ -7,17 +7,13 @@ import Unit from '../models/Unit';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
-import * as moment from 'moment'
 import Room from '../models/Room';
 import { createSession } from '../services/session';
-import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker, message } from 'antd';
-import { formatFullDateTimeString } from '../utils';
-import classNames from 'classnames';
-import { createBrowserHistory } from 'history';
+import { formatFullDateTimeString, success, error } from '../utils';
+import { Card, Button, Dropdown, Icon, Menu, Row, Col, Typography, Modal, Tooltip } from 'antd';
 import StartSessionModal from './StartSessionModal';
 
 const { Title } = Typography;
-const { Option } = Select;
 const { confirm } = Modal;
 
 interface Props {
@@ -45,10 +41,51 @@ class GroupCard extends React.PureComponent<GroupProps> {
     private takeAttendance = () => {
         this.setState({
             modelOpen: true,
-            isError: false, 
+            isError: false,
         })
-
     };
+
+    private handleModelOk = async () => {
+
+        const { roomId, sessionIndex } = { ...this.state };
+        if (roomId == -1 || sessionIndex == -1) {
+            this.setState({
+                isError: true
+            })
+        }
+        else {
+            this.setState({
+                modelOpen: false,
+            })
+            const groupId = this.props.group.id;
+            let currentRoom = this.props.roomList.filter(r => r.id == roomId)[0];
+            let currentSession = this.props.units[sessionIndex];
+            const abc = {
+                startTime: currentSession.startTime,
+                endTime: currentSession.endTime,
+                rtspString: currentRoom.rtspString,
+                roomName: currentRoom.name,
+                groupId,
+                name: currentSession.name
+            };
+            console.log(abc);
+            const data = await createSession({
+                startTime: currentSession.startTime,
+                endTime: currentSession.endTime,
+                rtspString: currentRoom.rtspString,
+                roomName: currentRoom.name,
+                groupId,
+                name: currentSession.name
+            });
+            if (data != null && data.data != null) {
+                const sessionId = data.data.id;
+                if (sessionId != null) {
+                    this.props.redirect(`session/${sessionId}`);
+                }
+            }
+        }
+
+    }
 
     private handleModelCancel = () => {
         this.setState({
@@ -58,11 +95,11 @@ class GroupCard extends React.PureComponent<GroupProps> {
 
     private startDeactiveGroup = () => {
         this.props.startDeactiveGroup
-            (this.props.group.id, this.props.groupSearch, this.successDeactive);
+            (this.props.group.id, this.props.groupSearch, this.successDeactive, error);
     }
 
     private successDeactive = () => {
-        message.success("Delete group " + this.props.group.name + " success!");
+        success("Delete group " + this.props.group.name + " success!");
         Modal.destroyAll();
     }
 
@@ -97,9 +134,9 @@ class GroupCard extends React.PureComponent<GroupProps> {
                         <Title level={4}>{group.name}</Title>
                     </Col>
                     <Col span={2}>
-                        <Dropdown overlay={menu}>
-                            <Button icon="ellipsis" type="link"></Button>
-                        </Dropdown>
+                        <Tooltip title="Delete">
+                            <Icon type="delete" onClick={this.showConfirm} />
+                        </Tooltip>
                     </Col>
                 </Row>
                 <div className="description-container">

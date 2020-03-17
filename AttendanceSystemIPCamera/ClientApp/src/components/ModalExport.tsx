@@ -10,7 +10,8 @@ import Group from '../models/Group';
 import { CSVLink } from 'react-csv'
 import moment from 'moment';
 import ExportRequest from '../models/ExportRequest';
-import { formatDateDDMMYYYYHHmm } from '../utils'
+import ExportFormat1 from '../models/ExportFormat1';
+import ExportFormat2 from '../models/ExportFormat2';
 import { renderStripedTable } from '../utils'
 
 const { Text } = Typography
@@ -95,9 +96,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
             var exportRequest = {
                 groupId: this.props.group.id,
                 isSingleDate: this.state.timePicker == TIME_OPTIONS.SINGLE_DATE,
-                //(Single date && condition is not all) || (Range date && condition is not all)
-                withCondition: (this.state.timePicker == TIME_OPTIONS.SINGLE_DATE && this.state.isPresent != ATTENDANCE_STATUS_OPTIONS.ALL) ||
-                    (this.state.timePicker != TIME_OPTIONS.SINGLE_DATE && this.state.isGreaterThanOrEqual != ATTENDANCE_OPTIONS.ALL),
+                withCondition: this.isWithCondition(),
                 singleDate: this.state.singleDate.format("YYYY-MM-DD"),
                 startDate: this.state.startDate.format("YYYY-MM-DD"),
                 endDate: this.state.endDate.format("YYYY-MM-DD"),
@@ -108,7 +107,12 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
             this.props.startGenerateExport(exportRequest, this.generateSuccess, this.setCsvData);
             
         }
-        //this.handleCancel();
+    }
+
+    private isWithCondition = () => {
+        //(Single date && condition is not all) || (Range date && condition is not all)
+        return (this.state.timePicker == TIME_OPTIONS.SINGLE_DATE && this.state.isPresent != ATTENDANCE_STATUS_OPTIONS.ALL) ||
+            (this.state.timePicker != TIME_OPTIONS.SINGLE_DATE && this.state.isGreaterThanOrEqual != ATTENDANCE_OPTIONS.ALL);
     }
 
     private generateSuccess = (exportRequest: ExportRequest) => {
@@ -177,10 +181,36 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
         }
     }
 
-    private setCsvData = (data: any) => {
-        this.setState({
-            csvData: data
-        });
+    private setCsvData = (data: any, exportRequest: ExportRequest) => {
+        if (exportRequest.isSingleDate || (!exportRequest.isSingleDate && !exportRequest.withCondition)) {
+            var csvData1 = new Array<ExportFormat1>();
+            data.forEach((item: any) => {
+                var row = {
+                    attendeeCode: item.attendeeCode,
+                    attendeeName: item.attendeeName,
+                    sessionIndex: item.sessionIndex,
+                    present: item.present
+                };
+                csvData1.push(row);
+            });
+            this.setState({
+                csvData: csvData1
+            });
+        } else {
+            var csvData2 = new Array<ExportFormat2>();
+            data.forEach((item: any) => {
+                var row = {
+                    attendeeCode: item.attendeeCode,
+                    attendeeName: item.attendeeName,
+                    attendancePercent: item.attendancePercent,
+                };
+                csvData2.push(row);
+            });
+            csvData2 = data;
+            this.setState({
+                csvData: csvData2
+            });
+        }
     }
 
     private setFileName = () => {
@@ -229,24 +259,6 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                     render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
                 },
                 {
-                    title: 'Session',
-                    key: 'sessionName',
-                    dataIndex: 'sessionName'
-                },
-                {
-                    title: 'Start Time',
-                    key: 'startTime',
-                    dataIndex: 'startTime',
-                    render: (text: any, record: any, index: number) => formatDateDDMMYYYYHHmm(text)
-                    
-                },
-                {
-                    title: 'End Time',
-                    key: 'endTime',
-                    dataIndex: 'endTime',
-                    render: (text: any, record: any, index: number) => formatDateDDMMYYYYHHmm(text)
-                },
-                {
                     title: 'Code',
                     key: 'attendeeCode',
                     dataIndex: 'attendeeCode'
@@ -255,6 +267,11 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                     title: 'Name',
                     key: 'attendeeName',
                     dataIndex: 'attendeeName'
+                },
+                {
+                    title: 'Session',
+                    key: 'sessionIndex',
+                    dataIndex: 'sessionIndex'
                 },
                 {
                     title: 'Present',
@@ -299,11 +316,6 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 
     private onExport = () => {
-        setTimeout(() => {
-            Modal.success({
-                content: 'Export successfully'
-            });
-        }, 1000);
         //Close Review modal
         this.setState({
             isGenerated: false
@@ -429,7 +441,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                     <Table
                         dataSource={this.state.csvData}
                         columns={this.state.tblReviewColumns}
-                        rowKey='$id'
+                        rowKey={(record: any) => record.attendeeCode + Math.random()}
                         bordered
                         pagination={{
                             pageSize: 5,

@@ -157,7 +157,7 @@ export const startGenerateExport = (exportRequest: ExportRequest, success: Funct
 	const apiResponse: ApiResponse = await exportSession(exportRequest);
 	if (apiResponse.success) {
 		success(exportRequest);
-		setData(apiResponse.data);
+		setData(apiResponse.data, exportRequest);
 	} else {
 		console.log(apiResponse.errors);
 	}

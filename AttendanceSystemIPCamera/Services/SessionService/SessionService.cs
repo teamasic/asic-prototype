@@ -184,25 +184,29 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         {
             var sessions = sessionRepository.GetSessionExport(groupId, date);
             var sessionExport = new List<SessionExportViewModel>();
-            foreach (var session in sessions)
+            if(sessions.Count > 0)
             {
-                var records = recordService.GetRecordsBySessionId(session.Id);
-                if (withCondition)
+                var firstSessionInList = sessions[0];
+                var count = GetIndexOf(groupId, firstSessionInList);
+                foreach (var session in sessions)
                 {
-                    records = records.Where(r => r.Present == isPresent).ToList();
-                }
-                foreach (var record in records)
-                {
-                    var exportModel = new SessionExportViewModel()
+                    var records = recordService.GetRecordsBySessionId(session.Id);
+                    if (withCondition)
                     {
-                        SessionName = session.Name,
-                        StartTime = session.StartTime,
-                        EndTime = session.EndTime,
-                        AttendeeCode = record.Attendee.Code,
-                        AttendeeName = record.Attendee.Name,
-                        Present = record.Present.ToString()
-                    };
-                    sessionExport.Add(exportModel);
+                        records = records.Where(r => r.Present == isPresent).ToList();
+                    }
+                    foreach (var record in records)
+                    {
+                        var exportModel = new SessionExportViewModel()
+                        {
+                            SessionIndex = count.ToString(),
+                            AttendeeCode = record.Attendee.Code,
+                            AttendeeName = record.Attendee.Name,
+                            Present = record.Present.ToString()
+                        };
+                        sessionExport.Add(exportModel);
+                    }
+                    count++;
                 }
             }
             return sessionExport;
@@ -286,25 +290,39 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         {
             var sessions = sessionRepository.GetSessionExport(groupId, startDate, endDate);
             var sessionExports = new List<SessionExportViewModel>();
-            //Mapping session to exportViewModel
-            foreach (var item in sessions)
+            if (sessions.Count > 0)
             {
-                var records = recordService.GetRecordsBySessionId(item.Id);
-                foreach (var record in records)
+                var firstSessionInList = sessions[0];
+                var count = GetIndexOf(groupId, firstSessionInList);
+                //Mapping session to exportViewModel
+                foreach (var item in sessions)
                 {
-                    var viewModel = new SessionExportViewModel()
+                    var records = recordService.GetRecordsBySessionId(item.Id);
+                    foreach (var record in records)
                     {
-                        SessionName = item.Name,
-                        StartTime = item.StartTime,
-                        EndTime = item.EndTime,
-                        AttendeeCode = record.Attendee.Code,
-                        AttendeeName = record.Attendee.Name,
-                        Present = record.Present.ToString()
-                    };
-                    sessionExports.Add(viewModel);
+                        var viewModel = new SessionExportViewModel()
+                        {
+                            SessionIndex = count.ToString(),
+                            AttendeeCode = record.Attendee.Code,
+                            AttendeeName = record.Attendee.Name,
+                            Present = record.Present.ToString()
+                        };
+                        sessionExports.Add(viewModel);
+                    }
+                    count++;
                 }
             }
             return sessionExports;
+        }
+
+        private int GetIndexOf(int groupId, Session session)
+        {
+            var sessions = sessionRepository.GetSessionByGroupId(groupId).OrderBy(s => s.Id).ToList();
+            if(sessions.Count > 0)
+            {
+                return sessions.IndexOf(session) + 1;
+            }
+            return -1;
         }
         #endregion
 
