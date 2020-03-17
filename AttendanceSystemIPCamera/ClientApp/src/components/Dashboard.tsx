@@ -4,6 +4,7 @@ import { RouteComponentProps } from 'react-router';
 import { bindActionCreators } from 'redux';
 import Group from '../models/Group';
 import { ApplicationState } from '../store';
+import { Link, withRouter } from 'react-router-dom';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination, InputNumber } from 'antd';
@@ -21,12 +22,12 @@ import { log, isNullOrUndefined } from 'util';
 import { renderStripedTable, success, error } from '../utils'
 import { parse } from 'papaparse';
 import { FormComponentProps } from 'antd/lib/form';
+import TopBar from './TopBar';
 
 const { Search } = Input;
 const { Title } = Typography;
 
 interface Props extends FormComponentProps {
-
 }
 
 // At runtime, Redux will merge together...
@@ -238,17 +239,11 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
         return (
             <React.Fragment>
-                <div className="breadcrumb-container">
-                    <Breadcrumb>
-                        <Breadcrumb.Item href="">
-                            <Icon type="home" />
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>
-                            <Icon type="hdd" />
-                            <span>Your groups</span>
-                        </Breadcrumb.Item>
-                    </Breadcrumb>
-                </div>
+                <TopBar showHome={false}>
+                    <span>
+                        Dashboard
+                    </span>
+                </TopBar>
                 <div className="title-container">
                     <Title className="title" level={3}>Your groups</Title>
                     <Button className="new-button" type="primary" icon="plus" onClick={this.showModal}>
@@ -364,7 +359,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     private ensureDataFetched() {
         this.props.requestGroups(this.props.groupSearch);
         this.props.requestRooms();
-        this.props.requestActiveSession();
+        // this.props.requestActiveSession();
         this.props.requestUnits();
     }
 
@@ -420,8 +415,9 @@ const mapDispatchToProps = {
     ...roomActionCreators, ...groupActionCreators, ...sessionActionCreators,
     ...unitActionCreators
 }
+
 export default Form.create<Props>({ name: 'add_attendee' })
-    (connect(
+    (withRouter(connect(
         mapStateToProps, // Selects which state properties are merged into the component's props
         mapDispatchToProps // Selects which action creators are merged into the component's props
-    )(Dashboard as any));
+    )(Dashboard as any)));

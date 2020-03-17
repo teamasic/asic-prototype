@@ -9,6 +9,7 @@ const unloadedState: SessionState = {
 	isLoadingSession: false,
 	successfullyLoadedSession: false,
 	activeSession: undefined,
+	currentlyOngoingSession: undefined,
 	isLoadingAttendeeRecords: false,
 	successfullyLoadedAttendeeRecords: false,
 	attendeeRecords: []
@@ -26,9 +27,9 @@ const reducers: Reducer<SessionState> = (
 	switch (action.type) {
         case ACTIONS.RECEIVE_ACTIVE_SESSION:
             return {
-                ... state,
-                activeSession: action.activeSession
-            };        
+				...state,
+				currentlyOngoingSession: action.activeSession
+            };
 		case ACTIONS.START_REQUEST_SESSION:
 			return {
 				...state,
@@ -107,6 +108,16 @@ const reducers: Reducer<SessionState> = (
 						}) : ar)
 				};
 			}
+		case ACTIONS.START_TAKING_ATTENDANCE:
+			return {
+				...state,
+				currentlyOngoingSession: action.session
+			};
+		case ACTIONS.END_TAKING_ATTENDANCE:
+			return {
+				...state,
+				currentlyOngoingSession: undefined
+			};
 	}
 	return state;
 };

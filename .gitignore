@@ -343,3 +343,6 @@ healthchecksdb
 AttendanceSystemIPCamera/ClientApp/src/**/*.js
 AttendanceSystemIPCamera/ClientApp/src/**/*.map
 /AttendanceSystemIPCamera/GPUCache
+
+#Python
+venv

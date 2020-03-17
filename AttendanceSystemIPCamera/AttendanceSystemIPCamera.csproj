@@ -50,6 +50,8 @@
     <Compile Remove="Migrations\20200214112808_Update1.Designer.cs" />
     <Compile Remove="Migrations\20200214113108_Update1.cs" />
     <Compile Remove="Migrations\20200214113108_Update1.Designer.cs" />
+    <Compile Remove="Migrations\20200229085155_Update2.cs" />
+    <Compile Remove="Migrations\20200229085155_Update2.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,14 +59,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\components\ChangeRequestModal.tsx" />
     <None Remove="ClientApp\src\components\GroupCard.tsx" />
     <None Remove="ClientApp\src\components\ModalExport.tsx" />
+    <None Remove="ClientApp\src\components\StartSessionModal.tsx" />
     <None Remove="ClientApp\src\middlewares\SignalRConnection.ts" />
     <None Remove="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
     <None Remove="ClientApp\src\models\Attendee.ts" />
     <None Remove="ClientApp\src\models\ExportFormat1.ts" />
     <None Remove="ClientApp\src\models\ExportFormat2.ts" />
+    <None Remove="ClientApp\src\models\ChangeRequest.ts" />
+    <None Remove="ClientApp\src\models\CreateChangeRequest.ts" />
     <None Remove="ClientApp\src\models\ExportRequest.ts" />
     <None Remove="ClientApp\src\models\Group - Copy.ts" />
     <None Remove="ClientApp\src\models\Group.ts" />
@@ -73,6 +79,7 @@
     <None Remove="ClientApp\src\models\Session.ts" />
     <None Remove="ClientApp\src\models\SessionViewModel.ts" />
     <None Remove="ClientApp\src\models\UpdateRecord.ts" />
+    <None Remove="ClientApp\src\services\changeRequest.ts" />
     <None Remove="ClientApp\src\services\attendee.ts" />
     <None Remove="ClientApp\src\services\group.ts" />
     <None Remove="ClientApp\src\services\record.ts" />
@@ -98,6 +105,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\components\ChangeRequestModal.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\components\StartSessionModal.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\components\GroupCard.tsx" />
     <TypeScriptCompile Include="ClientApp\src\components\ModalExport.tsx" />
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRConnection.ts" />
@@ -105,6 +118,12 @@
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ExportFormat1.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ExportFormat2.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\CreateChangeRequest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\models\ChangeRequest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\ExportRequest.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\HttpStatusCode.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\Record.ts">
@@ -121,6 +140,9 @@
     <TypeScriptCompile Include="ClientApp\src\models\UpdateRecord.ts" />
     <TypeScriptCompile Include="ClientApp\src\services\attendee.ts" />
     <TypeScriptCompile Include="ClientApp\src\services\record.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\services\changeRequest.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\unit.ts">

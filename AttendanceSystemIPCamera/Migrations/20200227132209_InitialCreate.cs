@@ -13,6 +13,7 @@ namespace AttendanceSystemIPCamera.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Code = table.Column<string>(nullable: true),
                     Name = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -26,6 +27,7 @@ namespace AttendanceSystemIPCamera.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Code = table.Column<string>(nullable: true),
                     Name = table.Column<string>(nullable: true),
                     DateTimeCreated = table.Column<DateTime>(nullable: false),
                     Deleted = table.Column<bool>(nullable: false)
@@ -33,6 +35,20 @@ namespace AttendanceSystemIPCamera.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Groups", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Rooms",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(nullable: true),
+                    RtspString = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Rooms", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -65,9 +81,12 @@ namespace AttendanceSystemIPCamera.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(nullable: true),
                     StartTime = table.Column<DateTime>(nullable: false),
-                    Duration = table.Column<int>(nullable: false),
-                    GroupId = table.Column<int>(nullable: true)
+                    EndTime = table.Column<DateTime>(nullable: false),
+                    RtspString = table.Column<string>(nullable: true),
+                    RoomName = table.Column<string>(nullable: true),
+                    GroupId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -77,7 +96,7 @@ namespace AttendanceSystemIPCamera.Migrations
                         column: x => x.GroupId,
                         principalTable: "Groups",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -86,8 +105,8 @@ namespace AttendanceSystemIPCamera.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    AttendeeId = table.Column<int>(nullable: true),
-                    SessionId = table.Column<int>(nullable: true),
+                    AttendeeId = table.Column<int>(nullable: false),
+                    SessionId = table.Column<int>(nullable: false),
                     Present = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
@@ -98,11 +117,39 @@ namespace AttendanceSystemIPCamera.Migrations
                         column: x => x.AttendeeId,
                         principalTable: "Attendees",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Records_Sessions_SessionId",
                         column: x => x.SessionId,
                         principalTable: "Sessions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChangeRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    AttendeeId = table.Column<int>(nullable: true),
+                    RecordId = table.Column<int>(nullable: true),
+                    Comment = table.Column<string>(nullable: true),
+                    Present = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChangeRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChangeRequests_Attendees_AttendeeId",
+                        column: x => x.AttendeeId,
+                        principalTable: "Attendees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ChangeRequests_Records_RecordId",
+                        column: x => x.RecordId,
+                        principalTable: "Records",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -111,6 +158,16 @@ namespace AttendanceSystemIPCamera.Migrations
                 name: "IX_AttendeeGroups_GroupId",
                 table: "AttendeeGroups",
                 column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChangeRequests_AttendeeId",
+                table: "ChangeRequests",
+                column: "AttendeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChangeRequests_RecordId",
+                table: "ChangeRequests",
+                column: "RecordId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Records_AttendeeId",
@@ -132,6 +189,12 @@ namespace AttendanceSystemIPCamera.Migrations
         {
             migrationBuilder.DropTable(
                 name: "AttendeeGroups");
+
+            migrationBuilder.DropTable(
+                name: "ChangeRequests");
+
+            migrationBuilder.DropTable(
+                name: "Rooms");
 
             migrationBuilder.DropTable(
                 name: "Records");

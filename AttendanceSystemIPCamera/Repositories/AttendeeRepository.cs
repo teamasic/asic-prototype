@@ -64,7 +64,7 @@ namespace AttendanceSystemIPCamera.Repositories
             return Get(a => a.Code.Equals(code),
                 null,
                 includeProperties:
-                "AttendeeGroups,AttendeeGroups.Group,AttendeeGroups.Group.Sessions,AttendeeGroups.Group.Sessions.Records")
+                "AttendeeGroups,AttendeeGroups.Group,AttendeeGroups.Group.Sessions,AttendeeGroups.Group.Sessions.Records,AttendeeGroups.Group.Sessions.Records.ChangeRequest")
                 .FirstOrDefault();
         }
 

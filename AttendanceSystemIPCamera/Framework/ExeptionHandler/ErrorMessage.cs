@@ -19,6 +19,12 @@ namespace AttendanceSystemIPCamera.Framework.ExeptionHandler
 
         public static string SESSION_ID_NOT_EXISTED = "Session id not existed: {0}";
 
+        public static string NOT_FOUND_ATTENDEE_WITH_ID = "Not found attendee with id {0}";
+
+        public static string NOT_FOUND_RECORD_WITH_ID = "Not found record with id {0}";
+
+        public static string CHANGE_REQUEST_INVALID = "Change request invalid";
+
         public static string NOT_FOUND_GROUP_WITH_ID = "Not found group with id {0}";
 
         public static string GROUP_ALREADY_EXISTED = "Group with code {0} is already existed";

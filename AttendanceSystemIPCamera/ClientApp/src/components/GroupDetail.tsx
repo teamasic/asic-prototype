@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { bindActionCreators } from 'redux';
 import Group from '../models/Group';
+import { Link, withRouter } from 'react-router-dom';
 import Attendee from '../models/Attendee';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
@@ -11,8 +12,15 @@ import { Breadcrumb, Icon, Button, Empty, message, Typography, Tabs, Row, Col, I
 import GroupInfo from './GroupInfo';
 import PastSession from './PastSession';
 import ModalExport from './ModalExport';
+import { roomActionCreators, requestRooms } from '../store/room/actionCreators';
+import { RoomsState } from '../store/room/state';
+import { UnitsState } from '../store/unit/state';
+import { sessionActionCreators } from '../store/session/actionCreators';
+import { unitActionCreators } from '../store/unit/actionCreators';
 import classNames from 'classnames';
 import { EditTwoTone } from '@ant-design/icons';
+import TopBar from './TopBar';
+import StartSessionModal from './StartSessionModal';
 
 const { Title } = Typography;
 const { Paragraph } = Typography
@@ -21,13 +29,19 @@ const { TabPane } = Tabs;
 interface GroupDetailComponentState {
     modalExportVisible: boolean,
     attendeeLoading: boolean,
-    editMaxSession: boolean
+    editMaxSession: boolean,
+    modalStartSessionVisible: boolean
 }
 
 // At runtime, Redux will merge together...
 type GroupDetailProps =
     GroupsState // ... state we've requested from the Redux store
     & typeof groupActionCreators // ... plus action creators we've requested
+    & UnitsState
+    & RoomsState// ... state we've requested from the Redux store
+    & typeof roomActionCreators
+    & typeof unitActionCreators
+    & typeof sessionActionCreators
     & RouteComponentProps<{
         id?: string;
     }>; // ... plus incoming routing parameters
@@ -37,7 +51,8 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
     state = {
         modalExportVisible: false,
         attendeeLoading: true,
-        editMaxSession: false
+        editMaxSession: false,
+        modalStartSessionVisible: false
     }
     // This method is called when the component is first added to the document
     public componentDidMount() {
@@ -62,15 +77,25 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
         })
     }
 
+    public openModalStartSession = () => {
+        this.setState({
+            modalStartSessionVisible: true
+        })
+    }
+
     public closeModalExport = () => {
         this.setState({
             modalExportVisible: false
         })
     }
 
+    public closeModalStartSession = () => {
+        this.setState({
+            modalStartSessionVisible: false
+        })
+    }
+
     private redirect(url: string) {
-        console.log(url);
-        console.log(this.props.location);
         this.props.history.replace(url);
     }
 
@@ -81,12 +106,10 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
     }
 
     private onMaxSessionBlur = (e: any) => {
-        console.log(JSON.parse(e.target.value));
         var group = {
             ...this.props.selectedGroup,
             maxSessionCount: JSON.parse(e.target.value)
         };
-        console.log(group);
         this.props.startUpdateGroup(group, this.updateGroupSuccess);
         this.setState({
             editMaxSession: false
@@ -94,23 +117,20 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
     }
 
     public render() {
-        const exportModal = <Button type="default" onClick={this.openModalExport} icon="export">Export</Button>
+        const tabBarExtra =
+            <div className="tab-bar-extra">
+                <Button type="default" onClick={this.openModalExport}
+                    icon="export">Export</Button>
+                <Button type="default" onClick={this.openModalStartSession}
+                    icon="plus">Create a session</Button>
+            </div>;
         return (
             <React.Fragment>
-                <div className="breadcrumb-container">
-                    <Breadcrumb>
-                        <Breadcrumb.Item href="">
-                            <Icon type="home" />
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>
-                            <Icon type="hdd" />
-                            <span>Group</span>
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>
-                            <span>{this.props.selectedGroup.code} - {this.props.selectedGroup.name}</span>
-                        </Breadcrumb.Item>
-                    </Breadcrumb>
-                </div>
+                <TopBar>
+                    <Breadcrumb.Item>
+                        <span>{this.props.selectedGroup.code} - {this.props.selectedGroup.name}</span>
+                    </Breadcrumb.Item>
+                </TopBar>
                 <div className="title-container">
                     <Row>
                         <Col>
@@ -136,7 +156,8 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                         </Col>
                     </Row>
                 </div>
-                <Tabs defaultActiveKey="1" type="card" tabBarExtraContent={exportModal}>
+                <Tabs defaultActiveKey="1" type="card"
+                    tabBarExtraContent={tabBarExtra}>
                     <TabPane tab="Group Information" key="1">
                         <GroupInfo attendees={this.props.selectedGroup.attendees} attendeeLoading={this.state.attendeeLoading} />
                     </TabPane>
@@ -147,6 +168,14 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                 <ModalExport modalVisible={this.state.modalExportVisible}
                     group={this.props.selectedGroup}
                     closeModal={this.closeModalExport} />
+                <StartSessionModal
+                    group={this.props.selectedGroup}
+                    hideModal={() => this.closeModalStartSession()}
+                    modelOpen={this.state.modalStartSessionVisible}
+                    redirect={url => this.redirect(url)}
+                    roomList={this.props.roomList}
+                    units={this.props.units}
+                />
             </React.Fragment>
         );
     }
@@ -160,11 +189,21 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                     attendeeLoading: false
                 });
             });
+            this.props.requestRooms();
+            this.props.requestActiveSession();
+            this.props.requestUnits();
         }
     }
 }
 
-export default connect(
-    (state: ApplicationState) => state.groups, // Selects which state properties are merged into the component's props
-    dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
-)(GroupDetail as any);
+export default withRouter(connect(
+    (state: ApplicationState) => ({
+        ...state.groups, ...state.rooms, ...state.units
+    }), // Selects which state properties are merged into the component's props
+    dispatch => bindActionCreators({
+        ...roomActionCreators,
+        ...groupActionCreators,
+        ...sessionActionCreators,
+        ...unitActionCreators
+    }, dispatch) // Selects which action creators are merged into the component's props
+)(GroupDetail as any));
