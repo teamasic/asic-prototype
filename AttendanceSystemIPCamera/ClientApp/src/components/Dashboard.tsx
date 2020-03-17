@@ -263,7 +263,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                             <Col span={8}>
                                 <Input placeholder="Enter group name" onChange={this.onGroupNameChange} />
                             </Col>
-                            <Col span={2} offset={1} style={{ padding: '5px 0' }}><Text strong>Max Session:</Text></Col>
+                            <Col span={2} offset={1} style={{ padding: '5px 0' }}><Text strong>Total Sessions:</Text></Col>
                             <Col span={3}>
                                 <InputNumber
                                     defaultValue={30}

@@ -152,7 +152,7 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                     this.props.attendees != undefined && this.props.attendees.length >= 1 ? (
                         <Popconfirm title="Are you sure to delete this attendee?"
                             onConfirm={() => this.handleDelete(record.id)}>
-                            <Button type="danger" icon="delete"></Button>
+                            <Button size="small" type="danger" icon="delete"></Button>
                         </Popconfirm>
                     ): null
                 ,

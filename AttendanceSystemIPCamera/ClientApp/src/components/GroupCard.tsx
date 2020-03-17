@@ -7,13 +7,10 @@ import Unit from '../models/Unit';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
-import * as moment from 'moment'
 import Room from '../models/Room';
 import { createSession } from '../services/session';
-import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker, message } from 'antd';
+import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, Typography, Modal, message, Tooltip } from 'antd';
 import { formatFullDateTimeString } from '../utils';
-import classNames from 'classnames';
-import { createBrowserHistory } from 'history';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -44,13 +41,13 @@ class GroupCard extends React.PureComponent<GroupProps> {
     private takeAttendance = () => {
         this.setState({
             modelOpen: true,
-            isError: false, 
+            isError: false,
         })
-        
+
     };
 
     private handleModelOk = async () => {
-        
+
         const { roomId, sessionIndex } = { ...this.state };
         if (roomId == -1 || sessionIndex == -1) {
             this.setState({
@@ -162,9 +159,9 @@ class GroupCard extends React.PureComponent<GroupProps> {
                         <Title level={4}>{group.name}</Title>
                     </Col>
                     <Col span={2}>
-                        <Dropdown overlay={menu}>
-                            <Button icon="ellipsis" type="link"></Button>
-                        </Dropdown>
+                        <Tooltip title="Delete">
+                            <Icon type="delete" onClick={this.showConfirm} />
+                        </Tooltip>
                     </Col>
                 </Row>
                 <div className="description-container">

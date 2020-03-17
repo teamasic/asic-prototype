@@ -25,13 +25,23 @@ code {
 }
 
 .ant-select-selection, .ant-input, .ant-input-number {
-	border-color: #40A9FF
+	border-color: #40A9FF;
 }
 
 .ant-modal-header {
-	background-color: #1890ff
+	background-color: #1890ff;
 }
 
 .ant-modal-title, .ant-modal-close-x {
-	color: #ffffff
+	color: #ffffff;
+}
+
+.ant-table-thead > tr > th {
+	background: #1890FF;
+	color: #ffffff;
+}
+
+.ant-table-row[class*='ant-table-row-level-0'] td {
+	padding-top: 5px;
+	padding-bottom: 5px;
 }

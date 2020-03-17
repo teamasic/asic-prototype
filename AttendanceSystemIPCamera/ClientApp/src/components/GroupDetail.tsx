@@ -119,8 +119,8 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                             </Title>
                         </Col>
                         <Col>
-                            <Title className="title" level={3}>
-                                <Paragraph>Max sessions : {this.state.editMaxSession ?
+                            <Title className="title" level={4}>
+                                <Paragraph>Total sessions : {this.state.editMaxSession ?
                                     (<InputNumber
                                         defaultValue={this.props.selectedGroup.maxSessionCount}
                                         min={0}
