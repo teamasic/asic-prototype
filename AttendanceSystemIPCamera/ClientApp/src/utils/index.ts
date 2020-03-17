@@ -1,5 +1,6 @@
 ﻿import format from 'date-fns/format';
 import moment from 'moment';
+import Swal from 'sweetalert2'
 
 export const formatFullDateTimeString = (time: Date | string) => format(new Date(time), 'EEEE, MMMM d, yyyy');
 
@@ -15,4 +16,18 @@ export const renderStripedTable = (record: any, index: number) => {
     } else {
         return 'striped';
     }
+}
+
+export const success = (msg: string) => {
+    Swal.fire({
+        icon: 'success',
+        text: msg
+    });
+}
+
+export const error = (msg: string) => {
+    Swal.fire({
+        icon: 'error',
+        text: msg
+    });
 }

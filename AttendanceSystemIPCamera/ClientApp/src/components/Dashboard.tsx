@@ -8,7 +8,7 @@ import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import { Breadcrumb, Icon, Button, Empty, Select, List, Card, Spin, Row, Col, Pagination, InputNumber } from 'antd';
 import { Typography } from 'antd';
-import { Input, Modal, Upload, Table, Divider, message } from 'antd';
+import { Input, Modal, Upload, Table, Divider, message, Form } from 'antd';
 import classNames from 'classnames';
 import '../styles/Dashboard.css';
 import GroupCard from './GroupCard';
@@ -18,16 +18,21 @@ import { UnitsState } from '../store/unit/state';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import { unitActionCreators } from '../store/unit/actionCreators';
 import { log, isNullOrUndefined } from 'util';
-import { renderStripedTable } from '../utils'
+import { renderStripedTable, success, error } from '../utils'
 import { parse } from 'papaparse';
+import { FormComponentProps } from 'antd/lib/form';
 
 const { Search } = Input;
 const { Title } = Typography;
-const { Text } = Typography;
+
+interface Props extends FormComponentProps {
+
+}
 
 // At runtime, Redux will merge together...
 type GroupProps =
     GroupsState
+    & Props
     & UnitsState
     & RoomsState// ... state we've requested from the Redux store
     & typeof groupActionCreators
@@ -39,7 +44,7 @@ type GroupProps =
 interface DashboardComponentState {
     modalVisible: boolean,
     modalLoading: boolean,
-    importAttendees: any, 
+    importAttendees: any,
     groupCode: string,
     groupName: string,
     maxSession: number,
@@ -96,14 +101,24 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         });
     }
 
-    public handleOk = (value: any) => {
-        var newGroup = new Group();
-        newGroup.name = this.state.groupName;
-        newGroup.code = this.state.groupCode;
-        newGroup.attendees = this.state.importAttendees;
-        newGroup.maxSessionCount = this.state.maxSession;
-        console.log(newGroup);
-        this.props.postGroup(newGroup, this.redirectToGroupDetail);
+    public handleOk = (e: any) => {
+        e.preventDefault();
+        this.props.form.validateFields((err: any, values: any) => {
+            if (!err) {
+                var newGroup = new Group();
+                newGroup.name = this.state.groupName;
+                newGroup.code = this.state.groupCode;
+                newGroup.attendees = this.state.importAttendees;
+                newGroup.maxSessionCount = this.state.maxSession;
+                this.props.postGroup(newGroup, this.createGroupSuccess, error);
+            }
+        });
+    }
+
+    public createGroupSuccess = () => {
+        this.props.requestGroups(this.props.groupSearch);
+        this.handleCancel();
+        success("Create group success!");
     }
 
     public onMaxSessionChane = (value: number | undefined) => {
@@ -167,7 +182,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         this.setState({
             groupCode: e.target.value
         });
-    } 
+    }
 
     public onGroupNameChange = (e: any) => {
         this.setState({
@@ -219,6 +234,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                 dataIndex: 'Name'
             }
         ];
+        const { getFieldDecorator } = this.props.form;
 
         return (
             <React.Fragment>
@@ -250,28 +266,43 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                 Cancel
                             </Button>,
                             <Button key="submit" type="primary" loading={this.state.modalLoading} onClick={this.handleOk}>
-                                            Save
+                                Save
                             </Button>,
                         ]}
                     >
-                        <Row>
-                            <Col span={2} style={{ padding: '5px 0' }}><Text strong>Group Code:</Text></Col>
-                            <Col span={5}>
-                                <Input placeholder="Enter group code" onChange={this.onGroupCodeChange} />
-                            </Col>
-                            <Col span={2} offset={1} style={{ padding: '5px 0' }}><Text strong>Group Name:</Text></Col>
-                            <Col span={8}>
-                                <Input placeholder="Enter group name" onChange={this.onGroupNameChange} />
-                            </Col>
-                            <Col span={2} offset={1} style={{ padding: '5px 0' }}><Text strong>Total Sessions:</Text></Col>
-                            <Col span={3}>
-                                <InputNumber
-                                    defaultValue={30}
-                                    min={0}
-                                    max={100}
-                                    onChange={this.onMaxSessionChane} />
-                            </Col>
-                        </Row>
+                        <Form layout="inline">
+                            <Row>
+                                <Col span={8}>
+                                    <Form.Item label="Group Code" required>
+                                        {getFieldDecorator('code', {
+                                            rules: [{ required: true, message: 'Please input group code' }],
+                                        })(
+                                            <Input placeholder="Enter group code" onChange={this.onGroupCodeChange} />
+                                        )}
+                                    </Form.Item>
+                                </Col>
+                                <Col span={9}>
+                                    <Form.Item label="Group Name" required>
+                                        {getFieldDecorator('name', {
+                                            rules: [{ required: true, message: 'Please input group name' }],
+                                        })(
+                                            <Input placeholder="Enter group name" onChange={this.onGroupNameChange} />
+                                        )}
+                                    </Form.Item>
+                                </Col>
+                                <Col span={7}>
+                                    <Form.Item label="Total sessions" required>
+                                        {getFieldDecorator('totalSession', {
+                                            rules: [{ required: true, message: 'Please input total session' }],
+                                        })(<InputNumber
+                                            min={0}
+                                            max={100}
+                                            onChange={this.onMaxSessionChane} />
+                                        )}
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </Form>
                         <Divider orientation="left">List Attendees</Divider>
                         <Row gutter={[0, 32]}>
                             <Col span={8}>
@@ -323,7 +354,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                 })}>
                     {
                         this.props.isLoading ? <Spin size="large" /> :
-                        (hasGroups ? this.renderGroupsTable() : this.renderEmpty())
+                            (hasGroups ? this.renderGroupsTable() : this.renderEmpty())
                     }
                 </div>
             </React.Fragment>
@@ -368,7 +399,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                 group={group}
                                 roomList={this.props.roomList}
                                 units={this.props.units}
-                                viewDetail={this.viewDetail}/>
+                                viewDetail={this.viewDetail} />
                         </List.Item>
                     )}
                 />
@@ -389,7 +420,8 @@ const mapDispatchToProps = {
     ...roomActionCreators, ...groupActionCreators, ...sessionActionCreators,
     ...unitActionCreators
 }
-export default connect(
-    mapStateToProps, // Selects which state properties are merged into the component's props
-    mapDispatchToProps // Selects which action creators are merged into the component's props
-)(Dashboard as any);
+export default Form.create<Props>({ name: 'add_attendee' })
+    (connect(
+        mapStateToProps, // Selects which state properties are merged into the component's props
+        mapDispatchToProps // Selects which action creators are merged into the component's props
+    )(Dashboard as any));

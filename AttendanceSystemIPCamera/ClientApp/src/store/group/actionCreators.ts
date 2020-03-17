@@ -12,6 +12,8 @@ import { AnyAction } from "redux";
 import PaginatedList from "../../models/PaginatedList";
 import GroupSearch from "../../models/GroupSearch";
 import Attendee from "../../models/Attendee";
+import { STATUS_CODES } from "http";
+import HttpStatusCode from "../../models/HttpStatusCode";
 
 export const ACTIONS = {
     START_REQUEST_GROUPS: 'START_REQUEST_GROUPS',
@@ -109,18 +111,27 @@ const requestGroupDetail = (id: number, stopLoadingTable: Function): AppThunkAct
     }
 }
 
-const postGroup = (newGroup: Group, renderDetailPage: Function): AppThunkAction => async (dispatch, getState) => {
+const postGroup = (newGroup: Group, reloadGroups: Function, error: Function): AppThunkAction => async (dispatch, getState) => {
     dispatch(startCreateNewGroup(newGroup));
     const apiResponse: ApiResponse = await createGroup(newGroup);
     if (apiResponse.success) {
         dispatch(createGroupSuccess(apiResponse.data));
-        renderDetailPage(apiResponse.data.id);
+        reloadGroups();
     } else {
-        console.log("Create group error: " + apiResponse.errors);
+        switch (apiResponse.statusCode) {
+            case HttpStatusCode.BAD_REQUEST:
+                error("Group information is invalid!");
+                break;
+            case HttpStatusCode.EXISTED:
+                error("Group with code " + newGroup.code + " is already existed!");
+                break;
+            default:
+                error("Oops.. Something went wrong!");
+        }
     }
 }
 
-const startDeactiveGroup = (id: number, groupSearch: GroupSearch, success: Function): AppThunkAction => async (dispatch, getState) => {
+const startDeactiveGroup = (id: number, groupSearch: GroupSearch, success: Function, error: Function): AppThunkAction => async (dispatch, getState) => {
     const apiResponse: ApiResponse = await deactiveGroup(id);
     if (apiResponse.success) {
         success();
@@ -131,7 +142,8 @@ const startDeactiveGroup = (id: number, groupSearch: GroupSearch, success: Funct
             dispatch(stopRequestGroupsWithError(groupResponse.errors));
         }
     } else {
-        console.log("Delete group error: " + apiResponse.errors.toString());
+        error("Oops..Something went wrong!");
+        console.log(apiResponse.errors);
     }
 }
 
@@ -171,14 +183,11 @@ const startGetAttendeeByCode = (code: string, loadName: Function): AppThunkActio
 const startCreateAttendeeInGroup = (groupId: number, newAttendee: Attendee, success: Function, duplicateAttendee: Function): AppThunkAction => async (dispatch, getState) => {
     const apiResponse: ApiResponse = await createAttendeeInGroup(groupId, newAttendee);
     if (apiResponse.success) {
-        if (apiResponse.data != null) {
-            dispatch(createAttendeeInGroupSuccess(apiResponse.data));
-            success();
-        } else {
-            duplicateAttendee();
-        }
+        dispatch(createAttendeeInGroupSuccess(apiResponse.data));
+        success();
     } else {
-        console.log("Create attendee in group errors: " + apiResponse.errors.toString());
+        duplicateAttendee();
+        console.log(apiResponse.errors);
     }
 }
 

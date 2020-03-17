@@ -10,7 +10,7 @@ import { GroupsState } from '../store/group/state';
 import Room from '../models/Room';
 import { createSession } from '../services/session';
 import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, Typography, Modal, message, Tooltip } from 'antd';
-import { formatFullDateTimeString } from '../utils';
+import { formatFullDateTimeString, success, error } from '../utils';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -120,11 +120,11 @@ class GroupCard extends React.PureComponent<GroupProps> {
 
     private startDeactiveGroup = () => {
         this.props.startDeactiveGroup
-            (this.props.group.id, this.props.groupSearch, this.successDeactive);
+            (this.props.group.id, this.props.groupSearch, this.successDeactive, error);
     }
 
     private successDeactive = () => {
-        message.success("Delete group " + this.props.group.name + " success!");
+        success("Delete group " + this.props.group.name + " success!");
         Modal.destroyAll();
     }
 
