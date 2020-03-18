@@ -21,7 +21,6 @@ def recognize_image(imagePath, threshold=0):
 def recognize_image_after_read(image, threshold=0, alignFace = False):
     boxes = my_face_detection.face_locations(image)
     if len(boxes) == 1:
-        image = my_face_detection.align_face(image, boxes[0])
         if (alignFace == True):
             aligned_image = my_face_detection.align_face(image, boxes[0])
             vecs = my_face_recognition.face_encodings(aligned_image)
