@@ -41,3 +41,17 @@ def get_unknown_images(datasetDir, resultDir):
                 break
         break
     print(len(listImages))
+
+def copy_images_enough(originalDir, resultDir, numOfImages):
+    # [os.remove(os.path.join(destPath, dir)) for dir in os.listdir(destPath)]
+    total = 0
+    for dicName in os.listdir(originalDir):
+        dic = os.path.join(originalDir, dicName)
+        if (len(os.listdir(dic)) >= 10):
+            print(dic)
+            total += 1
+            os.chmod(dic, os.st.S_IWRITE)
+            newDic = os.path.join(resultDirs, dicName)
+            os.mkdir(newDic)
+            shutil.copytree(dic, newDic, dirs_exist_ok=True)
+    print(total)
