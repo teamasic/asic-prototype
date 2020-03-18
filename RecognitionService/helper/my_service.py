@@ -15,11 +15,16 @@ def recognize_image(imagePath, threshold=0):
     return recognize_image_after_read(image, threshold)
 
 
-def recognize_image_after_read(image, threshold=0):
+def recognize_image_after_read(image, threshold=0, alignFace = False):
     boxes = my_face_detection.face_locations(image)
     if len(boxes) == 1:
         image = my_face_detection.align_face(image, boxes[0])
-        vec = my_face_recognition.face_encodings(image)[0]
+        if (alignFace == True):
+            aligned_image = my_face_detection.align_face(image, boxes[0])
+            vecs = my_face_recognition.face_encodings(aligned_image)
+        else:
+            vecs = my_face_recognition.face_encodings(image, boxes)
+        vec = vecs[0]
         name, proba = _get_label(vec, threshold)
         return boxes[0], name, proba
     return None
@@ -37,8 +42,8 @@ def _get_label(vec, threshold=0):
     return "Unknown", None
 
 
-def generate_more_embeddings(datasetPath):
-    imagePaths = paths.list_images(datasetPath)
+def generate_more_embeddings(datasetPath, alignFace = False):
+    imagePaths = list(paths.list_images(datasetPath))
     data = pickle.loads(open(my_constant.embeddingsPath, "rb").read())
     knownEmbeddings = data["embeddings"]
     knownNames = data["knownNames"]
@@ -61,7 +66,11 @@ def generate_more_embeddings(datasetPath):
             print(imagePath, "= 0")
             print(len(boxes))
             continue
-        vecs = my_face_recognition.face_encodings(image, boxes)
+        if (alignFace == True):
+            aligned_image = my_face_detection.align_face(image, boxes[0])
+            vecs = my_face_recognition.face_encodings(aligned_image)
+        else:
+            vecs = my_face_recognition.face_encodings(image, boxes)
         vec = vecs[0]
         knownEmbeddings.append(vec.flatten())
         knownNames.append(name)
@@ -76,7 +85,7 @@ def generate_more_embeddings(datasetPath):
     f.close()
 
 
-def generate_embeddings(datasetPath):
+def generate_embeddings(datasetPath, alignFace = False):
     imagePaths = list(paths.list_images(datasetPath))
     knownEmbeddings = []
     knownNames = []
@@ -99,10 +108,11 @@ def generate_embeddings(datasetPath):
             print(imagePath, "= 0")
             print(len(boxes))
             continue
-
-        aligned_image = my_face_detection.align_face(image, boxes[0])
-
-        vecs = my_face_recognition.face_encodings(aligned_image)
+        if (alignFace == True):
+            aligned_image = my_face_detection.align_face(image, boxes[0])
+            vecs = my_face_recognition.face_encodings(aligned_image)
+        else:
+            vecs = my_face_recognition.face_encodings(image, boxes)
         vec = vecs[0]
 
         knownEmbeddings.append(vec.flatten())
