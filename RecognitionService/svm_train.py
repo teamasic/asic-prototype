@@ -16,7 +16,7 @@ import os
 def generate_train_model():
     embedding = pickle.loads(open(my_constant.embeddingsPath, "rb").read())
     X = embedding["embeddings"]
-    le = LabelEncoder();
+    le = LabelEncoder()
     Y = le.fit_transform(embedding["names"])
     # Y = LabelEncoder().fit_transform(embedding["names"])
     print(len(X))
@@ -85,7 +85,7 @@ def train_tune():
     C_range = 10. ** np.arange(-2, 5)
     gamma_range = 10. ** np.arange(-6, 3)
     param_grid = [{'C': C_range, 'gamma': gamma_range, 'kernel': ['rbf']}]
-    clf = GridSearchCV(svm.SVC(), param_grid, cv=3)
+    clf = GridSearchCV(svm.SVC(probability=True), param_grid, cv=5)
     clf.fit(X, Y)
     print(clf.best_params_)
     print(clf.best_score_)
@@ -102,48 +102,4 @@ def train_tune():
 
 
 generate_train_model()
-# train_tune()
-
-
-# check features range [0-1]
-# src = "J:\\asic-prototype\\RecognitionService\\output_dlib\\embeddings.pickle"
-# embeddings = pickle.loads(open(src, "rb").read())
-# vectors = embeddings["embeddings"]
-# for vec in vectors:
-#     (print(vec) for e in vec if (e >= 1 or e <= -1))
-
-
-
-# append embedding files
-# src = "J:\\asic-prototype\\RecognitionService\\output_dlib\\309-test-embeddings.pickle"
-# dest ="j:\\embeddings.pickle"
-# total = "J:\\asic-prototype\\RecognitionService\\output_dlib\\309-total-embeddings.pickle"
-# embeddingS = pickle.loads(open(src, "rb").read())
-# Xs = embeddingS["embeddings"]
-# Ys = embeddingS["names"]
-# embeddingD = pickle.loads(open(dest, "rb").read())
-# Xd = embeddingD["embeddings"]
-# Yd = embeddingD["names"]
-# Xtotal = []
-# Xtotal.extend(Xs)
-# Xtotal.extend(Xd)
-# Ytotal = []
-# Ytotal.extend(Ys)
-# Ytotal.extend(Yd)
-# data = {"embeddings": Xtotal, "names": Ytotal}
-# f = open(total, "wb")
-# f.write(pickle.dumps(data))
-# f.close()
-
-# filter dataset on celeb
-# path = "j:\\dataset\\VN-celeb"
-# destPath ="J:\\asic-prototype\\RecognitionService\\dataset"
-# [os.remove(os.path.join(destPath, dir)) for dir in os.listdir(destPath)]
-# for dicName in os.listdir(path):
-#     dic = os.path.join(path, dicName)
-#     if(len(os.listdir(dic)) >= 20):
-#         print(dic)
-#         os.chmod(dic, os.st.S_IWRITE)
-#         newDic = os.path.join(destPath, dicName)
-#         os.mkdir(newDic)
-#         shutil.copytree(dic, newDic, dirs_exist_ok=True)
+train_tune()

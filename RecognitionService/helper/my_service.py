@@ -48,7 +48,7 @@ def generate_more_embeddings(datasetPath, alignFace = False):
     imagePaths = list(paths.list_images(datasetPath))
     data = pickle.loads(open(my_constant.embeddingsPath, "rb").read())
     knownEmbeddings = data["embeddings"]
-    knownNames = data["knownNames"]
+    knownNames = data["names"]
     totalAdded = 0
     for (i, imagePath) in enumerate(imagePaths):
         # extract the person name from the image path

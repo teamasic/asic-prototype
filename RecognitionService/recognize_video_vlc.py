@@ -1,17 +1,18 @@
 # import the necessary packages
+from config import my_constant
+import os
+os.add_dll_directory(my_constant.vlcPath)
 import time
 import vlc
 import argparse
 import cv2
 import imutils
 from helper import recognition_api, my_service
-from config import my_constant
-import os
-os.add_dll_directory(my_constant.vlcPath)
+
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.8:8554/unicast",
+ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.4:8554/unicast",
                 help="path to rtsp string")
 args = vars(ap.parse_args())
 
