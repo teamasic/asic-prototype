@@ -155,30 +155,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         //    }
         //}
 
-
         #region Support methods
-        private async Task CallRecognitionService(double timeDifferenceMilliseconds, int durationMinutes, string rtspString)
-        {
-            Thread.Sleep(Convert.ToInt32(timeDifferenceMilliseconds));
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            var pythonFullPath = myConfiguration.PythonExeFullPath;
-            var currentDirectory = Environment.CurrentDirectory;
-            var cmd = string.Format(@"{0}\{1}", currentDirectory, myConfiguration.RecognitionProgramPathOpenCV);
-            var args = "";
-            args += string.Format(@"--recognizer {0}\{1}", currentDirectory, myConfiguration.RecognizerPath);
-            args += string.Format(@" --le {0}\{1}", currentDirectory, myConfiguration.LePath);
-            startInfo.FileName = pythonFullPath;
-            startInfo.Arguments = string.Format("{0} {1}", cmd, args);
-            startInfo.UseShellExecute = true;
-            startInfo.RedirectStandardOutput = false;
-            startInfo.RedirectStandardError = false;
-            Process myProcess = new Process();
-            myProcess.StartInfo = startInfo;
-            myProcess.Start();
-            Thread.Sleep(1000 * 60 * durationMinutes);
-            await recordService.UpdateRecordsAfterEndSession();
-            myProcess.Kill();
-        }
 
         private List<SessionExportViewModel> ExportSingleDate(int groupId, DateTime date, bool withCondition, bool isPresent)
         {
