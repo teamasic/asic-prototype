@@ -1,7 +1,7 @@
 import os
 import shutil
 from pathlib import Path
-from random import random
+import random
 
 import cv2
 from imutils import paths
