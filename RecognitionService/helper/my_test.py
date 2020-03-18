@@ -126,3 +126,35 @@ def test_result():
     print("Sensitivity [TP / (TP + FN)] = {}", truePositive / totalInDb)
     print("Precision [TP / (TP + FP)] = {}", truePositive / (truePositive + falsePositive))
     print("Accuracy [(TP + TN) / (TP + FP + TN + FN)] = {}", (truePositive + trueNegative) / (totalInDb + totalNotInDb))
+
+def copyUnknownImages():
+    unknownImagesPath = "unknow_data/images/unknown"
+    unknownImagesPathReal = "images/unknown"
+    Path(unknownImagesPathReal).mkdir(parents=True, exist_ok=True)
+    listImages = list(paths.list_images(unknownImagesPath))
+    for image in listImages:
+        shutil.copy(image, unknownImagesPathReal)
+
+def getImagesNotInTraining():
+    for (rootDir, subDirs, files) in os.walk(fullDatasetDir):
+        for subDatasetDir in subDirs:
+            fullPathSubDatasetDir = os.path.join(fullDatasetDir, subDatasetDir)
+            fullPathSubTrainDir = os.path.join(trainingDir, subDatasetDir)
+            fullPathSubTestDir = os.path.join(testDir, subDatasetDir)
+            imagePaths = list(paths.list_images(fullPathSubDatasetDir))
+            imagePathsTrain = list(paths.list_images(fullPathSubTrainDir))
+            shutil.rmtree(fullPathSubTestDir)
+            Path(fullPathSubTestDir).mkdir(parents=True, exist_ok=True)
+            imagePathsWithoutRoot = []
+            imagePathsTrainWithoutRoot = []
+            for imagePath in imagePaths:
+                imagePathTemp = os.path.join(imagePath.split("\\")[1], imagePath.split("\\")[2])
+                imagePathsWithoutRoot.append(imagePathTemp)
+            for imagePath in imagePathsTrain:
+                imagePathTemp = os.path.join(imagePath.split("\\")[1], imagePath.split("\\")[2])
+                imagePathsTrainWithoutRoot.append(imagePathTemp)
+            imagesAdd = [x for x in imagePathsWithoutRoot if x not in imagePathsTrainWithoutRoot]
+            fullImageAddPath = list(map(lambda x: os.path.join(fullDatasetDir, x), imagesAdd))
+            print(fullImageAddPath)
+            for image in fullImageAddPath:
+                shutil.copy(image, fullPathSubTestDir)
