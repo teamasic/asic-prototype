@@ -11,13 +11,14 @@ import * as moment from 'moment'
 import Room from '../models/Room';
 import { createSession } from '../services/session';
 import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker, message } from 'antd';
-import { formatFullDateTimeString } from '../utils';
+import { formatFullDateTimeString, success, error } from '../utils';
 import classNames from 'classnames';
 import { createBrowserHistory } from 'history';
 
 const { Title } = Typography;
 const { Option } = Select;
 const { confirm } = Modal;
+
 
 interface Props {
     modelOpen: boolean;
@@ -44,12 +45,12 @@ class GroupCard extends React.PureComponent<GroupProps> {
     private handleModelOk = async () => {
         const { roomId, sessionIndex } = { ...this.state };
         if (roomId == -1 || sessionIndex == -1) {
-            this.setState({
-                isError: true
-            })
+            // this.setState({
+            //     isError: true
+            // })
+           error("Please choose room and unit")
         }
         else {
-            this.handleModelCancel();
             const groupId = this.props.group.id;
             let currentRoom = this.props.roomList.filter(r => r.id == roomId)[0];
             let currentSession = this.props.units[sessionIndex];
@@ -62,6 +63,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                 name: currentSession.name
             });
             if (data != null && data.data != null) {
+                this.handleModelCancel();
                 const sessionId = data.data.id;
                 this.setState({
                     isError: false
@@ -69,6 +71,9 @@ class GroupCard extends React.PureComponent<GroupProps> {
                 if (sessionId != null) {
                     this.props.redirect(`session/${sessionId}`);
                 }
+            }
+            else {
+                error("Session with this unit existed")
             }
         }
 

@@ -29,7 +29,7 @@ import classNames from 'classnames';
 import '../styles/Session.css';
 import { SessionState } from '../store/session/state';
 import AttendeeRecordPair from '../models/AttendeeRecordPair';
-import { formatFullDateTimeString, minutesOfDay } from '../utils';
+import { formatFullDateTimeString, minutesOfDay, error } from '../utils';
 import { takeAttendance } from '../services/session';
 import moment from 'moment';
 import '../styles/Table.css';
@@ -176,23 +176,28 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		let startTime = this.state.startTime;
 		let endTime = this.state.endTime;
 		if (startTime.isSameOrAfter(endTime) || minutesOfDay(startTime) < minutesOfDay(moment())){
-			this.setState({
-				isError: true,
-			})
+			error("Start time and end time is not suitable")
 		}
 		else {
 			// this.props.startRealTimeConnection();
+			this.setState({
+				isModelOpen: false
+			})
+			if (this.props.activeSession != null) {
+				this.props.startTakingAttendance(this.props.activeSession);
+			}
 			const data = await takeAttendance({
 				sessionId: this.state.sessionId,
 				startTime: this.state.startTime.format('YYYY-MM-DD HH:mm'),
 				endTime: this.state.endTime.format('YYYY-MM-DD HH:mm'),
 			})
-			if (this.props.activeSession != null) {
-				this.props.startTakingAttendance(this.props.activeSession);
+			if (data.success == false){
+				error("Error while taking attendance, please try again")
 			}
-			this.setState({
-				isModelOpen: false
-			})
+			this.props.startTakingAttendance(null);
+			
+
+			
 		}
 
 	}
