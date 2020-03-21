@@ -1,6 +1,7 @@
 ﻿using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Services.AttendeeService;
+using AttendanceSystemIPCamera.Services.UserService;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -12,26 +13,27 @@ namespace AttendanceSystemIPCamera.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AttendeeController : BaseController
+    public class UserController : BaseController
     {
-        private readonly IAttendeeService attendeeService;
+        private readonly IUserService service;
         private readonly IMapper mapper;
 
-        public AttendeeController(IAttendeeService attendeeService, IMapper mapper)
+        public UserController(IUserService attendeeService, IMapper mapper)
         {
-            this.attendeeService = attendeeService;
+            this.service = attendeeService;
             this.mapper = mapper;
         }
 
-        [HttpGet]
-        public BaseResponse<AttendeeViewModel> GetByCode([FromQuery] string code)
+        [HttpPost("login/firebase")]
+        public async Task<dynamic> LoginWithFirebase(UserAuthentication userAuthen)
         {
-            return ExecuteInMonitoring(() =>
+            return await ExecuteInMonitoring(async () =>
             {
-               var attendee = attendeeService.GetByAttendeeCode(code);
-               return mapper.Map<AttendeeViewModel>(attendee);
+                return await service.LoginWithFirebaseAsync(userAuthen);
             });
         }
+
+
 
     }
 }

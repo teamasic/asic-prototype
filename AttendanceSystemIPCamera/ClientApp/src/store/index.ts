@@ -5,10 +5,12 @@ import SessionsReducer from './session/reducers';
 import UnitsReducer from './unit/reducers';
 import RoomsReducer from './room/reducers';
 import ChangeRequestsReducer from './changeRequest/reducers';
+import userReducer from './user/userReducer';
 import { AnyAction } from 'redux';
 import { RoomsState } from './room/state';
 import { UnitsState } from './unit/state';
 import { ChangeRequestState } from './changeRequest/state';
+import { UserState } from './user/userState';
 
 // The top-level state object
 export interface ApplicationState {
@@ -17,6 +19,7 @@ export interface ApplicationState {
 	rooms: RoomsState | undefined;
 	units: UnitsState | undefined;
 	changeRequests: ChangeRequestState | undefined;
+	user: UserState | undefined;
 }
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
@@ -27,7 +30,8 @@ export const reducers = {
     rooms: RoomsReducer,
 	groups: GroupsReducer,
 	units: UnitsReducer,
-	changeRequests: ChangeRequestsReducer
+	changeRequests: ChangeRequestsReducer,
+	user: userReducer
 };
 
 // This type can be used as a hint on action creators so that its 'dispatch' and 'getState' params are

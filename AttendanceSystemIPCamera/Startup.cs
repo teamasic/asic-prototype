@@ -29,6 +29,7 @@ using AttendanceSystemIPCamera.Services.RecognitionService;
 using AttendanceSystemIPCamera.Services.UnitService;
 using AttendanceSystemIPCamera.Framework.GlobalStates;
 using Microsoft.Extensions.Logging;
+using AttendanceSystemIPCamera.Services.UserService;
 
 namespace AttendanceSystemIPCamera
 {
@@ -105,15 +106,15 @@ namespace AttendanceSystemIPCamera
             });
 
 
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
+            //app.UseSpa(spa =>
+            //{
+            //    spa.Options.SourcePath = "ClientApp";
 
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
-            });
+            //    if (env.IsDevelopment())
+            //    {
+            //        spa.UseReactDevelopmentServer(npmScript: "start");
+            //    }
+            //});
 
         }
 
@@ -175,6 +176,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<SupervisorNetworkService>();
             services.AddScoped<IRecognitionService, RecognitionService>();
             services.AddScoped<IChangeRequestService, ChangeRequestService>();
+            services.AddScoped<IUserService, UserService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
