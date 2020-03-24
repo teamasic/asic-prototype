@@ -27,13 +27,17 @@ namespace AttendanceSystemIPCamera.Controllers
         private readonly IRecognitionService recognitionService;
         private readonly IRecordService recordService;
         private readonly IMapper mapper;
+        private ILogger logger;
+
         public TestController(SupervisorNetworkService service, IMapper mapper,
-            IRecognitionService recognitionService, IRecordService recordService)
+            IRecognitionService recognitionService, IRecordService recordService,
+            ILogger<TestController> logger)
         {
             this.service = service;
             this.mapper = mapper;
             this.recognitionService = recognitionService;
             this.recordService = recordService;
+            this.logger = logger;
         }
         //[HttpGet]
         //public dynamic Get(string message)
@@ -52,10 +56,20 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             public string Value { get; set; }
         }
-        [HttpGet]
-        public  void NormalizeData()
+
+        [HttpPost("log")]
+        public void PostLog()
         {
-            var records =  recordService.GetRecords();
+            logger.LogInformation("This is log infomation");
+            logger.LogDebug("This is log debug");
+            logger.LogWarning("This is log warning");
+            logger.LogError("This is log error");
+        }
+
+        [HttpGet]
+        public void NormalizeData()
+        {
+            var records = recordService.GetRecords();
             records.ToList().ForEach(r =>
             {
                 if (r.Session == null || r.Attendee == null)
