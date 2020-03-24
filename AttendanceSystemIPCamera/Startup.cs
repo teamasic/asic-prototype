@@ -93,7 +93,7 @@ namespace AttendanceSystemIPCamera
             app.UseSpaStaticFiles();
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ASIC API"));
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Supervisor ASIC API"));
 
             app.UseRouting();
 
@@ -122,7 +122,7 @@ namespace AttendanceSystemIPCamera
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "ASIC API", Version = "v1" });
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Supervisor ASIC", Version = "v1" });
             });
         }
 
@@ -162,6 +162,7 @@ namespace AttendanceSystemIPCamera
             SetupRepositories(services);
             SetupUnitConfig(services);
             SetupGlobalStateManager(services);
+
         }
 
         private void SetupServices(IServiceCollection services)

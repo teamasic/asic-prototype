@@ -12,7 +12,7 @@ namespace AttendanceSystemIPCamera.Utils
     public class RestApi
     {
 
-        public static async Task<T> CallApiAsync<T>(string url, object requestMessage) where T : class
+        public static async Task<T> PostAsync<T>(string url, object requestMessage) where T : class
         {
             HttpClient client = new HttpClient();
             var content = new StringContent(JsonConvert.SerializeObject(requestMessage), 

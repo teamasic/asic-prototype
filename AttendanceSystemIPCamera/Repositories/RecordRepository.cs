@@ -18,6 +18,8 @@ namespace AttendanceSystemIPCamera.Repositories
         public Record GetRecordBySessionAndAttendee(int sessionId, int attendeeId);
         Task<IEnumerable<Record>> GetRecordsBySessionId(int id);
         Task<Record> GetRecordBySessionAndAttendeeCode(int sessionId, string attendeeCode);
+        List<Record> GetAttendanceDataForSync(DateTime fromTime, DateTime toTime);
+        IEnumerable<Record> GetRecords();
     }
     public class RecordRepository : Repository<Record>, IRecordRepository
     {
@@ -50,6 +52,19 @@ namespace AttendanceSystemIPCamera.Repositories
                     .ThenInclude(s => s.Group)
                 .Where(r => r.Id == (int) id)
                 .FirstOrDefaultAsync();
+        }
+
+        public List<Record> GetAttendanceDataForSync(DateTime fromTime, DateTime toTime)
+        {
+            var data = Get(r => (r.StartTime >= fromTime && r.StartTime <= toTime) // from <= start <= to
+                                    || (r.UpdateTime >= fromTime && r.UpdateTime <= toTime), //from <= update <= to
+                includeProperties: "Attendee,Session,Session.Group").ToList();
+            return data;
+        }
+
+        public IEnumerable<Record> GetRecords()
+        {
+            return dbSet.AsEnumerable();
         }
     }
 }

@@ -38,8 +38,9 @@ namespace AttendanceSystemIPCamera.Services.UserService
 
         public async Task<SupervisorInfo> LoginWithFirebaseAsync(UserAuthentication userAuthentication)
         {
+            string loginApi = $"{myConfiguration.ServerUrl}{ServerConstants.LoginApi}";
             var authorizedUser = 
-                await RestApi.CallApiAsync<AuthorizedUser>(myConfiguration.LoginServerApi, userAuthentication);
+                await RestApi.PostAsync<AuthorizedUser>(loginApi, userAuthentication);
             if (authorizedUser == null)
             {
                 throw new BaseException(ErrorMessage.USER_NOT_FOUND);

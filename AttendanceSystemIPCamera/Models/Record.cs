@@ -14,6 +14,12 @@ namespace AttendanceSystemIPCamera.Models
         public int Id { get; set; }
         public int AttendeeId { get; set; }
         public int SessionId { get; set; }
+        //giảm chuẩn để tiện cho sync attendance data
+        public string AttendeeCode { get; set; }
+        public string SessionName { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+        public DateTime? UpdateTime { get; set; }
         public Attendee Attendee { get; set; }
         public Session Session { get; set; }
         public bool Present { get; set; }

@@ -53,5 +53,14 @@ namespace AttendanceSystemIPCamera.Controllers
                 return await recordService.UpdateRecordsAfterEndSession();
             });
         }
+
+        [HttpPost("sync")]
+        public dynamic SyncAttendanceData()
+        {
+            return ExecuteInMonitoring(() =>
+             {
+                 return recordService.SyncAttendanceData();
+             });
+        }
     }
 }
