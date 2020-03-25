@@ -18,7 +18,7 @@ def recognize_image(imagePath, threshold=0):
     return recognize_image_after_read(image, threshold)
 
 
-def recognize_image_after_read(image, threshold=0, alignFace = False):
+def recognize_image_after_read(image, threshold=0, alignFace=False):
     boxes = my_face_detection.face_locations(image)
     if len(boxes) == 1:
         if (alignFace == True):
@@ -33,8 +33,10 @@ def recognize_image_after_read(image, threshold=0, alignFace = False):
 
 
 def _get_label(vec, threshold=0):
-    recognizer = pickle.loads(open(my_constant.recognizerPath, "rb").read())
-    le = pickle.loads(open(my_constant.lePath, "rb").read())
+    recognizer_model = pickle.loads(open(my_constant.recognizerModelPath, "rb").read())
+    recognizer = recognizer_model["recognizer"]
+    le = recognizer_model["le"]
+
     preds = recognizer.predict_proba([vec])[0]
     j = np.argmax(preds)
     proba = preds[j]
@@ -44,7 +46,7 @@ def _get_label(vec, threshold=0):
     return "Unknown", None
 
 
-def generate_more_embeddings(datasetPath, alignFace = False):
+def generate_more_embeddings(datasetPath, alignFace=False):
     imagePaths = list(paths.list_images(datasetPath))
     data = pickle.loads(open(my_constant.embeddingsPath, "rb").read())
     knownEmbeddings = data["embeddings"]
@@ -87,7 +89,7 @@ def generate_more_embeddings(datasetPath, alignFace = False):
     f.close()
 
 
-def generate_embeddings(datasetPath, alignFace = False):
+def generate_embeddings(datasetPath, alignFace=False):
     imagePaths = list(paths.list_images(datasetPath))
     knownEmbeddings = []
     knownNames = []
@@ -145,15 +147,14 @@ def generate_train_model():
     recognizer.fit(data["embeddings"], labels)
 
     # write the actual face recognition model to disk
-    f = open(my_constant.recognizerPath, "wb+")
-    f.write(pickle.dumps(recognizer))
+
+    recognizer_model = {"recognizer": recognizer, "le": le}
+    f = open(my_constant.recognizerModelPath, "wb+")
+    f.write(pickle.dumps(recognizer_model))
     f.close()
 
-    # write the label encoder to disk
-    f = open(my_constant.lePath, "wb+")
-    f.write(pickle.dumps(le))
-    f.close()
-def augment_images(datasetDir, augmentedDir, genImageNum = 4):
+
+def augment_images(datasetDir, augmentedDir, genImageNum=4):
     # grab the paths to the input images in our dataset
     print("[INFO] quantifying faces...")
     imagePaths = list(paths.list_images(datasetDir))

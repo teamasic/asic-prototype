@@ -22,9 +22,6 @@ args = vars(ap.parse_args())
 # Load arguments
 rtspString = args["rtsp"]
 
-recognizer = pickle.loads(open(my_constant.recognizerPath, "rb").read())
-le = pickle.loads(open(my_constant.lePath, "rb").read())
-
 # initialize the video stream, then allow the camera sensor to warm up
 print("[INFO] starting video stream...")
 vs = stream_video.CustomVideoStream(src=0).start()

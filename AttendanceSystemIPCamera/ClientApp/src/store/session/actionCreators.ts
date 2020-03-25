@@ -184,7 +184,7 @@ function endTakingAttendance() {
 	};
 }
 
-function startTakingAttendance(session: Session) {
+function startTakingAttendance(session: any) {
 	return {
 		type: ACTIONS.START_TAKING_ATTENDANCE,
 		session

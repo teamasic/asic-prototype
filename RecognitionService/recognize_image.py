@@ -23,8 +23,6 @@ args = vars(ap.parse_args())
 # Load arguments
 imagePath = args["image"]
 
-recognizer = pickle.loads(open(my_constant.recognizerPath, "rb").read())
-le = pickle.loads(open(my_constant.lePath, "rb").read())
 
 while True:
     image = cv2.imread(imagePath)

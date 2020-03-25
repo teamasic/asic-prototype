@@ -87,31 +87,36 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
                 ResponsePython responsePython = new ResponsePython();
                 using (var myProcess = Process.Start(startInfo))
                 {
-                    await Task.Delay(1000 * 60 * durationMinutes);
+                    myProcess.WaitForExit(1000 * 60 * durationMinutes);
+                    myProcess.Kill();
+                    responsePython.Errors = myProcess.StandardError.ReadToEnd();
+                    responsePython.Results = myProcess.StandardOutput.ReadToEnd();
+                }
+                if (responsePython.Errors.Contains("Cannot read video stream"))
+                {
+                    throw new AppException(System.Net.HttpStatusCode.InternalServerError, "Cannot read video stream");
+                }
+                else
+                {
                     using (var scope = serviceScopeFactory.CreateScope())
                     {
                         var recordService = scope.ServiceProvider.GetRequiredService<IRecordService>();
                         await recordService.UpdateRecordsAfterEndSession();
                     }
-                    myProcess.Kill();
-                    responsePython.Errors = myProcess.StandardError.ReadToEnd();
-                    responsePython.Results = myProcess.StandardOutput.ReadToEnd();
                 }
                 return responsePython;
 
             }
             catch(Exception ex)
             {
-                Console.Write(ex.Message);
+                Debug.Write(ex.Message);
                 using (var scope = serviceScopeFactory.CreateScope())
                 {
                     var sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
                     sessionRepository.SetActiveSession(-1);
                 }
                 throw new AppException(System.Net.HttpStatusCode.InternalServerError, ex.Message);
-
             }
-            // Wait until start time
            
         }
         private async Task<ResponsePython> RecognitionByOpenCV(int durationStartIn, int durationMinutes, string rtspString)
