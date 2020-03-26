@@ -139,22 +139,20 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                             </Title>
                         </Col>
                         <Col>
-                            <div className="row">
-                                <Title className="title" level={3}>
-                                    <Paragraph>Max sessions : {this.state.editMaxSession ?
-                                        (<InputNumber
-                                            defaultValue={this.props.selectedGroup.maxSessionCount}
-                                            min={0}
-                                            max={100}
-                                            onBlur={this.onMaxSessionBlur}
-                                        />
-                                        ) :
-                                        (
-                                            <span>{this.props.selectedGroup.maxSessionCount} < EditTwoTone onClick={this.onEditMaxSession} /></span>
-                                        )
-                                    }</Paragraph>
-                                </Title>
-                            </div>
+                            <Title className="title" level={4}>
+                                <Paragraph>Total sessions : {this.state.editMaxSession ?
+                                    (<InputNumber
+                                        defaultValue={this.props.selectedGroup.maxSessionCount}
+                                        min={0}
+                                        max={100}
+                                        onBlur={this.onMaxSessionBlur}
+                                    />
+                                    ) :
+                                    (
+                                        <span>{this.props.selectedGroup.maxSessionCount} < EditTwoTone onClick={this.onEditMaxSession} /></span>
+                                    )
+                                }</Paragraph>
+                            </Title>
                         </Col>
                     </Row>
                 </div>

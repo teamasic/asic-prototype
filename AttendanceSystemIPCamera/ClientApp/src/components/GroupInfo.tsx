@@ -1,7 +1,6 @@
 ﻿import * as React from 'react';
-import { Table, Popconfirm, Button, message, Modal, Form, Input, Typography } from 'antd'
+import { Table, Popconfirm, Button, message, Modal, Form, Input } from 'antd'
 import { GroupsState } from '../store/group/state';
-import Group from '../models/Group';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { RouteComponentProps } from 'react-router';
 import { connect } from 'react-redux';
@@ -9,11 +8,10 @@ import { ApplicationState } from '../store';
 import { bindActionCreators } from 'redux';
 import Attendee from '../models/Attendee';
 import '../styles/Table.css';
-import { renderStripedTable } from '../utils'
+import { renderStripedTable, success, error } from '../utils'
+import { FormComponentProps } from 'antd/lib/form';
 
-const { Text } = Typography
-
-interface Props {
+interface Props extends FormComponentProps {
     attendees?: Attendee[],
     attendeeLoading: boolean
 }
@@ -26,7 +24,7 @@ interface GroupInfoComponentstate {
 
 // At runtime, Redux will merge together...
 type GroupInfoProps =
-    Props 
+    Props
     & GroupsState // ... state we've requested from the Redux store
     & typeof groupActionCreators // ... plus action creators we've requested
     & RouteComponentProps<{}>; // ... plus incoming routing parameters
@@ -66,7 +64,11 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
             modalVisible: false,
             newAttendee: attendee
         });
-        message.success("Add attendee success!");
+        this.props.form.setFieldsValue({
+            attendeeCode: '',
+            attendeeName: ''
+        });
+        success("Add attendee to group success!");
     }
 
     public openModal = () => {
@@ -110,11 +112,13 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
             ...this.state.newAttendee,
             name: name
         };
-        console.log(attendee);
         this.setState({
             newAttendee: attendee
         })
-    } 
+        this.props.form.setFieldsValue({
+            attendeeName: name
+        });
+    }
 
     public onPageChange = (page: number) => {
         this.setState({
@@ -123,7 +127,17 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
     }
 
     public duplicateAttendee = () => {
-        message.error("Attendee " + this.state.newAttendee.code + " is already in this group!");
+        error("Attendee " + this.state.newAttendee.code + " is already in this group!");
+    }
+
+    public handleSubmit = (e: any) => {
+        e.preventDefault();
+        this.props.form.validateFields((err: any, values: any) => {
+            if (!err) {
+                console.log('Received values of form: ', values);
+                this.addAttendee();
+            }
+        });
     }
 
     public render() {
@@ -148,17 +162,17 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                 title: '',
                 dataIndex: 'action',
                 width: '5%',
-                render: (text: any, record: any) => 
+                render: (text: any, record: any) =>
                     this.props.attendees != undefined && this.props.attendees.length >= 1 ? (
                         <Popconfirm title="Are you sure to delete this attendee?"
                             onConfirm={() => this.handleDelete(record.id)}>
-                            <Button type="danger" icon="delete"></Button>
+                            <Button size="small" type="danger" icon="delete"></Button>
                         </Popconfirm>
-                    ): null
+                    ) : null
                 ,
             }
         ];
-        
+        const { getFieldDecorator } = this.props.form;
         return (
             <div>
                 <Button type="primary"
@@ -171,15 +185,24 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                     visible={this.state.modalVisible}
                     title="Add new attendee"
                     okText="Save"
-                    onOk={this.addAttendee}
+                    onOk={this.handleSubmit}
                     onCancel={this.handleCancel}
                 >
-                    <Form labelCol={{ span: 5 }} wrapperCol={{ span: 12 }} onSubmit={this.addAttendee}>
+                    <Form labelCol={{ span: 5 }} wrapperCol={{ span: 12 }} onSubmit={this.handleSubmit}>
                         <Form.Item label="Code" required>
-                            <Input type="text" onChange={this.onNewCodeChange} value={this.state.newAttendee.code} onBlur={this.getAttendeeName} />
+                            {getFieldDecorator('attendeeCode', {
+                                rules: [{ required: true, message: 'Please input attendee code' }],
+                            })(
+                                <Input type="text" onChange={this.onNewCodeChange}
+                                    onBlur={this.getAttendeeName} />
+                            )}
                         </Form.Item>
                         <Form.Item label="Name" required>
-                            <Input type="text" onChange={this.onNewNameChange} value={this.state.newAttendee.name} />
+                            {getFieldDecorator('attendeeName', {
+                                rules: [{ required: true, message: 'Please input attendee name' }],
+                            })(
+                                <Input type="text" onChange={this.onNewNameChange} />
+                            )}
                         </Form.Item>
                     </Form>
                 </Modal>
@@ -197,15 +220,16 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                     rowClassName={renderStripedTable}
                 />
             </div>
-            
-            );
+
+        );
     }
 }
 
-export default connect(
-    (state: ApplicationState, ownProps: Props) => ({
-        ...state.groups,
-        ...ownProps
-    }), // Selects which state properties are merged into the component's props
-    dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
-)(GroupInfo as any);
+export default Form.create<Props>({ name: 'add_attendee' })
+    (connect(
+        (state: ApplicationState, ownProps: Props) => ({
+            ...state.groups,
+            ...ownProps
+        }), // Selects which state properties are merged into the component's props
+        dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
+    )(GroupInfo as any));

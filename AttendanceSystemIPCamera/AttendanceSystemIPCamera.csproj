@@ -67,11 +67,14 @@
     <None Remove="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
     <None Remove="ClientApp\src\models\Attendee.ts" />
+    <None Remove="ClientApp\src\models\ExportFormat1.ts" />
+    <None Remove="ClientApp\src\models\ExportFormat2.ts" />
     <None Remove="ClientApp\src\models\ChangeRequest.ts" />
     <None Remove="ClientApp\src\models\CreateChangeRequest.ts" />
     <None Remove="ClientApp\src\models\ExportRequest.ts" />
     <None Remove="ClientApp\src\models\Group - Copy.ts" />
     <None Remove="ClientApp\src\models\Group.ts" />
+    <None Remove="ClientApp\src\models\HttpStatusCode.ts" />
     <None Remove="ClientApp\src\models\Record.ts" />
     <None Remove="ClientApp\src\models\Session.ts" />
     <None Remove="ClientApp\src\models\SessionViewModel.ts" />
@@ -114,6 +117,8 @@
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRConnection.ts" />
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\ExportFormat1.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\ExportFormat2.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\CreateChangeRequest.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -121,6 +126,7 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\ExportRequest.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\HttpStatusCode.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\Record.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

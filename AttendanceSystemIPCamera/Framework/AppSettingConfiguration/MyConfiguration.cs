@@ -13,9 +13,5 @@ namespace AttendanceSystemIPCamera.Framework.AppSettingConfiguration
         public string RecognitionServiceName { get; set; }
         public string ExportFilePath { get; set; }
         public string RecognitionImageBase64Path { get; set; }
-        public string RecognizerPath { get; set; }
-        public string LePath { get; set; }
-        public string Server { get; set; }
-        public int ServerPort { get; set; }
     }
 }
