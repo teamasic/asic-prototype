@@ -81,6 +81,7 @@
     <None Remove="ClientApp\src\services\group.ts" />
     <None Remove="ClientApp\src\services\record.ts" />
     <None Remove="ClientApp\src\services\session.ts" />
+    <None Remove="ClientApp\src\services\settings.ts" />
     <None Remove="ClientApp\src\services\unit.ts" />
     <None Remove="ClientApp\src\store\classroom\actionCreators.ts" />
     <None Remove="ClientApp\src\store\classroom\reducers.ts" />
@@ -137,6 +138,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\changeRequest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\services\settings.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\unit.ts">

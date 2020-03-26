@@ -8,6 +8,10 @@ import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 import createSignalRConnection from './middlewares/SignalRConnection';
 import { attachEvents } from './middlewares/SignalRMiddleware';
+import { config } from "dotenv"
+import { resolve } from "path"
+
+config({ path: resolve(__dirname, "../.env") })
 
 // Create browser history to use in the Redux store
 const baseUrl = document

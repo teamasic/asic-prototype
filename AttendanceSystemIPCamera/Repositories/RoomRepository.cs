@@ -16,6 +16,8 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface IRoomRepository : IRepository<Room>
     {
         public Task<Room> GetRoomByName(string name);
+        public void ClearAllRooms();
+        public Task AddRooms(IEnumerable<Room> rooms);
     }
     public class RoomRepository : Repository<Room>, IRoomRepository
     {
@@ -26,6 +28,14 @@ namespace AttendanceSystemIPCamera.Repositories
         public async Task<Room> GetRoomByName(string name)
         {
             return await dbSet.FirstOrDefaultAsync(c => c.Name.Equals(name));
+        }
+        public void ClearAllRooms()
+        {
+            dbSet.RemoveRange(context.Set<Room>());
+        }
+        public async Task AddRooms(IEnumerable<Room> rooms)
+        {
+            await dbSet.AddRangeAsync(rooms);
         }
     }
 }

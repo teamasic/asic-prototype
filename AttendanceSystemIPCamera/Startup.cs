@@ -29,6 +29,7 @@ using AttendanceSystemIPCamera.Services.RecognitionService;
 using AttendanceSystemIPCamera.Services.UnitService;
 using AttendanceSystemIPCamera.Framework.GlobalStates;
 using Microsoft.Extensions.Logging;
+using AttendanceSystemIPCamera.Services.SettingsService;
 
 namespace AttendanceSystemIPCamera
 {
@@ -64,6 +65,7 @@ namespace AttendanceSystemIPCamera
             SetupAutoMapper(services);
             SetupDependencyInjection(services);
             SetupMyConfiguration(services);
+            SetupFilesConfiguration(services);
             SetupBackgroundService(services);
             setupSwagger(services);
         }
@@ -71,6 +73,10 @@ namespace AttendanceSystemIPCamera
         private void SetupMyConfiguration(IServiceCollection services)
         {
             services.AddSingleton(Configuration.GetSection("MyConfiguration").Get<MyConfiguration>());
+        }
+        private void SetupFilesConfiguration(IServiceCollection services)
+        {
+            services.AddSingleton(Configuration.GetSection("FilesConfiguration").Get<FilesConfiguration>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -175,6 +181,9 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<SupervisorNetworkService>();
             services.AddScoped<IRecognitionService, RecognitionService>();
             services.AddScoped<IChangeRequestService, ChangeRequestService>();
+            services.AddScoped<ISettingsService, SettingsService>();
+            services.AddScoped<SettingsUtils>();
+            services.AddHttpClient();
         }
         private void SetupRepositories(IServiceCollection services)
         {
