@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Services.RecognitionService
@@ -35,8 +38,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
 
         public async Task<ResponsePython> StartRecognition(int durationBeforeStartInMinutes, int durationWhileRunningInMinutes, string rtspString)
         {
-            return await RecognitionByImageVLC(durationBeforeStartInMinutes, durationWhileRunningInMinutes, rtspString);
-            //await RecognitionByOpenCV(durationStartIn, durationMinutes, rtspString);
+            return await RecognitionByVideo(durationBeforeStartInMinutes, durationWhileRunningInMinutes, rtspString);
         }
         public ResponsePython RecognitionImage(string imageString)
         {
@@ -71,7 +73,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             startInfo.WorkingDirectory = parentDirectory + "\\" + myConfiguration.RecognitionServiceName;
             return startInfo;
         }
-        private async Task<ResponsePython> RecognitionByImageVLC(int durationStartIn, int durationMinutes, string rtspString)
+        private async Task<ResponsePython> RecognitionByVideo(int durationStartIn, int durationMinutes, string rtspString)
         {
             try
             {
@@ -80,34 +82,78 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
                 // Get start info
                 var cmd = myConfiguration.RecognitionProgramPathVLC;
                 var args = "";
-                args += string.Format(@"--rtsp {0}", rtspString);
-                var startInfo = GetProcessStartInfo(cmd, args);
 
-                // Start process
-                ResponsePython responsePython = new ResponsePython();
-                using (var myProcess = Process.Start(startInfo))
+                // rtsp string of camera
+                args += string.Format(@"--rtsp {0}", rtspString);
+
+                // num of people for recognition
+                args += string.Format(@" --num {0}", 1);
+
+                // duration for recognition
+                args += string.Format(@" --time {0}", 1000 * 60 * durationMinutes);
+
+                // set flag for checking attendance
+                args += string.Format(@" --attendance {0}", "True");
+                var startInfo = GetProcessStartInfo(cmd, args);
+                // Handle outputs and errors
+                StringBuilder output = new StringBuilder();
+                StringBuilder error = new StringBuilder();
+                using (Process process = new Process())
                 {
-                    myProcess.WaitForExit(1000 * 60 * durationMinutes);
-                    myProcess.Kill();
-                    responsePython.Errors = myProcess.StandardError.ReadToEnd();
-                    responsePython.Results = myProcess.StandardOutput.ReadToEnd();
-                }
-                if (responsePython.Errors.Contains("Cannot read video stream"))
-                {
-                    throw new AppException(System.Net.HttpStatusCode.InternalServerError, "Cannot read video stream");
-                }
-                else
-                {
-                    using (var scope = serviceScopeFactory.CreateScope())
+                    process.StartInfo = startInfo;
+                    process.OutputDataReceived += (sender, e) =>
                     {
-                        var recordService = scope.ServiceProvider.GetRequiredService<IRecordService>();
-                        await recordService.UpdateRecordsAfterEndSession();
+                        if (e.Data != null)
+                        {
+                            output.AppendLine(e.Data);
+                        }
+                    };
+
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        if (e.Data != null)
+                        {
+                            error.AppendLine(e.Data);
+                        }
+                    };
+                    //Start process 
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    // Wait for exit
+                    var exitWait = process.WaitForExit(1000 * 60 * (durationMinutes + 1));
+                    if (exitWait)
+                    {
+                        // ok
+                        if (process.ExitCode == 0)
+                        {
+                            using (var scope = serviceScopeFactory.CreateScope())
+                            {
+                                var recordService = scope.ServiceProvider.GetRequiredService<IRecordService>();
+                                await recordService.UpdateRecordsAfterEndSession();
+                            }
+                        }
+                        // exception
+                        else if (process.ExitCode == 1)
+                        {
+                            throw new AppException(HttpStatusCode.InternalServerError, error.ToString());
+                        }
+                    }
+                    else
+                    {
+                        process.Kill();
+                        throw new AppException(HttpStatusCode.InternalServerError, error.ToString());
                     }
                 }
-                return responsePython;
+                return new ResponsePython()
+                {
+                    Errors = error.ToString(),
+                    Results = output.ToString()
+                };
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.Write(ex.Message);
                 using (var scope = serviceScopeFactory.CreateScope())
@@ -115,35 +161,9 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
                     var sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
                     sessionRepository.SetActiveSession(-1);
                 }
-                throw new AppException(System.Net.HttpStatusCode.InternalServerError, ex.Message);
+                throw new AppException(HttpStatusCode.InternalServerError, ex.Message);
             }
-           
-        }
-        private async Task<ResponsePython> RecognitionByOpenCV(int durationStartIn, int durationMinutes, string rtspString)
-        {
-            await Task.Delay(1000 * 60 * durationStartIn);
 
-            // Get start info
-            var cmd = myConfiguration.RecognitionProgramPathOpenCV;
-            var args = "";
-            args += string.Format(@"--rtsp {0}", rtspString);
-            var startInfo = GetProcessStartInfo(cmd, args);
-
-            // Start process
-            ResponsePython responsePython = new ResponsePython();
-            using (var myProcess = Process.Start(startInfo))
-            {
-                await Task.Delay(1000 * 60 * durationMinutes);
-                using (var scope = serviceScopeFactory.CreateScope())
-                {
-                    var recordService = scope.ServiceProvider.GetRequiredService<IRecordService>();
-                    await recordService.UpdateRecordsAfterEndSession();
-                }
-                myProcess.Kill();
-                responsePython.Errors = myProcess.StandardError.ReadToEnd();
-                responsePython.Results = myProcess.StandardOutput.ReadToEnd();
-            }
-            return responsePython;
         }
     }
 }
