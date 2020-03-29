@@ -10,8 +10,8 @@ namespace AttendanceSystemIPCamera.Framework.AppSettingConfiguration
         public string UnitConfigFile { get; set; }
         public string SettingsConfigFile { get; set; }
         public string RoomConfigFile { get; set; }
-        public string RecognizerFile { get; set; }
-        public string LeFile { get; set; }
+        public string RecognizerModelFile { get; set; }
         public string LastUpdatedFileName { get; set; }
+        public string RecognizerOutputFolder { get; set; }
     }
 }

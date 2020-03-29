@@ -73,7 +73,6 @@ namespace AttendanceSystemIPCamera.Controllers
             return await ExecuteInMonitoring(async () =>
             {
                 var lastUpdatedDate = await service.DownloadRoomFile();
-                unitService.Refresh();
                 return new SettingViewModel
                 {
                     NeedsUpdate = false,
@@ -87,7 +86,6 @@ namespace AttendanceSystemIPCamera.Controllers
             return await ExecuteInMonitoring(async () =>
             {
                 var lastUpdatedDate = await service.DownloadSettingsFile();
-                unitService.Refresh();
                 return new SettingViewModel
                 {
                     NeedsUpdate = false,

@@ -6,13 +6,14 @@ import Group from '../models/Group';
 import { Link, withRouter } from 'react-router-dom';
 import Attendee from '../models/Attendee';
 import { ApplicationState } from '../store';
-import { Breadcrumb, Icon, Button, Empty, message, Typography, Tabs, Row, Col, InputNumber } from 'antd';
+import { Breadcrumb, Icon, Button, Empty, message, Typography, Tabs, Row, Col, InputNumber, Card } from 'antd';
 import { SettingState } from '../store/settings/state';
 import { settingActionCreators } from '../store/settings/actionCreators';
 import classNames from 'classnames';
 import TopBar from './TopBar';
 import Setting from '../models/Setting';
 import '../styles/Settings.css';
+import { success, error } from '../utils'
 
 const { Title } = Typography;
 const { Paragraph } = Typography
@@ -31,14 +32,16 @@ class Settings extends React.PureComponent<SettingProps> {
 
     // This method is called when the component is first added to the document
     public componentDidMount() {
+        this.props.checkForUpdates(() => { });
     }
 
     private checkForUpdates() {
-        this.props.checkForUpdates();
+        this.props.checkForUpdates(() => {
+            error('Unable to check for updates. Please check your internet connection and try again.');
+        });
     }
 
     public render() {
-        const updatableBoxes = ['Model', 'Room', 'Unit', 'Others'];
         return (
             <React.Fragment>
                 <TopBar>
@@ -55,25 +58,57 @@ class Settings extends React.PureComponent<SettingProps> {
                     <Button size="large"
                         type="primary"
                         onClick={() => this.checkForUpdates()}>Check for updates</Button>
-                    {updatableBoxes.map(key =>
-                        this.renderUpdateBox(key, (this.props as any)[key.toLowerCase()]))}
+                    {
+                        this.renderUpdateBox("model", "Update facial recognition data",
+                            "Update the data required for facial recognition tasks.",
+                            this.props.model)
+                    }
+                    {
+                        this.renderUpdateBox("room", "Update room configuration",
+                            "Update your institution's room list and associated IP cameras.",
+                            this.props.room)
+                    }
+                    {
+                        this.renderUpdateBox("unit", "Update unit configuration",
+                            "Update your institution's unit configuration (i.e. class periods, work hours, etc.)",
+                            this.props.unit)
+                    }
+                    {
+                        this.renderUpdateBox("others", "Update other settings",
+                            "Update other miscellaneous settings.",
+                            this.props.others)
+                    }
                 </div>
             </React.Fragment>
         );
     }
 
-    private renderUpdateBox(name: string, setting: Setting) {
-        return <div className="update-box row centered" key={name}>
-            <div>
-                <Title level={3}>{name}</Title>
-                Last updated: {new Date(setting.lastUpdated).toLocaleDateString()}
-            </div>
-            {
-                setting.needsUpdate ?
-                    <Button icon="exclamation-circle" type="default">Update now</Button> :
-                    <div><Icon type="check-circle" />Updated</div>
-            }
-        </div>;
+    private renderUpdateBox(key: string, name: string, description: string, setting: Setting) {
+        return <Card className="update-card" title={name} bordered={false}>
+            <Row>
+                <Col span={20}>
+                    <div>{description}</div>
+                    <div>Last updated: {(new Date(setting.lastUpdated)).toLocaleDateString()}</div>
+                </Col>
+                <Col span={4}>
+                    {
+                        setting.needsUpdate ?
+                            <Button loading={setting.loading} onClick={() => {
+                                this.props.update(key, this.updateSuccess, this.updateError)
+                            }} icon="sync">Update now</Button> :
+                            <Button disabled={true} icon="sync">Already updated</Button>
+                    }
+                </Col>
+            </Row>
+        </Card>;
+    }
+
+    private updateSuccess() {
+        success('Successfully updated.');
+    }
+
+    private updateError() {
+        error('An error happened during the updating process. Please try again.');
     }
 }
 

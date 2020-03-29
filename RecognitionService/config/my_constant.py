@@ -1,5 +1,7 @@
 from typing import Final
-embeddingsPath: Final = "output_dlib/embeddings.pickle"
+tempFolder: Final = "temp"
+outputDlibFolder: Final = "output_dlib"
+embeddingsPath: Final = "embeddings.pickle"
 snapshotPath: Final = "snapshot/snapshot.jpg"
 vlcPath: Final = r'C:\Program Files\VideoLAN\VLC'
-recognizerModelPath: Final = "output_dlib/recognizer_model.pickle"
+recognizerModelPath: Final = "recognizer_model.pickle"

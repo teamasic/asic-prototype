@@ -3,3 +3,18 @@
     padding: 10px;
     margin: 10px 0;
 }
+
+.update-card {
+    width: 100%;
+    margin: 15px 0 15px 5px;
+}
+
+.update-card .ant-card-head, .update-card .ant-card-body {
+    padding-left: 0 !important;
+}
+
+@media screen and (min-width: 800px) {
+    .update-card {
+        width: 60%;
+    }
+}

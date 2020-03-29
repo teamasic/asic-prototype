@@ -2,4 +2,5 @@
     needsUpdate: boolean;
     lastUpdated: Date;
     newestServerUpdate: Date;
+    loading: boolean;
 }

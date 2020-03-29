@@ -22,8 +22,7 @@ namespace AttendanceSystemIPCamera.Services.SettingsService
     class SettingsDownloadAPI
     {
         private static readonly string BASE = "/api/settings/";
-        public static readonly string MODEL_RECOGNIZER = BASE + "model/recognizer";
-        public static readonly string MODEL_LE = BASE + "model/le";
+        public static readonly string MODEL = BASE + "model";
         public static readonly string ROOM = BASE + "room";
         public static readonly string UNIT = BASE + "unit";
         public static readonly string OTHERS = BASE + "others";
@@ -46,12 +45,12 @@ namespace AttendanceSystemIPCamera.Services.SettingsService
             return new UriBuilder
             {
                 Scheme = "https",
-                Host = myConfig.Server,
+                Host = myConfig.ServerHost,
                 Port = myConfig.ServerPort,
                 Path = path
             };
         }
-        private async Task DownloadFile(string path, string fileName)
+        private async Task DownloadFile(string path, string folder, string fileName)
         {
             UriBuilder uriBuilder = GetServerUri(path);
 
@@ -67,9 +66,9 @@ namespace AttendanceSystemIPCamera.Services.SettingsService
                 HttpContent content = response.Content;
                 var contentStream = await content.ReadAsStreamAsync(); // get the actual content stream
 
-                var dirName = Path.GetDirectoryName(fileName).ToString();
-                Directory.CreateDirectory(dirName);
-                using var file = File.Create(fileName);
+               // var dirName = Path.GetDirectoryName(fileName).ToString();
+                Directory.CreateDirectory(folder);
+                using var file = File.Create(Path.Join(folder, fileName));
                 await contentStream.CopyToAsync(file); // copy that stream to the file stream
             }
             else
@@ -79,25 +78,28 @@ namespace AttendanceSystemIPCamera.Services.SettingsService
         }
         public async Task DownloadModelConfig()
         {
-            var recognizerFile = filesConfig.RecognizerFile;
-            await DownloadFile(SettingsDownloadAPI.MODEL_RECOGNIZER, recognizerFile);
-            var leFile = filesConfig.LeFile;
-            await DownloadFile(SettingsDownloadAPI.MODEL_LE, leFile);
+            var currentDirectory = Environment.CurrentDirectory;
+            var parentDirectory = Directory.GetParent(currentDirectory).FullName;
+            var fileDest = Path.Join(parentDirectory,
+                myConfig.RecognitionServiceName, 
+                filesConfig.RecognizerOutputFolder);
+            await DownloadFile(SettingsDownloadAPI.MODEL, fileDest,
+                filesConfig.RecognizerModelFile);
         }
         public async Task DownloadUnitConfig()
         {
             var unitFile = filesConfig.UnitConfigFile;
-            await DownloadFile(SettingsDownloadAPI.UNIT, unitFile);
+            await DownloadFile(SettingsDownloadAPI.UNIT, Environment.CurrentDirectory, unitFile);
         }
         public async Task DownloadOtherSettingsConfig()
         {
             var settingsFile = filesConfig.SettingsConfigFile;
-            await DownloadFile(SettingsDownloadAPI.OTHERS, settingsFile);
+            await DownloadFile(SettingsDownloadAPI.OTHERS, Environment.CurrentDirectory, settingsFile);
         }
         public async Task DownloadRoomConfig()
         {
             var roomFile = filesConfig.RoomConfigFile;
-            await DownloadFile(SettingsDownloadAPI.ROOM, roomFile);
+            await DownloadFile(SettingsDownloadAPI.ROOM, Environment.CurrentDirectory, roomFile);
         }
 
         public async Task<SettingsUpdateViewModel> GetLastUpdatedDates()

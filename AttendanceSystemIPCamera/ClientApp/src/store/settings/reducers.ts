@@ -8,7 +8,8 @@ import Setting from "../../models/Setting";
 const unloadedSetting: Setting = {
     needsUpdate: false,
     lastUpdated: new Date(),
-    newestServerUpdate: new Date()
+    newestServerUpdate: new Date(),
+    loading: false
 };
 const unloadedState: SettingState = {
     model: {
@@ -36,6 +37,30 @@ const reducers: Reducer<SettingState> = (state: SettingState | undefined, incomi
                 ... state,
                 ... action.settings
             };
+        case ACTIONS.RECEIVE_UPDATE:
+            return {
+                ...state,
+                [action.key]: {
+                    ...action.setting,
+                    loading: false
+                }
+            };
+        case ACTIONS.START_LOADING_UPDATE:
+            return {
+                ...state,
+                [action.key]: {
+                    ...(state as any)[action.key],
+                    loading: true
+                }
+            }
+        case ACTIONS.STOP_LOADING_UPDATE:
+            return {
+                ...state,
+                [action.key]: {
+                    ...(state as any)[action.key],
+                    loading: false
+                }
+            }
     }
 
     return state;

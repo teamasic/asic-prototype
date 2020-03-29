@@ -68,8 +68,25 @@ namespace AttendanceSystemIPCamera.Services.RoomService
         }
         public async Task ResetRooms(IEnumerable<Room> rooms)
         {
-            roomRepository.ClearAllRooms();
-            await roomRepository.AddRooms(rooms);
+            var i = 1;
+            foreach (var room in rooms)
+            {
+                room.Id = i;
+                i++;
+            }
+            using var transaction = unitOfWork.CreateTransaction();
+            try
+            {
+                roomRepository.ClearAllRooms();
+                await roomRepository.AddRooms(rooms);
+                unitOfWork.Commit();
+                await transaction.CommitAsync();
+            }
+            catch (Exception e)
+            {
+                await transaction.RollbackAsync();
+                throw e;
+            }
         }
     }
 }
