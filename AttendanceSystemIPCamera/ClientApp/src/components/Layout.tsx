@@ -44,7 +44,7 @@ class PageLayout extends React.Component<
 		if (!this.props.successfullyLoaded) {
 			this.props.requestChangeRequests(ChangeRequestStatusFilter.UNRESOLVED);
 		}
-		const nonDefaultPathnames = ['change-requests'];
+		const nonDefaultPathnames = ['change-requests', 'settings'];
 		const currentPath = this.props.location.pathname.substring(1);
 		nonDefaultPathnames.forEach(path => {
 			if (currentPath.includes(path)) {
@@ -92,9 +92,13 @@ class PageLayout extends React.Component<
 									</Badge>
 							</div>
 						</Menu.Item>
-						<Menu.Item key="3">
+						<Menu.Item key="settings">
 							<Icon type="sync" />
-							<span>Sync</span>
+							<div className="link-container">
+								<Link to="/settings">
+									Settings
+								</Link>
+							</div>
 						</Menu.Item>
 					</Menu>
 				</Sider>

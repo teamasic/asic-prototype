@@ -328,6 +328,10 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					</span>
 				</div>
 				<Row>
+					<img src="api/attendee/SE12348/avatar" />
+					<img src="api/attendee/SE12350/avatar" />
+				</Row>
+				<Row>
 					<Col span={8}>
 						<Search
 							className="search-input"
