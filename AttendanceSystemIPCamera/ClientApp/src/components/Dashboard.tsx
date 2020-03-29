@@ -26,6 +26,7 @@ import TopBar from './TopBar';
 
 const { Search } = Input;
 const { Title } = Typography;
+const { Text } = Typography;
 
 interface Props extends FormComponentProps {
 }
@@ -49,7 +50,9 @@ interface DashboardComponentState {
     groupCode: string,
     groupName: string,
     maxSession: number,
-    page: number
+    page: number,
+    msgImportCSV: string,
+    csvFile: File
 }
 
 class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState> {
@@ -61,7 +64,9 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         groupCode: "",
         groupName: "",
         maxSession: 0,
-        page: 1
+        page: 1,
+        msgImportCSV: ' ',
+        csvFile: new File([], 'Null')
     }
 
     // This method is called when the component is first added to the document
@@ -104,8 +109,12 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
     public handleOk = (e: any) => {
         e.preventDefault();
+        var isImportedFile = this.state.csvFile.name !== 'Null';
+        if(!isImportedFile) {
+            this.setState({msgImportCSV: 'Please import csv file'});
+        }
         this.props.form.validateFields((err: any, values: any) => {
-            if (!err) {
+            if (!err && isImportedFile) {
                 var newGroup = new Group();
                 newGroup.name = this.state.groupName;
                 newGroup.code = this.state.groupCode;
@@ -138,14 +147,16 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                 complete: function (results: any, file: File) {
                     if (thisState.checkValidFileFormat(results.data)) {
                         thisState.setState({
-                            importAttendees: results.data
+                            importAttendees: results.data,
+                            msgImportCSV: '',
+                            csvFile: file
                         }, () => {
                             resolve();
                         });
                     } else {
-                        message.error("You upload a csv file with wrong format. Please try again!", 3);
                         thisState.setState({
-                            importAttendees: []
+                            importAttendees: [],
+                            msgImportCSV: 'You upload a csv file with wrong format. Please try again!'
                         }, () => { reject(); });
                     }
                 }, error: function (errors: any, file: File) {
@@ -164,18 +175,17 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
             if (!isNullOrUndefined(temp[0].No)
                 && !isNullOrUndefined(temp[0].Code)
                 && !isNullOrUndefined(temp[0].Name)) {
-                console.log('true');
                 return true;
             }
         }
-        console.log('false');
         return false;
     }
 
     public handleCancel = () => {
         this.setState({
             modalVisible: false,
-            importAttendees: []
+            importAttendees: [],
+            csvFile: new File([], 'Null')
         });
     }
 
@@ -194,7 +204,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     public validateBeforeUpload = (file: File): boolean | Promise<void> => {
         if (file.type !== "application/vnd.ms-excel") {
             //Show error in 3 second
-            message.error("Only accept CSV file!", 3);
+            this.setState({ msgImportCSV: 'Only accept CSV file!' });
             return false;
         }
         return this.parseFileToTable(file);
@@ -270,7 +280,10 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                 <Col span={8}>
                                     <Form.Item label="Group Code" required>
                                         {getFieldDecorator('code', {
-                                            rules: [{ required: true, message: 'Please input group code' }],
+                                            rules: [
+                                                { required: true, message: 'Please input group code' },
+                                                { min: 3, max: 10, message: 'Group code requires 3-10 characters' }
+                                            ],
                                         })(
                                             <Input placeholder="Enter group code" onChange={this.onGroupCodeChange} />
                                         )}
@@ -279,7 +292,10 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                 <Col span={9}>
                                     <Form.Item label="Group Name" required>
                                         {getFieldDecorator('name', {
-                                            rules: [{ required: true, message: 'Please input group name' }],
+                                            rules: [
+                                                { required: true, message: 'Please input group name' },
+                                                { min: 3, max: 50, message: 'Group name requires 3-50 characters' }
+                                            ],
                                         })(
                                             <Input placeholder="Enter group name" onChange={this.onGroupNameChange} />
                                         )}
@@ -300,7 +316,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                         </Form>
                         <Divider orientation="left">List Attendees</Divider>
                         <Row gutter={[0, 32]}>
-                            <Col span={8}>
+                            <Col span={4}>
                                 <Upload
                                     multiple={false}
                                     accept=".csv"
@@ -311,6 +327,19 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                         <Icon type="upload" /> Upload CSV File
                                     </Button>
                                 </Upload>
+                            </Col>
+                            <Col span={20}>
+                                {this.state.msgImportCSV.length === 0 ?
+                                    (
+                                        <div>
+                                            <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" />
+                                            <Text type="secondary"> {this.state.csvFile.name}</Text>
+                                        </div>
+                                    ) :
+                                    this.state.msgImportCSV.length !== 1 ?
+                                        (<Icon type="close-circle" theme="twoTone" twoToneColor="#ff0000" />) : null
+                                }
+                                <Text type="danger"> {this.state.msgImportCSV}</Text>
                             </Col>
                         </Row>
                         <Row>
