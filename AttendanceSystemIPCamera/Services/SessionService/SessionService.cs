@@ -363,7 +363,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 var durationBeforeStartInMinutes = GetDurationBeforeStartInMinutes(viewModel.StartTime);
                 var durationWhileRunningInMinutes = GetDurationWhileRunningInMinutes(viewModel.StartTime, viewModel.EndTime);
                 sessionRepository.SetActiveSession(viewModel.SessionId);
-                recognitionService.StartRecognition(durationBeforeStartInMinutes, durationWhileRunningInMinutes, session.RtspString);
+                await recognitionService.StartRecognition(durationBeforeStartInMinutes, durationWhileRunningInMinutes, session.RtspString);
                 return mapper.Map<SessionViewModel>(session);
             }
         }

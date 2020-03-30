@@ -1,6 +1,6 @@
 ﻿import format from 'date-fns/format';
 import moment from 'moment';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 
 export const formatFullDateTimeString = (time: Date | string) => format(new Date(time), 'EEEE, MMMM d, yyyy');
 

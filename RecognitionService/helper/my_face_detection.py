@@ -13,8 +13,8 @@ import imutils
 """
 
 
-def face_locations(image):
-    return _face_locations_hog(image)
+def face_locations(image, numberOfTimesToUpSample = 1):
+    return _face_locations_hog(image, numberOfTimesToUpSample)
 
 
 def _face_locations_caffe(image):
@@ -57,9 +57,9 @@ def _face_locations_caffe(image):
         boxes[i] = tuple(map(int, box))
     return boxes
 
-def _face_locations_hog(image):
+def _face_locations_hog(image, numberOfTimesToUpSample = 1):
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    boxes = face_recognition.face_locations(rgb, model="hog")
+    boxes = face_recognition.face_locations(rgb, model="hog", number_of_times_to_upsample=numberOfTimesToUpSample)
     return boxes
 
 

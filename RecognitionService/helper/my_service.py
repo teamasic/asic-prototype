@@ -13,12 +13,12 @@ from config import my_constant
 from helper import my_face_detection, my_face_recognition, my_face_generator
 
 
-def recognize_image(imagePath, threshold=0):
+def recognize_image(imagePath):
     image = cv2.imread(imagePath)
-    return recognize_image_after_read(image, threshold)
+    return recognize_image_after_read(image)
 
 
-def recognize_image_after_read(image, threshold=0, alignFace = False):
+def recognize_image_after_read(image, alignFace=False, numberOfTimesToUpSample=1):
     boxes = my_face_detection.face_locations(image)
     if len(boxes) == 1:
         if (alignFace == True):
@@ -27,24 +27,42 @@ def recognize_image_after_read(image, threshold=0, alignFace = False):
         else:
             vecs = my_face_recognition.face_encodings(image, boxes)
         vec = vecs[0]
-        name, proba = _get_label(vec, threshold)
+        name, proba = _get_label(vec)
         return boxes[0], name, proba
+    else:
+        print("len: {}".format(len(boxes)))
     return None
 
 
-def _get_label(vec, threshold=0):
-    recognizer = pickle.loads(open(my_constant.recognizerPath, "rb").read())
-    le = pickle.loads(open(my_constant.lePath, "rb").read())
+def _get_label(vec):
+    recognizer_model = pickle.loads(open(my_constant.recognizerModelPath, "rb").read())
+    recognizer = recognizer_model["recognizer"]
+    le = recognizer_model["le"]
+
     preds = recognizer.predict_proba([vec])[0]
     j = np.argmax(preds)
     proba = preds[j]
     name = le.classes_[j]
-    if (proba > threshold):
+    if proba > my_constant.threshold:
         return name, proba
     return "Unknown", None
 
 
-def generate_more_embeddings(datasetPath, alignFace = False):
+def recognize_image_after_read_multiple(image, numberOfTimesToUpSample=1):
+    boxes = my_face_detection.face_locations(image, numberOfTimesToUpSample)
+    return get_label_after_detect_multiple(image, boxes)
+
+
+def get_label_after_detect_multiple(image, boxes):
+    vecs = my_face_recognition.face_encodings(image, boxes)
+    results = []
+    for i, vec in enumerate(vecs):
+        name, proba = _get_label(vec)
+        results.append((boxes[i], name, proba))
+    return results
+
+
+def generate_more_embeddings(datasetPath, alignFace=False):
     imagePaths = list(paths.list_images(datasetPath))
     data = pickle.loads(open(my_constant.embeddingsPath, "rb").read())
     knownEmbeddings = data["embeddings"]
@@ -87,7 +105,7 @@ def generate_more_embeddings(datasetPath, alignFace = False):
     f.close()
 
 
-def generate_embeddings(datasetPath, alignFace = False):
+def generate_embeddings(datasetPath, alignFace=False):
     imagePaths = list(paths.list_images(datasetPath))
     knownEmbeddings = []
     knownNames = []
@@ -145,15 +163,14 @@ def generate_train_model():
     recognizer.fit(data["embeddings"], labels)
 
     # write the actual face recognition model to disk
-    f = open(my_constant.recognizerPath, "wb+")
-    f.write(pickle.dumps(recognizer))
+
+    recognizer_model = {"recognizer": recognizer, "le": le}
+    f = open(my_constant.recognizerModelPath, "wb+")
+    f.write(pickle.dumps(recognizer_model))
     f.close()
 
-    # write the label encoder to disk
-    f = open(my_constant.lePath, "wb+")
-    f.write(pickle.dumps(le))
-    f.close()
-def augment_images(datasetDir, augmentedDir, genImageNum = 4):
+
+def augment_images(datasetDir, augmentedDir, genImageNum=4):
     # grab the paths to the input images in our dataset
     print("[INFO] quantifying faces...")
     imagePaths = list(paths.list_images(datasetDir))
@@ -207,3 +224,9 @@ def augment_images(datasetDir, augmentedDir, genImageNum = 4):
         for i, image in enumerate(images):
             full_file_name = os.path.sep.join([augmented_path, name, str(i + 1) + ".jpg"])
             cv2.imwrite(full_file_name, image)
+
+
+def transfer_rtsp_to_http(rtspString):
+    command = "{} {} {}".format(my_constant.transferToHttpBatchPath, rtspString, my_constant.portHttpStream)
+    os.system(command)
+    return "http://localhost:{}".format(my_constant.portHttpStream)

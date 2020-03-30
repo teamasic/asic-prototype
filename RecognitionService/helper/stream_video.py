@@ -32,8 +32,10 @@ class CustomVideoStream:
 
     def read(self):
         # return the frame most recently read
-        ret, image = self.stream.retrieve()
-        return image
+        self.grabbed = False
+        while self.grabbed is False:
+            self.grabbed, self.frame = self.stream.retrieve()
+        return self.frame
 
     def stop(self):
         # indicate that the thread should be stopped

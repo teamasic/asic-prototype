@@ -47,7 +47,7 @@ class PageLayout extends React.Component<
 		if (!this.props.successfullyLoaded) {
 			this.props.requestChangeRequests(ChangeRequestStatusFilter.UNRESOLVED);
 		}
-		const nonDefaultPathnames = ['change-requests'];
+		const nonDefaultPathnames = ['change-requests', 'settings'];
 		const currentPath = this.props.location.pathname.substring(1);
 		nonDefaultPathnames.forEach(path => {
 			if (currentPath.includes(path)) {
@@ -112,28 +112,31 @@ class PageLayout extends React.Component<
 											marginLeft: '5px'
 										}}>
 									</Badge>
-								</div>
-							</Menu.Item>
-							<Menu.Item key="3">
-								<Icon type="sync" />
-								<span>Sync</span>
-							</Menu.Item>
-
-							<Menu.Item key="4" onClick={() => this.logout()}>
-								<Icon type="logout" />
-								<span>Logout</span>
-							</Menu.Item>
-						</Menu>
-					</Sider>
-					<Layout className={classNames({
-						'inner-layout': true,
-						'with-sidebar-collapsed': this.state.collapsed
-					})}>
-						<Content className="content">
-							{this.props.children}
-						</Content>
-					</Layout>
+							</div>
+						</Menu.Item>
+						<Menu.Item key="settings">
+							<Icon type="sync" />
+							<div className="link-container">
+								<Link to="/settings">
+									Settings
+								</Link>
+							</div>
+						</Menu.Item>
+						<Menu.Item key="logout" onClick={() => this.logout()}>
+							<Icon type="logout" />
+							<span>Logout</span>
+						</Menu.Item>
+					</Menu>
+				</Sider>
+				<Layout className={classNames({
+					'inner-layout': true,
+					'with-sidebar-collapsed': this.state.collapsed
+				})}>
+					<Content className="content">
+						{this.props.children}
+					</Content>
 				</Layout>
+			</Layout>
 		);
 	}
 

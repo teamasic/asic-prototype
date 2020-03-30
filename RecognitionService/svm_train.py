@@ -66,13 +66,10 @@ def generate_train_model():
     # plt.show();
 
     # write the actual face recognition model to disk
-    f = open(my_constant.recognizerPath, "wb")
-    f.write(pickle.dumps(clf))
-    f.close()
 
-    # write the label encoder to disk
-    f = open(my_constant.lePath, "wb")
-    f.write(pickle.dumps(le))
+    recognizer_model = {"recognizer": clf, "le": le}
+    f = open(my_constant.recognizerModelPath, "wb+")
+    f.write(pickle.dumps(recognizer_model))
     f.close()
 
 
@@ -91,12 +88,9 @@ def train_tune():
     print(clf.best_score_)
     print(clf.best_estimator_)
 
-    f = open(my_constant.recognizerPath, "wb")
-    f.write(pickle.dumps(clf))
-    f.close()
-
-    f = open(my_constant.lePath, "wb")
-    f.write(pickle.dumps(le))
+    recognizer_model = {"recognizer": clf, "le": le}
+    f = open(my_constant.recognizerModelPath, "wb+")
+    f.write(pickle.dumps(recognizer_model))
     f.close()
 
 
