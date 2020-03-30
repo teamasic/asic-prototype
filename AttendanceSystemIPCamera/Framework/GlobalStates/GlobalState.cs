@@ -8,5 +8,6 @@ namespace AttendanceSystemIPCamera.Framework.GlobalStates
     public class GlobalState
     {
         public int CurrentActiveSession { get; set; } = -1; // -1 means no active session
+        public ICollection<string> CurrentSessionUnknownImages { get; set; } = new List<string>();
     }
 }

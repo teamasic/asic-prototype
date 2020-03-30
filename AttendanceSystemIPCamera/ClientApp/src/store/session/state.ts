@@ -13,4 +13,5 @@ export interface SessionState {
 	isLoadingAttendeeRecords: boolean;
 	successfullyLoadedAttendeeRecords: boolean;
 	attendeeRecords: AttendeeRecordPair[];
+	unknownImages: string[];
 }

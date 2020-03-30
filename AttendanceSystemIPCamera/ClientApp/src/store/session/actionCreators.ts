@@ -5,7 +5,8 @@ import {
 	getSessionAttendeeRecordList,
 	getActiveSession,
 	exportSession,
-	getPastSession
+	getPastSession,
+	getSessionUnknownImagesList
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -29,7 +30,8 @@ export const ACTIONS = {
 	UPDATE_ATTENDEE_RECORD_REAL_TIME: 'UPDATE_ATTENDEE_RECORD_REAL_TIME',
 	START_REAL_TIME_CONNECTION: 'START_REAL_TIME_CONNECTION',
 	START_TAKING_ATTENDANCE: 'START_TAKING_ATTENDANCE',
-	END_TAKING_ATTENDANCE: 'END_TAKING_ATTENDANCE'
+	END_TAKING_ATTENDANCE: 'END_TAKING_ATTENDANCE',
+	RECEIVE_UNKNOWN_IMAGES: 'RECEIVE_UNKNOWN_IMAGES'
 };
 
 function startRequestSession(sessionId: number) {
@@ -74,6 +76,13 @@ function receiveSessionAttendeeRecords(attendeeRecords: AttendeeRecordPair[]) {
 	};
 }
 
+function receiveSessionUnknownImages(unknownImages: string[]) {
+	return {
+		type: ACTIONS.RECEIVE_UNKNOWN_IMAGES,
+		unknownImages
+	};
+}
+
 const requestAttendeeRecords = (
 	sessionId: number
 ): AppThunkAction => async dispatch => {
@@ -87,6 +96,17 @@ const requestAttendeeRecords = (
 	} else {
 		dispatch(stopRequestAttendeeRecordsWithError(apiResponse.errors));
 	}
+	};
+
+const requestUnknownImages = (
+	sessionId: number
+): AppThunkAction => async dispatch => {
+	const apiResponse: ApiResponse = await getSessionUnknownImagesList(
+		sessionId
+	);
+	if (apiResponse.success) {
+		dispatch(receiveSessionUnknownImages(apiResponse.data));
+	}
 };
 
 const requestSession = (
@@ -99,6 +119,7 @@ const requestSession = (
 	if (apiResponse.success) {
 		dispatch(requestAttendeeRecords(sessionId) as any);
 		dispatch(receiveSessionData(apiResponse.data));
+		dispatch(requestUnknownImages(sessionId) as any);
 	} else {
 		dispatch(stopRequestGroupsWithError(apiResponse.errors));
 	}

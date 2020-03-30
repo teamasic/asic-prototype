@@ -14,5 +14,8 @@ namespace AttendanceSystemIPCamera.Framework.AppSettingConfiguration
         public string RecognitionImageBase64Path { get; set; }
         public string ServerHost { get; set; }
         public int ServerPort { get; set; }
+        public string AvatarFolderPath { get; set; }
+        public string UnknownFolderPath { get; set; }
+        public string AvatarPlaceholderName { get; set; }
     }
 }

@@ -48,6 +48,15 @@ namespace AttendanceSystemIPCamera.Controllers
             });
         }
 
+        [HttpGet("{id}/unknown")]
+        public BaseResponse<ICollection<string>> GetSessionUnknownImages(int id)
+        {
+            return ExecuteInMonitoring(() =>
+            {
+                return sessionService.GetSessionUnknownImages(id);
+            });
+        }
+
         [HttpGet("past")]
         public Task<BaseResponse<IEnumerable<SessionViewModel>>> GetPastSessionByGroupId([FromQuery] int groupId) 
         {

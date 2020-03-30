@@ -17,6 +17,13 @@ export const getSessionAttendeeRecordList = async (
 	return await response.data;
 };
 
+export const getSessionUnknownImagesList = async (
+	id: number
+): Promise<ApiResponse> => {
+	const response = await axios(apify(`${id.toString()}/unknown`));
+	return await response.data;
+};
+
 export const createSession = async (data: any) => {
 	const response = await axios.post(baseRoute, data)
 	return await response.data;

@@ -27,8 +27,11 @@ namespace AttendanceSystemIPCamera.Framework
             public const string LOGIN = "login";
             public const string REFRESH_ATTENDANCE_DATA = "refresh";
             public const string CHANGE_REQUEST = "change";
+        }
 
-
+        public class Code
+        {
+            public static string UNKNOWN = "Unknown";
         }
     }
 }

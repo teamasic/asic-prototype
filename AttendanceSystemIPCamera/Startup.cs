@@ -30,6 +30,8 @@ using AttendanceSystemIPCamera.Services.UnitService;
 using AttendanceSystemIPCamera.Framework.GlobalStates;
 using Microsoft.Extensions.Logging;
 using AttendanceSystemIPCamera.Services.SettingsService;
+using System.IO;
+using Microsoft.Extensions.FileProviders;
 
 namespace AttendanceSystemIPCamera
 {
@@ -45,6 +47,7 @@ namespace AttendanceSystemIPCamera
         }
 
         public IConfiguration Configuration { get; }
+        private MyConfiguration myConfig;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -72,7 +75,8 @@ namespace AttendanceSystemIPCamera
 
         private void SetupMyConfiguration(IServiceCollection services)
         {
-            services.AddSingleton(Configuration.GetSection("MyConfiguration").Get<MyConfiguration>());
+            myConfig = Configuration.GetSection("MyConfiguration").Get<MyConfiguration>();
+            services.AddSingleton(myConfig);
         }
         private void SetupFilesConfiguration(IServiceCollection services)
         {
@@ -121,6 +125,7 @@ namespace AttendanceSystemIPCamera
                 }
             });
 
+            SetupStaticFiles(app);
         }
 
         private void setupSwagger(IServiceCollection services)
@@ -212,6 +217,25 @@ namespace AttendanceSystemIPCamera
         {
             var globalState = new GlobalState();
             services.AddSingleton(globalState);
+        }
+
+        private void SetupStaticFiles(IApplicationBuilder app)
+        {
+            if (myConfig == null)
+            {
+                myConfig = Configuration.GetSection("MyConfiguration").Get<MyConfiguration>();
+            }
+            UseStaticFiles(app, myConfig.AvatarFolderPath, "/api/avatars");
+            UseStaticFiles(app, myConfig.UnknownFolderPath, "/api/unknown");
+        }
+
+        private void UseStaticFiles(IApplicationBuilder app, string path, string requestPath) {
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), path)),
+                RequestPath = requestPath
+            });
         }
     }
 }
