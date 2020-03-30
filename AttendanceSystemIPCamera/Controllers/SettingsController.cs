@@ -29,14 +29,14 @@ namespace AttendanceSystemIPCamera.Controllers
         [HttpGet]
         public Task<BaseResponse<SettingsViewModel>> Get()
         {
-            return ExecuteInMonitoring(async () =>
+            return ExecuteInMonitoring((Func<Task<SettingsViewModel>>)(async () =>
             {
-                if (NetworkUtils.HasInternetConnection())
+                if (NetworkUtils.IsInternetAvailable())
                 {
                     return await service.GetUpdateSettings();
                 }
                 throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NO_INTERNET_CONNECTION);
-            });
+            }));
         }
 
         [HttpPost("model")]

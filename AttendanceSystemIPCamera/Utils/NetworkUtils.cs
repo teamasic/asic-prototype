@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 
@@ -22,9 +23,26 @@ namespace AttendanceSystemIPCamera.Utils
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
-        public static bool HasInternetConnection()
+        public static bool IsInternetAvailable()
         {
-            return true;
+            try
+            {
+                Ping myPing = new Ping();
+                string host = "8.8.8.8";
+                byte[] buffer = new byte[32];
+                int timeout = 1000;
+                PingOptions pingOptions = new PingOptions();
+                PingReply reply = myPing.Send(host, timeout, buffer, pingOptions);
+                return (reply.Status == IPStatus.Success);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
         }
+
+
+        
     }
 }

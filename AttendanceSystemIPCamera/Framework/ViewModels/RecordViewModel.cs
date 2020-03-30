@@ -32,6 +32,12 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public bool Present { get; set; }
         public ChangeRequestSimpleViewModel ChangeRequest { get; set; }
     }
-
+    public class RecordInSyncData : BaseViewModel<Record>
+    {
+        public int Id { get; set; }
+        public AttendeeViewModel Attendee { get; set; }
+        public SessionInSyncData Session { get; set; }
+        public bool Present { get; set; }
+    }
 }
 

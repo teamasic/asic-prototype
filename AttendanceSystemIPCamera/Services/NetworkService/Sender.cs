@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AttendanceSystemIPCamera.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -16,9 +17,9 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             this.localServer = localServer;
         }
 
-        protected object Encode(object plainMessage)
+        protected byte[] Encode(byte[] message)
         {
-            return plainMessage;
+            return CryptoUtils.Encrypt(message);
         }
 
         protected void Send(object encodedMessage, IPEndPoint remoteHostIP)
@@ -35,9 +36,9 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             else throw new InvalidDataException("Data must be byte array");
         }
 
-        public void Start(object plainMessage, IPEndPoint remoteHostIP)
+        public void Start(byte[] message, IPEndPoint remoteHostIP)
         {
-            object encodedMessage = Encode(plainMessage);
+            byte[] encodedMessage = Encode(message);
             Send(encodedMessage, remoteHostIP);
         }
 

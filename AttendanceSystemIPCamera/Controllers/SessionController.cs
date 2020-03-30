@@ -49,13 +49,13 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpGet("past")]
-        public Task<BaseResponse<IEnumerable<SessionViewModel>>> GetPastSessionByGroupId([FromQuery] int groupId) 
+        public BaseResponse<IEnumerable<SessionViewModel>> GetPastSessionByGroupId([FromQuery] int groupId)
         {
-            return ExecuteInMonitoring(async () =>
-            {
-                var sessions = sessionService.GetSessionByGroupId(groupId);
-                return mapper.ProjectTo<Session, SessionViewModel>(sessions);
-            });
+            return ExecuteInMonitoring(() =>
+           {
+               var sessions = sessionService.GetSessionByGroupId(groupId);
+               return mapper.ProjectTo<Session, SessionViewModel>(sessions);
+           });
         }
 
         [HttpPost]
@@ -76,12 +76,12 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPost("export")]
-        public Task<BaseResponse<List<Object>>> ExportSession
+        public BaseResponse<List<Object>> ExportSession
             ([FromBody] ExportRequestViewModel exportRequestViewModel)
         {
-            return ExecuteInMonitoring(async () =>
+            return ExecuteInMonitoring(() =>
             {
-                return sessionService.Export(exportRequestViewModel);
+               return sessionService.Export(exportRequestViewModel);
             });
         }
 

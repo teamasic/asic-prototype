@@ -103,9 +103,9 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPut("{id}")]
-        public Task<BaseResponse<GroupViewModel>> Update(int id, [FromBody] GroupViewModel updatedGroup)
+        public BaseResponse<GroupViewModel> Update(int id, [FromBody] GroupViewModel updatedGroup)
         {
-            return ExecuteInMonitoring(async () =>
+            return ExecuteInMonitoring(() =>
             {
                 var group = service.Update(id, updatedGroup);
                 var attendeeGroup = attendeeGroupService.GetByGroupId(group.Id);
@@ -115,23 +115,23 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPut("deactive/{id}")]
-        public Task<BaseResponse<GroupViewModel>> DeactiveGroup(int id)
+        public BaseResponse<GroupViewModel> DeactiveGroup(int id)
         {
-            return ExecuteInMonitoring(async () =>
-            {
-                var deactiveGroup = service.DeactiveGroup(id);
-                return mapper.Map<GroupViewModel>(deactiveGroup);
-            });
+            return ExecuteInMonitoring(() =>
+           {
+               var deactiveGroup = service.DeactiveGroup(id);
+               return mapper.Map<GroupViewModel>(deactiveGroup);
+           });
         }
 
         [HttpDelete("{groupId}")]
-        public Task<BaseResponse<AttendeeGroupViewModel>> DeleteAttendeeGroup(int groupId, [FromQuery] int attendeeId)
+        public BaseResponse<AttendeeGroupViewModel> DeleteAttendeeGroup(int groupId, [FromQuery] int attendeeId)
         {
-            return ExecuteInMonitoring(async () =>
-            {
-                var deletedAttendee = attendeeGroupService.Detete(attendeeId, groupId);
-                return mapper.Map<AttendeeGroupViewModel>(deletedAttendee);
-            });
+            return ExecuteInMonitoring(() =>
+           {
+               var deletedAttendee = attendeeGroupService.Detete(attendeeId, groupId);
+               return mapper.Map<AttendeeGroupViewModel>(deletedAttendee);
+           });
         }
     }
 }
