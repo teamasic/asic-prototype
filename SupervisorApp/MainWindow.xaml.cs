@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SupervisorApp.Handler;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,7 @@ namespace SupervisorApp
         {
             InitializeComponent();
             Browser.DownloadHandler = new DownloadHandler();
+            Browser.RequestHandler = new CustomRequestHandler();
         }
     }
 }

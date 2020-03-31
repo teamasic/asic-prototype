@@ -25,12 +25,12 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpGet]
-        public Task<BaseResponse<AttendeeViewModel>> GetByCode([FromQuery] string code)
+        public BaseResponse<AttendeeViewModel> GetByCode([FromQuery] string code)
         {
-            return ExecuteInMonitoring(async () =>
+            return ExecuteInMonitoring(() =>
             {
-                var attendee = attendeeService.GetByAttendeeCode(code);
-                return mapper.Map<AttendeeViewModel>(attendee);
+               var attendee = attendeeService.GetByAttendeeCode(code);
+               return mapper.Map<AttendeeViewModel>(attendee);
             });
         }
 

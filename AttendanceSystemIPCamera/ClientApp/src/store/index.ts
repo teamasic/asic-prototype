@@ -5,12 +5,14 @@ import SessionsReducer from './session/reducers';
 import UnitsReducer from './unit/reducers';
 import RoomsReducer from './room/reducers';
 import ChangeRequestsReducer from './changeRequest/reducers';
+import userReducer from './user/userReducer';
 import SettingsReducer from './settings/reducers';
 import { AnyAction } from 'redux';
 import { RoomsState } from './room/state';
 import { UnitsState } from './unit/state';
 import { ChangeRequestState } from './changeRequest/state';
 import { SettingState } from './settings/state';
+import { UserState } from './user/userState';
 
 // The top-level state object
 export interface ApplicationState {
@@ -19,6 +21,7 @@ export interface ApplicationState {
 	rooms: RoomsState | undefined;
 	units: UnitsState | undefined;
 	changeRequests: ChangeRequestState | undefined;
+	user: UserState | undefined;
 	settings: SettingState | undefined;
 }
 
@@ -31,6 +34,7 @@ export const reducers = {
 	groups: GroupsReducer,
 	units: UnitsReducer,
 	changeRequests: ChangeRequestsReducer,
+	user: userReducer,
 	settings: SettingsReducer
 };
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AttendanceSystemIPCamera.Utils;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -19,23 +20,23 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
         {
             return localServer.Receive(ref remoteHostIP);
         }
-        protected  object Decode(object encodedMessage) {
-            return encodedMessage;
+        protected byte[] Decode(byte[] encodedMessage) {
+            return CryptoUtils.Decrypt(encodedMessage);
         }
-        protected  bool Authenticate(object decodedMessage)
-        {
-            return true;
-        }
+        //protected  bool Authenticate(object decodedMessage)
+        //{
+        //    return true;
+        //}
 
         public object Start(ref IPEndPoint remoteHostIP)
         {
-            var encodedMessage = Encoding.UTF8.GetString(Receive(ref remoteHostIP) as byte[]);
-            var decodedMessage = Decode(encodedMessage);
-            if (Authenticate(decodedMessage))
-            {
-                return decodedMessage;
-            }
-            return null;
+            byte[] encodedMessage = Receive(ref remoteHostIP) as byte[];
+            byte[] decodedMessage = Decode(encodedMessage);
+            //if (Authenticate(decodedMessage))
+            //{
+            //    return decodedMessage;
+            //}
+            return Encoding.UTF8.GetString(decodedMessage);
         }
 
     }

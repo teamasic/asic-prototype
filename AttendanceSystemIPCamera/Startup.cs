@@ -29,6 +29,7 @@ using AttendanceSystemIPCamera.Services.RecognitionService;
 using AttendanceSystemIPCamera.Services.UnitService;
 using AttendanceSystemIPCamera.Framework.GlobalStates;
 using Microsoft.Extensions.Logging;
+using AttendanceSystemIPCamera.Services.UserService;
 using AttendanceSystemIPCamera.Services.SettingsService;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
@@ -37,10 +38,6 @@ namespace AttendanceSystemIPCamera
 {
     public class Startup
     {
-
-        public static readonly ILoggerFactory DefaultLoggerFactory
-                                    = LoggerFactory.Create(builder => { builder.AddConsole(); });
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -84,7 +81,7 @@ namespace AttendanceSystemIPCamera
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -102,7 +99,7 @@ namespace AttendanceSystemIPCamera
             app.UseSpaStaticFiles();
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ASIC API"));
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Supervisor ASIC API"));
 
             app.UseRouting();
 
@@ -114,16 +111,17 @@ namespace AttendanceSystemIPCamera
                 endpoints.MapHub<RealTimeService>("/hub");
             });
 
+            loggerFactory.AddFile("Logs/supervisor-log-{Date}.txt");
 
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
+            //app.UseSpa(spa =>
+            //{
+            //    spa.Options.SourcePath = "ClientApp";
 
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
-            });
+            //    if (env.IsDevelopment())
+            //    {
+            //        spa.UseReactDevelopmentServer(npmScript: "start");
+            //    }
+            //});
 
             SetupStaticFiles(app);
         }
@@ -132,7 +130,7 @@ namespace AttendanceSystemIPCamera
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "ASIC API", Version = "v1" });
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Supervisor ASIC", Version = "v1" });
             });
         }
 
@@ -142,7 +140,6 @@ namespace AttendanceSystemIPCamera
             services.AddDbContext<MainDbContext>(options =>
             {
                 options.UseSqlite(Configuration.GetConnectionString("SqliteDB"));
-                options.UseLoggerFactory(DefaultLoggerFactory);
             });
         }
         private void SetupAutoMapper(IServiceCollection services)
@@ -172,6 +169,7 @@ namespace AttendanceSystemIPCamera
             SetupRepositories(services);
             SetupUnitConfig(services);
             SetupGlobalStateManager(services);
+
         }
 
         private void SetupServices(IServiceCollection services)
@@ -189,6 +187,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<ISettingsService, SettingsService>();
             services.AddScoped<SettingsUtils>();
             services.AddHttpClient();
+            services.AddScoped<IUserService, UserService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
