@@ -44,16 +44,19 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var setRecordViewModel = await recordService.RecordAttendance(viewModel);
                 if (viewModel.Code.Equals(Constants.Code.UNKNOWN))
                 {
-                    await realTimeService.MarkAttendeeAsUnknown(viewModel.Image);
+                    await realTimeService.MarkAttendeeAsUnknown(viewModel.Avatar);
+                    return new SetRecordViewModel {
+                        AttendeeId = -1
+                    };
                 }
                 else
                 {
+                    var setRecordViewModel = await recordService.RecordAttendance(viewModel);
                     await realTimeService.MarkAttendeeAsPresent(viewModel.Code);
+                    return setRecordViewModel;
                 }
-                return setRecordViewModel;
             });
         }
         [HttpPut("endSession")]

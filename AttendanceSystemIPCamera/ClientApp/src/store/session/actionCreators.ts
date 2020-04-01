@@ -31,7 +31,8 @@ export const ACTIONS = {
 	START_REAL_TIME_CONNECTION: 'START_REAL_TIME_CONNECTION',
 	START_TAKING_ATTENDANCE: 'START_TAKING_ATTENDANCE',
 	END_TAKING_ATTENDANCE: 'END_TAKING_ATTENDANCE',
-	RECEIVE_UNKNOWN_IMAGES: 'RECEIVE_UNKNOWN_IMAGES'
+	RECEIVE_UNKNOWN_IMAGES: 'RECEIVE_UNKNOWN_IMAGES',
+	UPDATE_UNKNOWN_REAL_TIME: 'UPDATE_UNKNOWN_REAL_TIME'
 };
 
 function startRequestSession(sessionId: number) {
@@ -134,18 +135,22 @@ function updateAttendeeRecord(updateInfo: UpdateRecord, updatedRecord: Record) {
 }
 
 const createOrUpdateRecord = (
-	updateInfo: UpdateRecord
+	updateInfo: UpdateRecord,
+	assumeSuccess: boolean = true
 ): AppThunkAction => async dispatch => {
 	const temporaryUpdatedRecord: Record = {
 		id: -1,
 		attendee: {
 			id: updateInfo.attendeeId,
 			code: '',
-			name: ''
+			name: '',
+			avatar: ''
 		},
 		present: updateInfo.present
 	};
-	dispatch(updateAttendeeRecord(updateInfo, temporaryUpdatedRecord));
+	if (assumeSuccess) {
+		dispatch(updateAttendeeRecord(updateInfo, temporaryUpdatedRecord));
+	}
 	const apiResponse: ApiResponse = await updateRecord(updateInfo);
 
 	if (apiResponse.success) {
@@ -212,6 +217,13 @@ function startTakingAttendance(session: any) {
 	};
 }
 
+function updateUnknownRealTime(image: any) {
+	return {
+		type: ACTIONS.UPDATE_UNKNOWN_REAL_TIME,
+		image
+	};
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
@@ -221,5 +233,6 @@ export const sessionActionCreators = {
 	startGetPastSession,
 	startRealTimeConnection,
 	startTakingAttendance,
-	endTakingAttendance
+	endTakingAttendance,
+	updateUnknownRealTime
 };

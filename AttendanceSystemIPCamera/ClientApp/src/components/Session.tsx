@@ -36,6 +36,7 @@ import '../styles/Table.css';
 import TopBar from './TopBar';
 import TakeAttendanceModal from './TakeAttendanceModal';
 import SessionTableView from './SessionTableView';
+import SessionActiveView from './SessionActiveView';
 const { Search } = Input;
 const { Title } = Typography;
 
@@ -71,22 +72,22 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		}
 	}
 
-	public markAsPresent(attendeeId: number) {
+	public markAsPresent = (attendeeId: number, assumeSuccess: boolean = true) => {
 		const sessionId = this.state.sessionId;
 		this.props.createOrUpdateRecord({
 			sessionId,
 			attendeeId,
 			present: true
-		});
+		}, assumeSuccess);
 	}
 
-	public markAsAbsent(attendeeId: number) {
+	public markAsAbsent = (attendeeId: number, assumeSuccess: boolean = true) => {
 		const sessionId = this.state.sessionId;
 		this.props.createOrUpdateRecord({
 			sessionId,
 			attendeeId,
 			present: false
-		});
+		}, assumeSuccess);
 	}
 
 	public render() {
@@ -125,9 +126,15 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	private renderSessionSection() {
 		const isThisSessionOngoing = this.props.currentlyOngoingSession &&
 			this.props.currentlyOngoingSession.id === this.props.activeSession!.id;
+
 		const sessionView = isThisSessionOngoing ?
 			this.renderSessionActiveView() :
 			this.renderSessionTableView();
+
+		/*
+		const sessionView = this.renderSessionActiveView();
+		*/
+		
 		return (
 			<React.Fragment>
 				<div className="title-container">
@@ -146,13 +153,17 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	private renderSessionTableView() {
 		return <SessionTableView
 			sessionId={this.state.sessionId}
-			markAsAbsent={attendeeId => this.markAsAbsent(attendeeId)}
-			markAsPresent={attendeeId => this.markAsPresent(attendeeId)}
+			markAsAbsent={this.markAsAbsent}
+			markAsPresent={this.markAsPresent}
 		/>
 	}
 
 	private renderSessionActiveView() {
-		return <></>;
+		return <SessionActiveView
+			sessionId={this.state.sessionId}
+			markAsAbsent={this.markAsAbsent}
+			markAsPresent={this.markAsPresent}
+		/>;
 	}
 
 	private renderEmpty() {

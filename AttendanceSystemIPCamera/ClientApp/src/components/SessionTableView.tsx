@@ -145,6 +145,17 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 			isModelOpen: false,
 		})
 	}
+
+	private onChangeStartTime = (time: moment.Moment) => {
+		this.setState({
+			startTime: time,
+		})
+	}
+	private onChangeEndTime = (time: moment.Moment) => {
+		this.setState({
+			endTime: time
+		})
+	}
 	
 	private renderOnRow = (record: any, index: number) => {
 		if (index % 2 == 0) {
@@ -240,11 +251,9 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 						<div className="row centered">
 							<Button type="primary"
 								className="take-attendance-button"
-								disabled={true}
 								onClick={this.openModelTakingAttendance}>
 								Start taking attendance
 							</Button>
-							<Badge color={"orange"} text="Currently taking attendance" />
 						</div>
 					</Col>
 				</Row>
@@ -252,6 +261,10 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 					<TakeAttendanceModal
 						visible={this.state.isModelOpen}
 						sessionId={this.props.sessionId}
+						onChangeStartTime={this.onChangeStartTime}
+						onChangeEndTime={this.onChangeEndTime}
+						startTime={this.state.startTime}
+						endTime={this.state.endTime}
 						onClose={() => this.onCancelModel()} />
 				}
 				<div
