@@ -21,10 +21,12 @@ const { confirm } = Modal;
 
 
 interface ModalProps {
+    unknownImage: string;
     visible: boolean;
     hideModal: () => void;
     attendeeRecords: AttendeeRecordPair[];
     markAsPresent: (attendeeId: number) => void;
+    removeUnknownImage: (image: string) => void;
 }
 
 interface State {
@@ -48,6 +50,7 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
             return;
         }
         this.props.markAsPresent(attendeeId);
+        this.props.removeUnknownImage(this.props.unknownImage);
         this.props.hideModal();
     }
 

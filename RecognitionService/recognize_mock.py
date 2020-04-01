@@ -22,7 +22,7 @@ def _send_recognized():
 		time.sleep(5)   # Delays for 5 seconds. You can also use a float value.
 
 def _send_unknown():
-	unknown = ['1.jpg', '3.jpg', '2.jpg']
+	unknown = ['1.png', '3.jpg', '2.jpg']
 	for image in unknown:
 		_recognize_unknown(image)
 		time.sleep(5)   # Delays for 5 seconds. You can also use a float value.

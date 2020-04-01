@@ -32,7 +32,8 @@ export const ACTIONS = {
 	START_TAKING_ATTENDANCE: 'START_TAKING_ATTENDANCE',
 	END_TAKING_ATTENDANCE: 'END_TAKING_ATTENDANCE',
 	RECEIVE_UNKNOWN_IMAGES: 'RECEIVE_UNKNOWN_IMAGES',
-	UPDATE_UNKNOWN_REAL_TIME: 'UPDATE_UNKNOWN_REAL_TIME'
+	UPDATE_UNKNOWN_REAL_TIME: 'UPDATE_UNKNOWN_REAL_TIME',
+	REMOVE_UNKNOWN_IMAGE: 'REMOVE_UNKNOWN_IMAGE'
 };
 
 function startRequestSession(sessionId: number) {
@@ -224,6 +225,13 @@ function updateUnknownRealTime(image: any) {
 	};
 }
 
+function removeUnknownImage(image: string) {
+	return {
+		type: ACTIONS.REMOVE_UNKNOWN_IMAGE,
+		image
+	};
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
@@ -234,5 +242,6 @@ export const sessionActionCreators = {
 	startRealTimeConnection,
 	startTakingAttendance,
 	endTakingAttendance,
-	updateUnknownRealTime
+	updateUnknownRealTime,
+	removeUnknownImage
 };
