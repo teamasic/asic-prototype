@@ -30,12 +30,12 @@ interface Props {
 }
 
 // At runtime, Redux will merge together...
-type GroupProps = Props &
+type StartSessionModalProps = Props &
     GroupsState & // ... state we've requested from the Redux store
     typeof groupActionCreators & // ... plus action creators we've requested
     RouteComponentProps<{}>; // ... plus incoming routing parameters
 
-class GroupCard extends React.PureComponent<GroupProps> {
+class StartSessionModal extends React.PureComponent<StartSessionModalProps> {
     public state = {
         sessionIndex: -1,
         roomId: -1,
@@ -164,4 +164,4 @@ export default connect(
         ...ownProps
     }), // Selects which state properties are merged into the component's props
     dispatch => bindActionCreators(groupActionCreators, dispatch) // Selects which action creators are merged into the component's props
-)(GroupCard as any);
+)(StartSessionModal as any);

@@ -5,6 +5,7 @@ import createSignalRConnection from './SignalRConnection';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import { changeRequestActionCreators } from '../store/changeRequest/actionCreators';
 import { ACTIONS as SESSION_ACTIONS } from '../store/session/actionCreators';
+import { success } from '../utils';
 
 const ACTIONS = {
     ...SESSION_ACTIONS
@@ -48,9 +49,14 @@ export function attachEvents(connection: signalR.HubConnection, dispatch: any) {
         dispatch(sessionActionCreators.updateAttendeeRecordRealTime(attendeeCode));
     });
 
+    connection.on("attendeeUnknown", image => {
+        dispatch(sessionActionCreators.updateUnknownRealTime(image));
+    });
+
     connection.on("sessionEnded", sessionId => {
         // clearInterval(interval);
         // connection.stop();
+        success("The taking attendance process has finished.")
         dispatch(sessionActionCreators.requestSession(sessionId));
         dispatch(sessionActionCreators.endTakingAttendance());
     });

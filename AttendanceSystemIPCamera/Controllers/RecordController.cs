@@ -9,6 +9,7 @@ using AttendanceSystemIPCamera.Models;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using AttendanceSystemIPCamera.Services.RecordService;
+using AttendanceSystemIPCamera.Services.AttendeeService;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -17,11 +18,14 @@ namespace AttendanceSystemIPCamera.Controllers
     public class RecordController : BaseController
     {
         private readonly IRecordService recordService;
+        private readonly IAttendeeService attendeeService;
         private readonly IRealTimeService realTimeService;
         private readonly IMapper mapper;
-        public RecordController(IRecordService recordService, IRealTimeService realTimeService, IMapper mapper)
+        public RecordController(IRecordService recordService, IAttendeeService attendeeService,
+            IRealTimeService realTimeService, IMapper mapper)
         {
             this.recordService = recordService;
+            this.attendeeService = attendeeService;
             this.mapper = mapper;
             this.realTimeService = realTimeService;
         }
@@ -40,9 +44,19 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var setRecordViewModel = await recordService.RecordAttendance(viewModel);
-                await realTimeService.MarkAttendeeAsPresent(viewModel.Code);
-                return setRecordViewModel;
+                if (viewModel.Code.Equals(Constants.Code.UNKNOWN))
+                {
+                    await realTimeService.MarkAttendeeAsUnknown(viewModel.Avatar);
+                    return new SetRecordViewModel {
+                        AttendeeId = -1
+                    };
+                }
+                else
+                {
+                    var setRecordViewModel = await recordService.RecordAttendance(viewModel);
+                    await realTimeService.MarkAttendeeAsPresent(viewModel.Code);
+                    return setRecordViewModel;
+                }
             });
         }
         [HttpPut("endSession")]

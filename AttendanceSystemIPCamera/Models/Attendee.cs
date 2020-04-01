@@ -13,6 +13,7 @@ namespace AttendanceSystemIPCamera.Models
         public int Id { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
+        public string Avatar { get; set; }
         public virtual ICollection<AttendeeGroup> AttendeeGroups { get; set; } = new List<AttendeeGroup>();
         [NotMapped]
         public virtual ICollection<Group> Groups => AttendeeGroups.Select(ag => ag.Group).ToList();

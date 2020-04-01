@@ -24,6 +24,7 @@ namespace AttendanceSystemIPCamera.Repositories
         List<Session> GetSessionExport(int groupId, DateTime date);
         List<Session> GetSessionByGroupId(int groupId);
         Task<Session> GetSessionWithGroupAndTime(int groupId, DateTime startTime, DateTime endTime);
+        public ICollection<string> GetSessionUnknownImages(int sessionId);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
@@ -40,6 +41,7 @@ namespace AttendanceSystemIPCamera.Repositories
         public void SetActiveSession(int sessionId)
         {
             globalState.CurrentActiveSession = sessionId;
+            globalState.CurrentSessionUnknownImages = new List<string>();
         }
 
         public async Task<Session> GetActiveSession()
@@ -89,6 +91,15 @@ namespace AttendanceSystemIPCamera.Repositories
         public List<Session> GetSessionByGroupId(int groupId)
         {
             return Get(s => s.GroupId == groupId).ToList();
+        }
+
+        public ICollection<string> GetSessionUnknownImages(int sessionId)
+        {
+            if (sessionId == globalState.CurrentActiveSession && globalState.CurrentActiveSession != -1)
+            {
+                return globalState.CurrentSessionUnknownImages;
+            }
+            return new List<string>();
         }
     }
 }

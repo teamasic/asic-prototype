@@ -34,6 +34,9 @@ import { takeAttendance } from '../services/session';
 import moment from 'moment';
 import '../styles/Table.css';
 import TopBar from './TopBar';
+import TakeAttendanceModal from './TakeAttendanceModal';
+import SessionTableView from './SessionTableView';
+import SessionActiveView from './SessionActiveView';
 const { Search } = Input;
 const { Title } = Typography;
 
@@ -44,40 +47,15 @@ type SessionProps = SessionState & // ... state we've requested from the Redux s
 		id?: string;
 	}>; // ... plus incoming routing parameters
 
-enum FilterBy {
-	PRESENT,
-	ABSENT,
-	NOT_YET,
-	ALL
-}
-
 interface SessionLocalState {
-	sessionId: number;
-	search: {
-		query: string;
-		filter: FilterBy;
-	};
-	isModelOpen: boolean,
-	startTime: moment.Moment,
-	endTime: moment.Moment,
-	isError: boolean,
-	page: number
+	sessionId: number
 }
 
 class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	public constructor(props: SessionProps) {
 		super(props);
 		this.state = {
-			sessionId: 0,
-			search: {
-				query: '',
-				filter: FilterBy.ALL
-			},
-			isModelOpen: false,
-			startTime: moment(),
-			endTime: moment().add(1, "m"),
-			isError: false,
-			page: 1
+			sessionId: 0
 		};
 	}
 	// This method is called when the component is first added to the document
@@ -94,142 +72,24 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		}
 	}
 
-	public searchBy(query: string) {
-		this.setState({
-			search: {
-				...this.state.search,
-				query
-			}
-		});
-	}
-
-	public filterBy(filter: FilterBy) {
-		this.setState({
-			search: {
-				...this.state.search,
-				filter
-			}
-		});
-	}
-
-	public markAsPresent(attendeeId: number) {
+	public markAsPresent = (attendeeId: number, assumeSuccess: boolean = true) => {
 		const sessionId = this.state.sessionId;
 		this.props.createOrUpdateRecord({
 			sessionId,
 			attendeeId,
 			present: true
-		});
+		}, assumeSuccess);
 	}
 
-	public markAsAbsent(attendeeId: number) {
+	public markAsAbsent = (attendeeId: number, assumeSuccess: boolean = true) => {
 		const sessionId = this.state.sessionId;
 		this.props.createOrUpdateRecord({
 			sessionId,
 			attendeeId,
 			present: false
-		});
+		}, assumeSuccess);
 	}
 
-	private searchAttendeeList(
-		attendeeRecords: AttendeeRecordPair[],
-		query: string
-	) {
-		return attendeeRecords.filter(
-			ar => ar.attendee.name.includes(query) || ar.attendee.code.includes(query)
-		);
-	}
-
-	private filterAttendeeList(
-		attendeeRecords: AttendeeRecordPair[],
-		filter: FilterBy
-	) {
-		switch (filter) {
-			case FilterBy.ALL:
-				return attendeeRecords;
-			case FilterBy.NOT_YET:
-				return attendeeRecords.filter(ar => ar.record == null);
-			case FilterBy.PRESENT:
-				return attendeeRecords.filter(
-					ar => ar.record != null && ar.record!.present
-				);
-			case FilterBy.ABSENT:
-				return attendeeRecords.filter(
-					ar => ar.record != null && !ar.record!.present
-				);
-		}
-	}
-	private openModelTakingAttendance = () => {
-		this.setState({
-			isModelOpen: true,
-			startTime: moment(),
-			endTime: moment().add(1, "m"),
-			isError: false
-		})
-	}
-	private onCancelModel = () => {
-		this.setState({
-			isModelOpen: false,
-		})
-	}
-	
-	private onOkModel = async () => {
-		let startTime = this.state.startTime;
-		let endTime = this.state.endTime;
-		if (startTime.isSameOrAfter(endTime) || minutesOfDay(startTime) < minutesOfDay(moment())){
-			error("Start time and end time is not suitable")
-		}
-		else {
-			// this.props.startRealTimeConnection();
-			this.setState({
-				isModelOpen: false
-			})
-			if (this.props.activeSession != null) {
-				this.props.startTakingAttendance(this.props.activeSession);
-			}
-			const data = await takeAttendance({
-				sessionId: this.state.sessionId,
-				startTime: this.state.startTime.format('YYYY-MM-DD HH:mm'),
-				endTime: this.state.endTime.format('YYYY-MM-DD HH:mm'),
-			})
-			if (data.success == false){
-				error("Error while taking attendance, please try again")
-			}
-			this.props.startTakingAttendance(null);
-			
-
-			
-		}
-
-	}
-	private onChangeStartTime = (time: moment.Moment) => {
-		this.setState({
-			startTime: time,
-		})
-	}
-	private onChangeEndTime = (time: moment.Moment) => {
-		this.setState({
-			endTime: time
-		})
-	}
-	private getDisableHours = () => {
-		let hours = [];
-		for (var i = 0; i < moment().hour(); i++) {
-			hours.push(i);
-		}
-		return hours;
-	}
-	private getDisableMinutes = () => {
-		let minutes = []
-		let currentHour = moment().hour();
-		let startTimeHour = this.state.startTime.hour();
-		if (currentHour == startTimeHour) {
-			let currentMinute = moment().minute();
-			for (let i = 0; i < currentMinute; i++) {
-				minutes.push(i);
-			}
-		}
-		return minutes;
-	}
 	public render() {
 		return (
 			<React.Fragment>
@@ -263,62 +123,20 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		);
 	}
 
-	private renderOnRow = (record: any, index: number) => {
-		if (index % 2 == 0) {
-			return 'default';
-		} else {
-			return 'striped';
-		}
-	}
-
 	private renderSessionSection() {
-		const columns = [
-			{
-				title: "#",
-				key: "index",
-				width: '5%',
-				render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
-			},
-			{
-				title: 'Id',
-				key: 'id',
-				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.code
-			},
-			{
-				title: 'Name',
-				key: 'name',
-				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.name
-			},
-			{
-				title: 'Present',
-				key: 'present',
-				width: '12%',
-				render: (text: string, pair: AttendeeRecordPair) =>
-					<Radio
-					checked={pair.record != null && pair.record.present}
-						onChange={() => this.markAsPresent(pair.attendee.id)}>
-					</Radio>
-			},
-			{
-				title: 'Absent',
-				key: 'absent',
-				width: '20%',
-				render: (text: string, pair: AttendeeRecordPair) =>
-					<Radio
-						checked={pair.record != null && !pair.record.present}
-						onChange={() => this.markAsAbsent(pair.attendee.id)}></Radio>
-			}
-		];
-		const processedList = this.searchAttendeeList(
-			this.filterAttendeeList(
-				this.props.attendeeRecords,
-				this.state.search.filter
-			),
-			this.state.search.query
-		);
+		const isThisSessionOngoing = this.props.currentlyOngoingSession &&
+			this.props.currentlyOngoingSession.id === this.props.activeSession!.id;
 
+		const sessionView = isThisSessionOngoing ?
+			this.renderSessionActiveView() :
+			this.renderSessionTableView();
+
+		/*
+		const sessionView = this.renderSessionActiveView();
+		*/
+		
 		return (
-			<div>
+			<React.Fragment>
 				<div className="title-container">
 					<Title className="title" level={3}>
 						Session
@@ -327,103 +145,25 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 						{formatFullDateTimeString(this.props.activeSession!.startTime)}
 					</span>
 				</div>
-				<Row>
-					<img src="api/attendee/SE12348/avatar" />
-					<img src="api/attendee/SE12350/avatar" />
-				</Row>
-				<Row>
-					<Col span={8}>
-						<Search
-							className="search-input"
-							placeholder="Search..."
-							onSearch={value => this.searchBy(value)}
-							enterButton
-						/>
-					</Col>
-					<Col span={8} offset={8}>
-						<div>
-							<span className="order-by-sub">Filter:</span>
-							<Select
-								className="order-by-select"
-								defaultValue={FilterBy.ALL}
-								onChange={(value: any) => this.filterBy(value)}
-							>
-								<Select.Option value={FilterBy.ALL}>
-									All attendees
-								</Select.Option>
-								<Select.Option value={FilterBy.PRESENT}>
-									Present attendees
-								</Select.Option>
-								<Select.Option value={FilterBy.ABSENT}>
-									Absent attendees
-								</Select.Option>
-								<Select.Option value={FilterBy.NOT_YET}>
-									Undetermined
-								</Select.Option>
-							</Select>
-						</div>
-					</Col>
-				</Row>
-				<Row style={{ marginTop: 5 }} type="flex" gutter={[4, 4]} align="bottom">
-					<Col>
-						<div className="row centered">
-							<Button type="primary"
-								className="take-attendance-button"
-								disabled={this.props.currentlyOngoingSession != null}
-								onClick={this.openModelTakingAttendance}>
-								Start taking attendance
-							</Button>
-							{
-								this.props.currentlyOngoingSession && 
-								this.props.currentlyOngoingSession.id === this.props.activeSession!.id &&
-								<Badge color={"orange"} text="Currently taking attendance" />
-							}
-						</div>
-					</Col>
-				</Row>
-				<Modal
-					title="Start taking attendance"
-					visible={this.state.isModelOpen}
-					onCancel={this.onCancelModel}
-					onOk={this.onOkModel} okText="Start">
-					<Row justify="start" style={{ marginTop: 5 }} type="flex" align="middle" gutter={[0, 0]}>
-						<Col span={12}>
-							<span style={{ marginRight: 5 }}>Start time</span>
-							<TimePicker onChange={this.onChangeStartTime} value={this.state.startTime} format="HH:mm" disabledHours={this.getDisableHours} disabledMinutes={this.getDisableMinutes} />
-						</Col>
-						<Col span={12}>
-							<span style={{ marginRight: 5 }}>End time</span>
-							<TimePicker onChange={this.onChangeEndTime} value={this.state.endTime} format="HH:mm" disabledHours={this.getDisableHours} disabledMinutes={this.getDisableMinutes} />
-						</Col>
-					</Row>
-					{this.state.isError ? 
-					<Row style={{marginTop: 15}} >
-						<Col>
-							<p style={{color: "red"}}>* Start time and end time is not suitable</p>
-						</Col>
-					</Row> : null}
-				</Modal>
-				<div
-					className={classNames({
-						'attendee-container': true,
-						'is-loading': this.props.isLoadingAttendeeRecords
-					})}
-				>
-					{this.props.isLoadingAttendeeRecords ? (
-						<Spin size="large" />
-					) : (
-							<Table
-								columns={columns}
-								dataSource={processedList}
-								bordered
-								pagination={false}
-								rowKey={record => record.attendee.id.toString()}
-								rowClassName={this.renderOnRow}
-							/>
-						)}
-				</div>
-			</div>
+				{sessionView}
+			</React.Fragment>
 		);
+	}
+
+	private renderSessionTableView() {
+		return <SessionTableView
+			sessionId={this.state.sessionId}
+			markAsAbsent={this.markAsAbsent}
+			markAsPresent={this.markAsPresent}
+		/>
+	}
+
+	private renderSessionActiveView() {
+		return <SessionActiveView
+			sessionId={this.state.sessionId}
+			markAsAbsent={this.markAsAbsent}
+			markAsPresent={this.markAsPresent}
+		/>;
 	}
 
 	private renderEmpty() {
