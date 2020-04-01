@@ -2,4 +2,5 @@
     id: number;
     code: string;
     name: string;
+    avatar: string;
 }
