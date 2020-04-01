@@ -141,7 +141,7 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 	}
 
 	private getUnknownSection() {
-		const unknowns = this.props.unknownImages.slice();
+		const unknowns = this.props.unknownImages.slice().reverse();
 		return <div className="container">
 			<Title className="title" level={4}>Unknown attendees</Title>
 			{

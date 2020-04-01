@@ -129,7 +129,7 @@ const reducers: Reducer<SessionState> = (
 		case ACTIONS.UPDATE_UNKNOWN_REAL_TIME:
 			return {
 				...state,
-				unknownImages: [action.image, ...state.unknownImages]
+				unknownImages: [...state.unknownImages, action.image]
 			};
 	}
 	return state;
