@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using AttendanceSystemIPCamera.Repositories;
 using AttendanceSystemIPCamera.Services.RecognitionService;
+using AttendanceSystemIPCamera.Utils;
+using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
+using System.IO;
 
 namespace AttendanceSystemIPCamera.Services.AttendeeService
 {
@@ -21,16 +24,21 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
         Attendee GetByAttendeeCodeForNetwork(string code);
         Attendee GetByAttendeeCode(string code);
         Attendee GetByAttendeeFaceForNetwork(string faceData);
+        public string GetAttendeeAvatarByCode(string code);
     }
 
-    public class AttendeeService : BaseService<Attendee>, IAttendeeService
+        public class AttendeeService : BaseService<Attendee>, IAttendeeService
     {
         private readonly IAttendeeRepository attendeeRepository;
+        private readonly MyConfiguration myConfiguration;
         private readonly IRecognitionService recognitionService;
 
-        public AttendeeService(MyUnitOfWork unitOfWork, IRecognitionService recognitionService) : base(unitOfWork)
+        public AttendeeService(MyUnitOfWork unitOfWork, 
+            MyConfiguration myConfiguration,
+            IRecognitionService recognitionService) : base(unitOfWork)
         {
             attendeeRepository = unitOfWork.AttendeeRepository;
+            this.myConfiguration = myConfiguration;
             this.recognitionService = recognitionService;
         }
 
@@ -63,6 +71,19 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
                 return attendeeRepository.GetByCodeForNetwork(response.Results);
             }
             return null;
+        }
+        public string GetAttendeeAvatarByCode(string code)
+        {
+            var avatarFolder = FileUtils.GetFolderRelativeToBaseDirectory(myConfiguration.AvatarFolderPath);
+            var files = Directory.EnumerateFiles(avatarFolder, string.Format(@"{0}.*", code));
+            if (files.Any())
+            {
+                return files.First();
+            }
+            else
+            {
+                return "";
+            }
         }
     }
 }

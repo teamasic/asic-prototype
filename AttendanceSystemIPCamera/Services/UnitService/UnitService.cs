@@ -9,37 +9,49 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Services.UnitService
 {
+    class UnitUtils
+    {
+        public static ICollection<Unit> GetUnits(string unitConfigFile)
+        {
+            ICollection<Unit> units = new List<Unit>();
+            try
+            {
+                using StreamReader file = File.OpenText(unitConfigFile);
+                JsonSerializer serializer = new JsonSerializer();
+                units = (ICollection<Unit>)serializer.Deserialize(file, typeof(ICollection<Unit>));
+            }
+            catch (Exception)
+            {
+            }
+            return units;
+        }
+    }
     public class UnitServiceFactory
     {
         public static UnitService UnitService { get; private set; }
-        public static UnitService Create(String unitConfigFile)
+        public static UnitService Create(string unitConfigFile)
         {
             if (UnitService != null)
             {
                 return UnitService;
             }
-            ICollection<Unit> units = new List<Unit>();
-            try
-            {
-                using (StreamReader file = File.OpenText(unitConfigFile))
-                {
-                    JsonSerializer serializer = new JsonSerializer();
-                    units = (ICollection<Unit>)serializer.Deserialize(file, typeof(ICollection<Unit>));
-                }
-            }
-            catch (Exception)
-            {
-            }
             UnitService = new UnitService
             {
-                Units = units
+                ConfigFile = unitConfigFile,
+                Units = UnitUtils.GetUnits(unitConfigFile)
             };
             return UnitService;
         }
     }
     public class UnitService
     {
+        public string ConfigFile { get; set; }
         public ICollection<Unit> Units { get; set; }
+
+        public void Refresh()
+        {
+            this.Units = UnitUtils.GetUnits(ConfigFile);
+        }
 
         public ICollection<Unit> GetUnitsForToday()
         {

@@ -9,7 +9,7 @@ import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
 import Room from '../models/Room';
 import { createSession } from '../services/session';
-import { formatFullDateTimeString, success, error } from '../utils';
+import { formatFullDateTimeString, formatDateString, success, error } from '../utils';
 import { Card, Button, Dropdown, Icon, Menu, Row, Col, Typography, Modal, Tooltip } from 'antd';
 import StartSessionModal from './StartSessionModal';
 
@@ -170,7 +170,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
     }
     private formatLastSessionTime(time: Date | null): string {
         if (time != null) {
-            return formatFullDateTimeString(time);
+            return formatDateString(time);
         }
         return 'Never';
     }

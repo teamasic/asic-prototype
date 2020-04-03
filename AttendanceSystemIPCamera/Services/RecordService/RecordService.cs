@@ -1,19 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AttendanceSystemIPCamera.Framework;
+using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
+using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
+using AttendanceSystemIPCamera.Framework.ExeptionHandler;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
-using Microsoft.EntityFrameworkCore;
+using AttendanceSystemIPCamera.Repositories;
 using AttendanceSystemIPCamera.Repositories.UnitOfWork;
 using AttendanceSystemIPCamera.Services.BaseService;
+using AttendanceSystemIPCamera.Utils;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using AttendanceSystemIPCamera.Repositories;
-using AttendanceSystemIPCamera.Framework.ExeptionHandler;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
-using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
+using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Services.RecordService
 {
@@ -23,9 +25,13 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public Task<IEnumerable<SetRecordViewModel>> UpdateRecordsAfterEndSession();
         public Task<SetRecordViewModel> RecordAttendance(AttendeeViewModel viewModel);
         public IEnumerable<Record> GetRecordsBySessionId(int sessionId);
+
+        public IEnumerable<RecordInSyncData> SyncAttendanceData();
+
+        IEnumerable<Record> GetRecords();
     }
 
-    public class RecordService: BaseService<Record>, IRecordService
+    public class RecordService : BaseService<Record>, IRecordService
     {
         private readonly IRecordRepository recordRepository;
         private readonly ISessionRepository sessionRepository;
@@ -33,7 +39,11 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         private readonly IGroupRepository groupRepository;
         private readonly IRealTimeService realTimeService;
         private readonly IMapper mapper;
-        public RecordService(MyUnitOfWork unitOfWork, IRealTimeService realTimeService, IMapper mapper) : base(unitOfWork)
+        private readonly MyConfiguration myConfiguration;
+        private ILogger _logger;
+
+        public RecordService(MyUnitOfWork unitOfWork, IRealTimeService realTimeService,
+            IMapper mapper, MyConfiguration myConfiguration, ILogger<IRecordService> _logger) : base(unitOfWork)
         {
             recordRepository = unitOfWork.RecordRepository;
             sessionRepository = unitOfWork.SessionRepository;
@@ -41,6 +51,8 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             groupRepository = unitOfWork.GroupRepository;
             this.realTimeService = realTimeService;
             this.mapper = mapper;
+            this.myConfiguration = myConfiguration;
+            this._logger = _logger;
         }
 
         public IEnumerable<Record> GetRecordsBySessionId(int sessionId)
@@ -70,18 +82,24 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 if (!record.Present)
                 {
                     record.Present = true;
+                    record.UpdateTime = DateTime.Now;
                     recordRepository.Update(record);
                     unitOfWork.Commit();
                 }
                 return mapper.Map<SetRecordViewModel>(record);
             }
 
-            else {
+            else
+            {
                 var attendee = await attendeeRepository.GetByAttendeeCode(viewModel.Code);
                 var newRecord = new Record
                 {
                     Session = activeSession,
                     Attendee = attendee,
+                    AttendeeCode = attendee.Code,
+                    SessionName = activeSession.Name,
+                    StartTime = activeSession.StartTime,
+                    EndTime = activeSession.EndTime,
                     Present = true
                 };
                 await recordRepository.Add(newRecord);
@@ -97,7 +115,8 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             if (viewModel.SessionId != -1)
             {
                 session = await sessionRepository.GetById(viewModel.SessionId);
-            } else
+            }
+            else
             {
                 session = await sessionRepository.GetActiveSession();
             }
@@ -108,12 +127,18 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 {
                     Session = session,
                     Attendee = attendee,
+                    AttendeeCode = attendee.Code,
+                    SessionName = session.Name,
+                    StartTime = session.StartTime,
+                    EndTime = session.EndTime,
                     Present = viewModel.Present
                 };
                 await recordRepository.Add(record);
-            } else
+            }
+            else
             {
                 record.Present = viewModel.Present;
+                record.UpdateTime = DateTime.Now;
             }
             unitOfWork.Commit();
             return record;
@@ -130,10 +155,15 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 var notRecordIds = allAttendeeIds.Where(id => !attendedAttendeeIds.Contains(id)).ToList();
                 notRecordIds.ForEach(async (attendeeId) =>
                 {
+                    var attendee = await attendeeRepository.GetById(attendeeId);
                     Record record = new Record
                     {
                         Session = activeSession,
-                        Attendee = await attendeeRepository.GetById(attendeeId),
+                        Attendee = attendee,
+                        AttendeeCode = attendee.Code,
+                        SessionName = activeSession.Name,
+                        StartTime = activeSession.StartTime,
+                        EndTime = activeSession.EndTime,
                         Present = false
                     };
                     await recordRepository.Add(record);
@@ -148,6 +178,45 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             {
                 throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.NO_ACTIVE_SESSION);
             }
+        }
+
+        public IEnumerable<RecordInSyncData> SyncAttendanceData()
+        {
+            var latestSyncTime = FileUtils.GetLatestSyncTime();
+            var records = recordRepository.GetAttendanceDataForSync(latestSyncTime, DateTime.Now);
+
+            var attendanceData = mapper.ProjectTo<Record, RecordInSyncData>(records);
+            if (attendanceData != null && attendanceData.Count() > 0)
+            {
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        string syncApi = $"{myConfiguration.ServerUrl}{Constants.ServerConstants.SyncApi}";
+                        var serverResponse = await RestApi.PostAsync<string>(syncApi, attendanceData);
+                        _logger.LogInformation($"ASICServer Response: {serverResponse}");
+                        if (serverResponse != null && string.Equals(serverResponse, "success", StringComparison.OrdinalIgnoreCase))
+                        {
+                            FileUtils.UpdateLatestSyncTime(DateTime.Now);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogInformation(e.Message);
+                        throw e;
+                    }
+                });
+            }
+            else
+            {
+                FileUtils.UpdateLatestSyncTime(DateTime.Now);
+            }
+            return attendanceData;
+        }
+
+        public IEnumerable<Record> GetRecords()
+        {
+            return this.recordRepository.GetRecords();
         }
     }
 }

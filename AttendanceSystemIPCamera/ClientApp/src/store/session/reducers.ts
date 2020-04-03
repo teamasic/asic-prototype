@@ -12,7 +12,8 @@ const unloadedState: SessionState = {
 	currentlyOngoingSession: undefined,
 	isLoadingAttendeeRecords: false,
 	successfullyLoadedAttendeeRecords: false,
-	attendeeRecords: []
+	attendeeRecords: [],
+	unknownImages: []
 };
 
 const reducers: Reducer<SessionState> = (
@@ -58,14 +59,16 @@ const reducers: Reducer<SessionState> = (
 				...state,
 				isLoadingAttendeeRecords: true,
 				successfullyLoadedAttendeeRecords: false,
-				attendeeRecords: []
+				attendeeRecords: [],
+				unknownImages: []
 			};
 		case ACTIONS.STOP_REQUEST_ATTENDEE_RECORDS_WITH_ERRORS:
 			return {
 				...state,
 				isLoadingAttendeeRecords: false,
 				successfullyLoadedAttendeeRecords: false,
-				attendeeRecords: []
+				attendeeRecords: [],
+				unknownImages: []
 			};
 		case ACTIONS.RECEIVE_ATTENDEE_RECORDS_DATA:
 			return {
@@ -111,12 +114,29 @@ const reducers: Reducer<SessionState> = (
 		case ACTIONS.START_TAKING_ATTENDANCE:
 			return {
 				...state,
-				currentlyOngoingSession: action.session
+				currentlyOngoingSession: action.session,
+				unknownImages: []
 			};
 		case ACTIONS.END_TAKING_ATTENDANCE:
 			return {
 				...state,
-				currentlyOngoingSession: undefined
+				currentlyOngoingSession: undefined,
+				unknownImages: []
+			};
+		case ACTIONS.RECEIVE_UNKNOWN_IMAGES:
+			return {
+				...state,
+				unknownImages: action.unknownImages
+			};
+		case ACTIONS.UPDATE_UNKNOWN_REAL_TIME:
+			return {
+				...state,
+				unknownImages: [...state.unknownImages, action.image]
+			};
+		case ACTIONS.REMOVE_UNKNOWN_IMAGE:
+			return {
+				...state,
+				unknownImages: state.unknownImages.filter(img => img !== action.image)
 			};
 	}
 	return state;

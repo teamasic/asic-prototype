@@ -19,6 +19,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
     public interface IRealTimeService
     {
         public Task MarkAttendeeAsPresent(string attendeeCode);
+        public Task MarkAttendeeAsUnknown(string imageName);
         public Task SessionEnded(int sessionId);
         public Task NewChangeRequestAdded();
     }
@@ -26,6 +27,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
     public class HubMethods
     {
         public static string ATTENDEE_PRESENTED = "attendeePresented";
+        public static string ATTENDEE_UNKNOWN = "attendeeUnknown";
         public static string SESSION_ENDED = "sessionEnded";
         public static string KEEP_ALIVE = "keepAlive";
         public static string NEW_CHANGE_REQUEST = "newChangeRequest";
@@ -48,6 +50,10 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public async Task MarkAttendeeAsPresent(string attendeeCode)
         {
             await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_PRESENTED, attendeeCode);
+        }
+        public async Task MarkAttendeeAsUnknown(string imageName)
+        {
+            await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_UNKNOWN, imageName);
         }
         public async Task NewChangeRequestAdded()
         {

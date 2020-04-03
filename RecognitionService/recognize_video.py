@@ -1,54 +1,90 @@
 # import the necessary packages
 import argparse
-import pickle
-from threading import Thread
+import time
+from queue import Queue
 
 import cv2
-import face_recognition
 import imutils
-import numpy as np
 import requests
 from imutils.video import FPS
 
-from config import my_constant
-from helper import stream_video, my_service, recognition_api
+from helper import stream_video, my_service, recognition_api, my_face_detection
 
-# construct the argument parser and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.4:8554/unicast",
-                help="path to rtsp string")
-args = vars(ap.parse_args())
+if __name__ == "__main__":
 
-# Load arguments
-rtspString = args["rtsp"]
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.4:8554/unicast",
+                    help="path to rtsp string")
+    ap.add_argument("-n", "--num", default=1,
+                    help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
+    ap.add_argument("-t", "--time", default=30000,
+                    help="Time for recognition in video in milliseconds")
+    ap.add_argument("-a", "--attendance", default=False,
+                    help="Open video stream for checking attendance or not")
+    args = vars(ap.parse_args())
 
-# initialize the video stream, then allow the camera sensor to warm up
-print("[INFO] starting video stream...")
-vs = stream_video.CustomVideoStream(src=0).start()
+    # Load arguments
+    rtspString = args["rtsp"]
+    maxNumOfPeople = int(args["num"])
+    durationForRecognitionMilli = int(args["time"])
+    isForCheckingAttendance = (args["attendance"] == "True")
+    print(args["attendance"])
+    print(isForCheckingAttendance)
 
-# start the FPS throughput estimator
-fps = FPS().start()
+    # transfer rtsp to http
+    httpString = my_service.transfer_rtsp_to_http(rtspString)
 
-while True:
-    # retrieve the frame from the threaded video stream
-    image = vs.read()
-    image = imutils.resize(image, width=600)
-    (h, w) = image.shape[:2]
+    # flag to handle api exeption
+    connectQueue = Queue()
 
-    result = my_service.recognize_image_after_read(image)
-    if result is not None:
-        (box, name, proba) = result
-        (top, right, bottom, left) = box
-        # Show and call API
-        # recognition_api.recognize_face_new_thread(name)
+    # initialize the video stream, then allow the camera sensor to warm up
+    print("[INFO] starting video stream...")
+    vs = stream_video.CustomVideoStream(src=httpString)
+    if vs.stream.isOpened() is False:
+        print("Cannot read video stream")
+        raise Exception("Cannot read video stream")
+    else:
+        # start the FPS throughput estimator
+        vs = vs.start()
+        fps = FPS().start()
+        startTimeMilli = int(round(time.time() * 1000))
+        while int(round(time.time() * 1000)) - startTimeMilli < durationForRecognitionMilli:
+            # retrieve the frame from the threaded video stream
+            image = vs.read()
+            image = imutils.resize(image, width=600)
+            (h, w) = image.shape[:2]
+            boxes = my_face_detection.face_locations(image)
+            if 0 < len(boxes) <= maxNumOfPeople:
+                results = my_service.get_label_after_detect_multiple(image, boxes)
+                for result in results:
+                    (box, name, proba) = result
+                    (top, right, bottom, left) = box
+                    # Show and call API
+                    if isForCheckingAttendance and name != "unknown":
+                        if connectQueue.empty() is False:
+                            if connectQueue.get() is True:
+                                recognition_api.recognize_face_new_thread(name, connectQueue)
+                            else:
+                                cv2.destroyAllWindows()
+                                vs.stop()
+                                raise Exception("Cannot check attendance")
+                        else:
+                            recognition_api.recognize_face_new_thread(name, connectQueue)
+                    # draw the predicted face name on the image
+                    text = "{}: {:.2f}%".format(name, proba * 100)
 
-        # draw the predicted face name on the image
-        text = "{}: {:.2f}%".format(name, proba * 100)
-
-        cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 225), 2)
-        y = top - 10 if top - 10 > 10 else top + 10
-        cv2.putText(image, text, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.45, (0, 0, 255), 2)
-        # show the output image
-    cv2.imshow("Image", image)
-    cv2.waitKey(1000)
+                    cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 225), 1)
+                    y = top - 10 if top - 10 > 10 else top + 10
+                    cv2.putText(image, text, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
+                                0.45, (0, 0, 255), 2)
+                # show the output image
+            fps.update()
+            cv2.imshow("Image", image)
+            k = cv2.waitKey(1)
+            if k == ord("q"):
+                break
+        fps.stop()
+        print("FPS: {}".format(fps.fps()))
+        print("Time elapsed: {}".format(fps.elapsed()))
+        cv2.destroyAllWindows()
+        vs.stop()

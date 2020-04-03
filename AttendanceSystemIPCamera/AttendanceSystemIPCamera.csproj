@@ -26,6 +26,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0" />
     <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
@@ -61,6 +62,7 @@
   <ItemGroup>
     <None Remove="ClientApp\src\components\ChangeRequestModal.tsx" />
     <None Remove="ClientApp\src\components\GroupCard.tsx" />
+    <None Remove="ClientApp\src\components\MarkUnknownPresentModal.tsx" />
     <None Remove="ClientApp\src\components\ModalExport.tsx" />
     <None Remove="ClientApp\src\components\StartSessionModal.tsx" />
     <None Remove="ClientApp\src\middlewares\SignalRConnection.ts" />
@@ -84,6 +86,7 @@
     <None Remove="ClientApp\src\services\group.ts" />
     <None Remove="ClientApp\src\services\record.ts" />
     <None Remove="ClientApp\src\services\session.ts" />
+    <None Remove="ClientApp\src\services\settings.ts" />
     <None Remove="ClientApp\src\services\unit.ts" />
     <None Remove="ClientApp\src\store\classroom\actionCreators.ts" />
     <None Remove="ClientApp\src\store\classroom\reducers.ts" />
@@ -106,6 +109,9 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="ClientApp\src\components\ChangeRequestModal.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\components\MarkUnknownPresentModal.tsx">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\components\StartSessionModal.tsx">
@@ -143,6 +149,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\changeRequest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\services\settings.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\unit.ts">

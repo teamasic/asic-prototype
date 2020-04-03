@@ -35,7 +35,8 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
         newAttendee: {
             id: 0,
             code: '',
-            name: ''
+            name: '',
+            avatar: ''
         },
         page: 1
     }

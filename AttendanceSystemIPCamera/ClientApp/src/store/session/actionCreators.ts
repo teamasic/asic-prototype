@@ -5,7 +5,8 @@ import {
 	getSessionAttendeeRecordList,
 	getActiveSession,
 	exportSession,
-	getPastSession
+	getPastSession,
+	getSessionUnknownImagesList
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -29,7 +30,10 @@ export const ACTIONS = {
 	UPDATE_ATTENDEE_RECORD_REAL_TIME: 'UPDATE_ATTENDEE_RECORD_REAL_TIME',
 	START_REAL_TIME_CONNECTION: 'START_REAL_TIME_CONNECTION',
 	START_TAKING_ATTENDANCE: 'START_TAKING_ATTENDANCE',
-	END_TAKING_ATTENDANCE: 'END_TAKING_ATTENDANCE'
+	END_TAKING_ATTENDANCE: 'END_TAKING_ATTENDANCE',
+	RECEIVE_UNKNOWN_IMAGES: 'RECEIVE_UNKNOWN_IMAGES',
+	UPDATE_UNKNOWN_REAL_TIME: 'UPDATE_UNKNOWN_REAL_TIME',
+	REMOVE_UNKNOWN_IMAGE: 'REMOVE_UNKNOWN_IMAGE'
 };
 
 function startRequestSession(sessionId: number) {
@@ -74,6 +78,13 @@ function receiveSessionAttendeeRecords(attendeeRecords: AttendeeRecordPair[]) {
 	};
 }
 
+function receiveSessionUnknownImages(unknownImages: string[]) {
+	return {
+		type: ACTIONS.RECEIVE_UNKNOWN_IMAGES,
+		unknownImages
+	};
+}
+
 const requestAttendeeRecords = (
 	sessionId: number
 ): AppThunkAction => async dispatch => {
@@ -87,6 +98,17 @@ const requestAttendeeRecords = (
 	} else {
 		dispatch(stopRequestAttendeeRecordsWithError(apiResponse.errors));
 	}
+	};
+
+const requestUnknownImages = (
+	sessionId: number
+): AppThunkAction => async dispatch => {
+	const apiResponse: ApiResponse = await getSessionUnknownImagesList(
+		sessionId
+	);
+	if (apiResponse.success) {
+		dispatch(receiveSessionUnknownImages(apiResponse.data));
+	}
 };
 
 const requestSession = (
@@ -99,6 +121,7 @@ const requestSession = (
 	if (apiResponse.success) {
 		dispatch(requestAttendeeRecords(sessionId) as any);
 		dispatch(receiveSessionData(apiResponse.data));
+		dispatch(requestUnknownImages(sessionId) as any);
 	} else {
 		dispatch(stopRequestGroupsWithError(apiResponse.errors));
 	}
@@ -113,18 +136,22 @@ function updateAttendeeRecord(updateInfo: UpdateRecord, updatedRecord: Record) {
 }
 
 const createOrUpdateRecord = (
-	updateInfo: UpdateRecord
+	updateInfo: UpdateRecord,
+	assumeSuccess: boolean = true
 ): AppThunkAction => async dispatch => {
 	const temporaryUpdatedRecord: Record = {
 		id: -1,
 		attendee: {
 			id: updateInfo.attendeeId,
 			code: '',
-			name: ''
+			name: '',
+			avatar: ''
 		},
 		present: updateInfo.present
 	};
-	dispatch(updateAttendeeRecord(updateInfo, temporaryUpdatedRecord));
+	if (assumeSuccess) {
+		dispatch(updateAttendeeRecord(updateInfo, temporaryUpdatedRecord));
+	}
 	const apiResponse: ApiResponse = await updateRecord(updateInfo);
 
 	if (apiResponse.success) {
@@ -191,6 +218,20 @@ function startTakingAttendance(session: any) {
 	};
 }
 
+function updateUnknownRealTime(image: any) {
+	return {
+		type: ACTIONS.UPDATE_UNKNOWN_REAL_TIME,
+		image
+	};
+}
+
+function removeUnknownImage(image: string) {
+	return {
+		type: ACTIONS.REMOVE_UNKNOWN_IMAGE,
+		image
+	};
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
@@ -200,5 +241,7 @@ export const sessionActionCreators = {
 	startGetPastSession,
 	startRealTimeConnection,
 	startTakingAttendance,
-	endTakingAttendance
+	endTakingAttendance,
+	updateUnknownRealTime,
+	removeUnknownImage
 };

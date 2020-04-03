@@ -26,6 +26,7 @@ using Microsoft.Extensions.DependencyInjection;
 using AttendanceSystemIPCamera.Services.RecognitionService;
 using System.Globalization;
 using CsvHelper;
+using AttendanceSystemIPCamera.Services.AttendeeService;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -40,6 +41,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         Task<SessionViewModel> CreateSession(CreateSessionViewModel createSessionViewModel);
         Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel);
         List<Session> GetSessionByGroupId(int groupId);
+        public ICollection<string> GetSessionUnknownImages(int sessionId);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -47,18 +49,22 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private readonly ISessionRepository sessionRepository;
         private readonly IGroupRepository groupRepository;
         private readonly IRecordService recordService;
-        private readonly MyConfiguration myConfiguration;
         private readonly IRecognitionService recognitionService;
         private readonly IMapper mapper;
 
-        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, MyConfiguration myConfiguration, IMapper mapper, IRecognitionService recognitionService) : base(unitOfWork)
+        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, IMapper mapper, 
+            IRecognitionService recognitionService) : base(unitOfWork)
         {
             sessionRepository = unitOfWork.SessionRepository;
             groupRepository = unitOfWork.GroupRepository;
             this.recordService = recordService;
-            this.myConfiguration = myConfiguration;
             this.recognitionService = recognitionService;
             this.mapper = mapper;
+        }
+
+        public ICollection<string> GetSessionUnknownImages(int sessionId)
+        {
+            return sessionRepository.GetSessionUnknownImages(sessionId);
         }
 
         public async Task<ICollection<AttendeeRecordPair>> GetSessionAttendeeRecordMap(int sessionId)

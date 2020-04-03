@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,13 +25,22 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpGet]
-        public Task<BaseResponse<AttendeeViewModel>> GetByCode([FromQuery] string code)
+        public BaseResponse<AttendeeViewModel> GetByCode([FromQuery] string code)
         {
-            return ExecuteInMonitoring(async () =>
+            return ExecuteInMonitoring(() =>
             {
-                var attendee = attendeeService.GetByAttendeeCode(code);
-                return mapper.Map<AttendeeViewModel>(attendee);
+               var attendee = attendeeService.GetByAttendeeCode(code);
+               return mapper.Map<AttendeeViewModel>(attendee);
             });
+        }
+
+        [HttpGet("{code}/avatar")]
+        public IActionResult GetAvatar(string code)
+        {
+            var path = "Assets/avatar";
+            var fileName = code + ".jpg";
+            var image = System.IO.File.OpenRead(Path.Join(Directory.GetCurrentDirectory(), path, fileName));
+            return File(image, "image/jpeg");
         }
 
     }
