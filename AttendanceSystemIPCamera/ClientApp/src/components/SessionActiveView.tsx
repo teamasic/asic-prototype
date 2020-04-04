@@ -55,25 +55,29 @@ type SessionProps = Props & SessionState & // ... state we've requested from the
 
 interface State {
 	unknownModalVisible: boolean;
+	currentUnknownImage: string;
 }
 
 class SessionActiveView extends React.PureComponent<SessionProps, State> {
 	public constructor(props: SessionProps) {
 		super(props);
 		this.state = {
-			unknownModalVisible: false
+			unknownModalVisible: false,
+			currentUnknownImage: ''
 		};
 	}
 
-	private openUnknownModal() {
+	private openUnknownModal(currentUnknownImage: string) {
 		this.setState({
-			unknownModalVisible: true
+			unknownModalVisible: true,
+			currentUnknownImage
 		});
 	}
 
 	private closeUnknownModal() {
 		this.setState({
-			unknownModalVisible: false
+			unknownModalVisible: false,
+			currentUnknownImage: ''
 		});
 	}
 
@@ -155,7 +159,7 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 										{this.getImageBox(`url(/api/unknown/${img})`)}
 										<Tooltip title="Mark attendee present">
 											<Button
-												onClick={() => this.openUnknownModal()}
+												onClick={() => this.openUnknownModal(img)}
 												className=""
 												type="primary"
 												size="small"
@@ -171,6 +175,8 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 			}
 			{
 				<MarkUnknownPresentModal
+					unknownImage={this.state.currentUnknownImage}
+					removeUnknownImage={(img: string) => this.props.removeUnknownImage(img)}
 					visible={this.state.unknownModalVisible}
 					hideModal={() => this.closeUnknownModal()}
 					markAsPresent={this.props.markAsPresent}

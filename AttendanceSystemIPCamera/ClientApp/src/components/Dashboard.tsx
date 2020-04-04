@@ -379,25 +379,20 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
     private renderGroupsTable() {
         return (
-            <div>
-                <List
-                    grid={{
-                        gutter: 32,
-                        xs: 1,
-                        sm: 2,
-                        md: 3
-                    }}
-                    dataSource={this.props.paginatedGroupList!.list}
-                    renderItem={group => (
-                        <List.Item>
-                            <GroupCard redirect={url => this.redirect(url)}
+            <div className="group-grid">
+                <div className="fixed-grid--around">
+                    {
+                        this.props.paginatedGroupList!.list.map(group => 
+                            <div className="grid-element">
+                                <GroupCard redirect={url => this.redirect(url)}
                                 group={group}
                                 roomList={this.props.roomList}
                                 units={this.props.units}
                                 viewDetail={this.viewDetail} />
-                        </List.Item>
-                    )}
-                />
+                            </div>
+                        )
+                    }
+                </div>
                 <div className="pagination-container">
                     <Pagination onChange={(page, pageSize) => this.pageChange(page, pageSize)}
                         defaultCurrent={1} total={this.props.paginatedGroupList!.total} hideOnSinglePage={true} />
