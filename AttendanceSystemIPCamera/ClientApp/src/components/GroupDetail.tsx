@@ -8,7 +8,7 @@ import Attendee from '../models/Attendee';
 import { ApplicationState } from '../store';
 import { groupActionCreators } from '../store/group/actionCreators';
 import { GroupsState } from '../store/group/state';
-import { Breadcrumb, Icon, Button, Empty, message, Typography, Tabs, Row, Col, InputNumber } from 'antd';
+import { Breadcrumb, Icon, Button, Empty, message, Typography, Tabs, Row, Col, InputNumber, Form, Input } from 'antd';
 import GroupInfo from './GroupInfo';
 import PastSession from './PastSession';
 import ModalExport from './ModalExport';
@@ -21,6 +21,7 @@ import classNames from 'classnames';
 import { EditTwoTone } from '@ant-design/icons';
 import TopBar from './TopBar';
 import StartSessionModal from './StartSessionModal';
+import { FormComponentProps } from 'antd/lib/form';
 
 const { Title } = Typography;
 const { Paragraph } = Typography
@@ -30,12 +31,14 @@ interface GroupDetailComponentState {
     modalExportVisible: boolean,
     attendeeLoading: boolean,
     editMaxSession: boolean,
-    modalStartSessionVisible: boolean
+    modalStartSessionVisible: boolean,
+    editGroupName: boolean
 }
 
 // At runtime, Redux will merge together...
 type GroupDetailProps =
-    GroupsState // ... state we've requested from the Redux store
+    FormComponentProps
+    & GroupsState // ... state we've requested from the Redux store
     & typeof groupActionCreators // ... plus action creators we've requested
     & UnitsState
     & RoomsState// ... state we've requested from the Redux store
@@ -48,27 +51,32 @@ type GroupDetailProps =
 
 
 class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailComponentState> {
-    state = {
-        modalExportVisible: false,
-        attendeeLoading: true,
-        editMaxSession: false,
-        modalStartSessionVisible: false
+    constructor(props: GroupDetailProps) {
+        super(props);
+        this.state = {
+            modalExportVisible: false,
+            attendeeLoading: true,
+            editMaxSession: false,
+            modalStartSessionVisible: false,
+            editGroupName: false
+        }
     }
+
     // This method is called when the component is first added to the document
     public componentDidMount() {
         this.ensureDataFetched();
     }
 
-    public editGroupName = (str: string) => {
-        var group = {
-            ...this.props.selectedGroup,
-            name: str
-        }
-        this.props.startUpdateGroup(group, this.updateGroupSuccess);
-    }
-
-    public updateGroupSuccess() {
-        message.success("Update group name success!")
+    public editGroupName = (e: any) => {
+        this.props.form.validateFields((err: any, values: any) => {
+            if(!err) {
+                var group = {
+                    ...this.props.selectedGroup,
+                    name: values.name
+                }
+                this.props.startUpdateGroup(group, () => {this.setState({editGroupName: false})});
+            }
+        });
     }
 
     public openModalExport = () => {
@@ -100,19 +108,22 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
     }
 
     private onEditMaxSession = () => {
-        this.setState({
-            editMaxSession: true
-        });
+        this.setState({editMaxSession: true});
+    }
+
+    private onEditGroupName = () => {
+        this.setState({editGroupName: true});
     }
 
     private onMaxSessionBlur = (e: any) => {
-        var group = {
-            ...this.props.selectedGroup,
-            maxSessionCount: JSON.parse(e.target.value)
-        };
-        this.props.startUpdateGroup(group, this.updateGroupSuccess);
-        this.setState({
-            editMaxSession: false
+        this.props.form.validateFields((err: any, values: any) => {
+            if(!err) {
+                var group = {
+                    ...this.props.selectedGroup,
+                    maxSessionCount: JSON.parse(values.maxSession)
+                };
+                this.props.startUpdateGroup(group, () => {this.setState({editMaxSession: false})});
+            }
         });
     }
 
@@ -124,6 +135,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                 <Button type="default" onClick={this.openModalStartSession}
                     icon="plus">Create a session</Button>
             </div>;
+        const { getFieldDecorator } = this.props.form;
         return (
             <React.Fragment>
                 <TopBar>
@@ -135,23 +147,53 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                     <Row>
                         <Col>
                             <Title className="title" level={3}>
-                                <Paragraph editable={{ onChange: this.editGroupName }}>{this.props.selectedGroup.name}</Paragraph>
+                                {this.state.editGroupName ?
+                                    (
+                                        <Form>
+                                            <Form.Item>
+                                                {getFieldDecorator('name', {
+                                                    initialValue: this.props.selectedGroup.name,
+                                                    rules: [
+                                                        { required: true, message: 'Please input group name' },
+                                                        { min: 3, max: 50, message: 'Group name must have 3-50 characters'}
+                                                    ],
+                                                })(
+                                                    <Input onBlur={this.editGroupName}/>
+                                                )}
+                                            </Form.Item>
+                                        </Form>
+                                    ) :
+                                    (
+                                        <span>{this.props.selectedGroup.name} < EditTwoTone onClick={this.onEditGroupName} /></span>
+                                    )
+                                }
                             </Title>
                         </Col>
                         <Col>
-                            <Title className="title" level={4}>
-                                <Paragraph>Total sessions : {this.state.editMaxSession ?
-                                    (<InputNumber
-                                        defaultValue={this.props.selectedGroup.maxSessionCount}
-                                        min={0}
-                                        max={100}
-                                        onBlur={this.onMaxSessionBlur}
-                                    />
+                        <Title className="title" level={4}>
+                                {this.state.editMaxSession ?
+                                    (
+                                        <Form>
+                                            <Form.Item>
+                                                {getFieldDecorator('maxSession', {
+                                                    initialValue: this.props.selectedGroup.maxSessionCount,
+                                                    rules: [
+                                                        { required: true, message: 'Please input max session' }
+                                                    ],
+                                                })(
+                                                    <InputNumber
+                                                        min={0}
+                                                        max={100}
+                                                        onBlur={this.onMaxSessionBlur}
+                                                    />
+                                                )}
+                                            </Form.Item>
+                                        </Form>
                                     ) :
                                     (
-                                        <span>{this.props.selectedGroup.maxSessionCount} < EditTwoTone onClick={this.onEditMaxSession} /></span>
+                                        <span>Total sessions: {this.props.selectedGroup.maxSessionCount} < EditTwoTone onClick={this.onEditMaxSession} /></span>
                                     )
-                                }</Paragraph>
+                                }
                             </Title>
                         </Col>
                     </Row>
@@ -196,14 +238,15 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
     }
 }
 
-export default withRouter(connect(
-    (state: ApplicationState) => ({
-        ...state.groups, ...state.rooms, ...state.units
-    }), // Selects which state properties are merged into the component's props
-    dispatch => bindActionCreators({
-        ...roomActionCreators,
-        ...groupActionCreators,
-        ...sessionActionCreators,
-        ...unitActionCreators
-    }, dispatch) // Selects which action creators are merged into the component's props
-)(GroupDetail as any));
+export default Form.create<GroupDetailProps>({ name: 'group_detail_form' })
+    (withRouter(connect(
+        (state: ApplicationState) => ({
+            ...state.groups, ...state.rooms, ...state.units
+        }), // Selects which state properties are merged into the component's props
+        dispatch => bindActionCreators({
+            ...roomActionCreators,
+            ...groupActionCreators,
+            ...sessionActionCreators,
+            ...unitActionCreators
+        }, dispatch) // Selects which action creators are merged into the component's props
+    )(GroupDetail as any)));
