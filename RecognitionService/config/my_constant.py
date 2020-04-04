@@ -8,4 +8,4 @@ recognizerModelPath: Final = "output_dlib/recognizer_model.pickle"
 portHttpStream: Final = 9911
 transferToHttpBatchPath = "transfer_to_http.bat"
 threshold = 0
-unknownDir: Final = r"..\Unknown"
+unknownDir: Final = r"..\unknown"

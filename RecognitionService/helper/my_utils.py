@@ -33,9 +33,8 @@ def saveImageFunction(image, box):
 
     crop_image = image[top:bottom, left:right]
 
-    dir = "../Unknown"
     unique_filename = "Unknown_{}.jpg".format(str(uuid.uuid4()))
-    fullPath = os.path.join(dir, unique_filename)
+    fullPath = os.path.join(my_constant.unknownDir, unique_filename)
 
     cv2.imwrite(fullPath, crop_image)
     return unique_filename

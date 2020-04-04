@@ -41,7 +41,7 @@ namespace AttendanceSystemIPCamera.Framework
 
         public class Code
         {
-            public static string UNKNOWN = "Unknown";
+            public static string UNKNOWN = "unknown";
         }
         public enum RolesEnum
         {
