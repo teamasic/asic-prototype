@@ -366,10 +366,17 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
             else
             {
-                var durationBeforeStartInMinutes = GetDurationBeforeStartInMinutes(viewModel.StartTime);
-                var durationWhileRunningInMinutes = GetDurationWhileRunningInMinutes(viewModel.StartTime, viewModel.EndTime);
                 sessionRepository.SetActiveSession(viewModel.SessionId);
-                await recognitionService.StartRecognition(durationBeforeStartInMinutes, durationWhileRunningInMinutes, session.RtspString);
+                if (viewModel.Multiple)
+                {
+                    await recognitionService.StartRecognitionMultiple(session.RtspString);
+                }
+                else
+                {
+                    var durationBeforeStartInMinutes = GetDurationBeforeStartInMinutes(viewModel.StartTime);
+                    var durationWhileRunningInMinutes = GetDurationWhileRunningInMinutes(viewModel.StartTime, viewModel.EndTime);
+                    await recognitionService.StartRecognition(durationBeforeStartInMinutes, durationWhileRunningInMinutes, session.RtspString);
+                }
                 return mapper.Map<SessionViewModel>(session);
             }
         }

@@ -64,7 +64,7 @@ namespace AttendanceSystemIPCamera.Controllers
             });
         }
 
-        [HttpPut("endSnapshot")]
+        [HttpPost("endSnapshot")]
         public Task<BaseResponse<IEnumerable<SetRecordViewModel>>> UpdateRecordsAfterSnapshot(
             SnapshotResultViewModel viewModel)
         {

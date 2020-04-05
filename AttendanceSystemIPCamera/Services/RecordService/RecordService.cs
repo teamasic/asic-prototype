@@ -172,7 +172,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 unitOfWork.Commit();
                 var newRecordList = await recordRepository.GetRecordsBySessionId(activeSession.Id);
                 await realTimeService.SessionEnded(activeSession.Id);
-                sessionRepository.SetActiveSession(-1);
+                sessionRepository.RemoveActiveSession();
                 return mapper.ProjectTo<Record, SetRecordViewModel>(newRecordList);
             }
             else
