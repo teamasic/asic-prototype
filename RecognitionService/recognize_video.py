@@ -1,14 +1,20 @@
 # import the necessary packages
 import argparse
+import copy
 import time
 from queue import Queue
+from threading import Thread
 
 import cv2
 import imutils
 import requests
+from imutils import paths
 from imutils.video import FPS
 
-from helper import stream_video, my_service, recognition_api, my_face_detection
+from config import my_constant
+from helper import stream_video, my_service, recognition_api, my_face_detection, my_utils
+from helper.my_utils import remove_all_files
+
 
 if __name__ == "__main__":
 
@@ -19,7 +25,7 @@ if __name__ == "__main__":
                     help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
     ap.add_argument("-t", "--time", default=30000,
                     help="Time for recognition in video in milliseconds")
-    ap.add_argument("-a", "--attendance", default=False,
+    ap.add_argument("-a", "--attendance", default=True,
                     help="Open video stream for checking attendance or not")
     args = vars(ap.parse_args())
 
@@ -27,15 +33,17 @@ if __name__ == "__main__":
     rtspString = args["rtsp"]
     maxNumOfPeople = int(args["num"])
     durationForRecognitionMilli = int(args["time"])
-    isForCheckingAttendance = (args["attendance"] == "True")
+    isForCheckingAttendance = (str(args["attendance"]) == "True")
     print(args["attendance"])
-    print(isForCheckingAttendance)
 
     # transfer rtsp to http
     httpString = my_service.transfer_rtsp_to_http(rtspString)
 
     # flag to handle api exeption
     connectQueue = Queue()
+
+    # Queue to save unknown images
+    imageUnknowns = Queue()
 
     # initialize the video stream, then allow the camera sensor to warm up
     print("[INFO] starting video stream...")
@@ -44,6 +52,9 @@ if __name__ == "__main__":
         print("Cannot read video stream")
         raise Exception("Cannot read video stream")
     else:
+        # start thread save face
+        # Thread(target=saveUnknownImage, args=(imageUnknowns,), daemon=True).start()
+
         # start the FPS throughput estimator
         vs = vs.start()
         fps = FPS().start()
@@ -60,16 +71,21 @@ if __name__ == "__main__":
                     (box, name, proba) = result
                     (top, right, bottom, left) = box
                     # Show and call API
-                    if isForCheckingAttendance and name != "unknown":
+                    if isForCheckingAttendance:
                         if connectQueue.empty() is False:
                             if connectQueue.get() is True:
-                                recognition_api.recognize_face_new_thread(name, connectQueue)
+                                if name == "unknown":
+                                    recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(image), box,                                    connectQueue)
+                                else:
+                                    recognition_api.recognize_face_new_thread(name, connectQueue)
                             else:
                                 cv2.destroyAllWindows()
                                 vs.stop()
+                                remove_all_files(my_constant.unknownDir)
                                 raise Exception("Cannot check attendance")
                         else:
                             recognition_api.recognize_face_new_thread(name, connectQueue)
+
                     # draw the predicted face name on the image
                     text = "{}: {:.2f}%".format(name, proba * 100)
 
@@ -88,3 +104,4 @@ if __name__ == "__main__":
         print("Time elapsed: {}".format(fps.elapsed()))
         cv2.destroyAllWindows()
         vs.stop()
+        remove_all_files(my_constant.unknownDir)

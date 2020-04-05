@@ -45,7 +45,7 @@ def _get_label(vec):
     name = le.classes_[j]
     if proba > my_constant.threshold:
         return name, proba
-    return "Unknown", None
+    return "unknown", None
 
 
 def recognize_image_after_read_multiple(image, numberOfTimesToUpSample=1):
