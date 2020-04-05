@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { Modal, DatePicker, Typography, Select, Row, Col, Input, InputNumber, Button, Table } from 'antd'
+import { Modal, DatePicker, Typography, Select, Row, Col, Input, InputNumber, Button, Table, Form } from 'antd'
 import { GroupsState } from '../store/group/state';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import { RouteComponentProps } from 'react-router';
@@ -14,6 +14,7 @@ import ExportFormat1 from '../models/ExportFormat1';
 import ExportFormat2 from '../models/ExportFormat2';
 import { renderStripedTable } from '../utils'
 import { ExportMultipleCondition } from '../models/ExportMultipleCondition';
+import { FormComponentProps } from 'antd/lib/form';
 
 const { Text } = Typography
 const { Option } = Select
@@ -41,7 +42,7 @@ const ATTENDANCE_STATUS_OPTIONS = {
     ABSENT: 'absent'
 }
 
-interface Props {
+interface Props extends FormComponentProps {
     modalVisible: boolean,
     group: Group,
     closeModal: Function
@@ -90,25 +91,28 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 
     private generate = () => {
-        if (!this.state.isGenerated) {
-            this.setState({
-                isGenerating: true
-            })
-            this.setFileName();
-            var exportRequest = {
-                groupId: this.props.group.id,
-                isSingleDate: this.state.timePicker == TIME_OPTIONS.SINGLE_DATE,
-                withCondition: this.isWithCondition(),
-                singleDate: this.state.singleDate.format("YYYY-MM-DD"),
-                startDate: this.state.startDate.format("YYYY-MM-DD"),
-                endDate: this.state.endDate.format("YYYY-MM-DD"),
-                isPresent: this.state.isPresent == ATTENDANCE_STATUS_OPTIONS.PRESENT,
-                multipleDateCondition: this.getMultipleDateCondition(),
-                attendancePercent: this.state.attendancePercent
-            };
-            this.props.startGenerateExport(exportRequest, this.generateSuccess, this.setCsvData);
-
-        }
+        this.props.form.validateFields((err: any, values: any) => {
+            if (!err) {
+                if (!this.state.isGenerated) {
+                    this.setState({
+                        isGenerating: true
+                    })
+                    this.setFileName();
+                    var exportRequest = {
+                        groupId: this.props.group.id,
+                        isSingleDate: this.state.timePicker == TIME_OPTIONS.SINGLE_DATE,
+                        withCondition: this.isWithCondition(),
+                        singleDate: this.state.singleDate.format("YYYY-MM-DD"),
+                        startDate: this.state.startDate.format("YYYY-MM-DD"),
+                        endDate: this.state.endDate.format("YYYY-MM-DD"),
+                        isPresent: this.state.isPresent == ATTENDANCE_STATUS_OPTIONS.PRESENT,
+                        multipleDateCondition: this.getMultipleDateCondition(),
+                        attendancePercent: this.state.attendancePercent
+                    };
+                    this.props.startGenerateExport(exportRequest, this.generateSuccess, this.setCsvData);
+                }
+            }
+        });
     }
 
     private isWithCondition = () => {
@@ -337,6 +341,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
 
     public render() {
         var modalTitle = this.props.group.code + " - " + this.props.group.name;
+        const { getFieldDecorator } = this.props.form;
         return (
             <div>
                 <Modal
@@ -371,20 +376,50 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                             {
                                 this.state.timePicker == TIME_OPTIONS.SINGLE_DATE ?
                                     (
-                                        <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.SINGLE)}
-                                            value={this.state.singleDate}
-                                            style={{ width: '50%' }} />
+                                        <Form layout="inline">
+                                            <Row>
+                                                <Col span={24}>
+                                                    <Form.Item>
+                                                        {getFieldDecorator('singleDate', {
+                                                            initialValue: this.state.singleDate,
+                                                            rules: [{ required: true, message: 'Please choose date' }],
+                                                        })(
+                                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.SINGLE)}
+                                                                style={{ width: '100%' }} />
+                                                        )}
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                        </Form>
                                     )
                                     :
                                     (
-                                        <InputGroup compact>
-                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.START_DATE)}
-                                                value={this.state.startDate}
-                                                style={{ width: '50%' }} />
-                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.END_DATE)}
-                                                value={this.state.endDate}
-                                                style={{ width: '50%' }} />
-                                        </InputGroup>
+                                        <Form layout="inline">
+                                            <Row>
+                                                <Col span={12}>
+                                                    <Form.Item>
+                                                        {getFieldDecorator('startDate', {
+                                                            initialValue: this.state.startDate,
+                                                            rules: [{ required: true, message: 'Please choose date' }],
+                                                        })(
+                                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.START_DATE)}
+                                                                style={{ width: '100%' }} />
+                                                        )}
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col span={12}>
+                                                    <Form.Item>
+                                                        {getFieldDecorator('endDate', {
+                                                            initialValue: this.state.endDate,
+                                                            rules: [{ required: true, message: 'Please choose date' }],
+                                                        })(
+                                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.END_DATE)}
+                                                                style={{ width: '100%' }} />
+                                                        )}
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                        </Form>
                                     )
                             }
                         </Col>
@@ -396,7 +431,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                         <Col span={19}>
                             {this.state.timePicker == TIME_OPTIONS.SINGLE_DATE ?
                                 (
-                                    <Select defaultValue={ATTENDANCE_STATUS_OPTIONS.ALL} style={{ width: '50%' }}
+                                    <Select defaultValue={ATTENDANCE_STATUS_OPTIONS.ALL} style={{ width: '47%' }}
                                         onChange={this.onAttendanceStatusChange}>
                                         <Option value={ATTENDANCE_STATUS_OPTIONS.ALL}>All</Option>
                                         <Option value={ATTENDANCE_STATUS_OPTIONS.PRESENT}>Is Present</Option>
@@ -471,11 +506,11 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 }
 
-export default connect(
+export default Form.create<Props>({ name: 'export_form' })(connect(
     (state: ApplicationState, ownProps: Props) =>
         ({
             ...state,
             ...ownProps
         }), // Selects which state properties are merged into the component's props
     dispatch => bindActionCreators(sessionActionCreators, dispatch) // Selects which action creators are merged into the component's props
-)(ModalExport as any);
+)(ModalExport as any));
