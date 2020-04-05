@@ -2,6 +2,7 @@
 import { SessionState } from './state';
 import { ACTIONS } from './actionCreators';
 import Record from '../../models/Record';
+import AttendeeRecordPair from '../../models/AttendeeRecordPair';
 
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
@@ -137,6 +138,39 @@ const reducers: Reducer<SessionState> = (
 			return {
 				...state,
 				unknownImages: state.unknownImages.filter(img => img !== action.image)
+			};
+		case ACTIONS.UPDATE_UNKNOWN_REAL_TIME_BATCH:
+			return {
+				...state,
+				unknownImages: [...state.unknownImages, ... action.images]
+			};
+		case ACTIONS.UPDATE_ATTENDEE_RECORD_REAL_TIME_BATCH:
+			const updatedAttendeeRecords = state.attendeeRecords
+				.filter(ar => action.attendeeCodes.includes(ar.attendee.code));
+			const changes: { [attendeeCode: string]: Record } = {};
+			updatedAttendeeRecords.forEach(ar => {
+				let updatedRecord: Record | undefined;
+				if (ar.record != null) {
+					updatedRecord = {
+						...ar.record,
+						present: true
+					};
+				} else {
+					updatedRecord = {
+						id: -1,
+						attendee: ar.attendee,
+						present: true
+					};
+				}
+				changes[ar.attendee.code] = updatedRecord;
+			});
+			return {
+				...state,
+				attendeeRecords: state.attendeeRecords.map(ar =>
+					action.attendeeCodes.includes(ar.attendee.code) ? ({
+						attendee: ar.attendee,
+						record: changes[ar.attendee.code]
+					}) : ar)
 			};
 	}
 	return state;

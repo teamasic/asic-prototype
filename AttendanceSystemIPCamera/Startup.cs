@@ -188,6 +188,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<SettingsUtils>();
             services.AddHttpClient();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IGlobalStateService, GlobalStateService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {

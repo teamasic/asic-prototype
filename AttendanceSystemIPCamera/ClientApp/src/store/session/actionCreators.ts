@@ -33,7 +33,9 @@ export const ACTIONS = {
 	END_TAKING_ATTENDANCE: 'END_TAKING_ATTENDANCE',
 	RECEIVE_UNKNOWN_IMAGES: 'RECEIVE_UNKNOWN_IMAGES',
 	UPDATE_UNKNOWN_REAL_TIME: 'UPDATE_UNKNOWN_REAL_TIME',
-	REMOVE_UNKNOWN_IMAGE: 'REMOVE_UNKNOWN_IMAGE'
+	REMOVE_UNKNOWN_IMAGE: 'REMOVE_UNKNOWN_IMAGE',
+	UPDATE_UNKNOWN_REAL_TIME_BATCH: 'UPDATE_UNKNOWN_REAL_TIME_BATCH',
+	UPDATE_ATTENDEE_RECORD_REAL_TIME_BATCH: 'UPDATE_ATTENDEE_RECORD_REAL_TIME_BATCH'
 };
 
 function startRequestSession(sessionId: number) {
@@ -232,6 +234,20 @@ function removeUnknownImage(image: string) {
 	};
 }
 
+function updateUnknownRealTimeBatch(images: string[]) {
+	return {
+		type: ACTIONS.UPDATE_UNKNOWN_REAL_TIME_BATCH,
+		images
+	};
+}
+
+function updateAttendeeRecordRealTimeBatch(attendeeCodes: string[]) {
+	return {
+		type: ACTIONS.UPDATE_ATTENDEE_RECORD_REAL_TIME_BATCH,
+		attendeeCodes
+	};
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
@@ -243,5 +259,7 @@ export const sessionActionCreators = {
 	startTakingAttendance,
 	endTakingAttendance,
 	updateUnknownRealTime,
-	removeUnknownImage
+	removeUnknownImage,
+	updateAttendeeRecordRealTimeBatch,
+	updateUnknownRealTimeBatch
 };

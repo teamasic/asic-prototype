@@ -53,6 +53,16 @@ export function attachEvents(connection: signalR.HubConnection, dispatch: any) {
         dispatch(sessionActionCreators.updateUnknownRealTime(image));
     });
 
+    connection.on("attendeePresentedBatch", (attendeeCodeString: string) => {
+        const codes = attendeeCodeString.split(",");
+        dispatch(sessionActionCreators.updateAttendeeRecordRealTimeBatch(codes));
+    });
+
+    connection.on("attendeeUnknownBatch", (imageString: string) => {
+        const images = imageString.split(",");
+        dispatch(sessionActionCreators.updateUnknownRealTimeBatch(images));
+    });
+
     connection.on("sessionEnded", sessionId => {
         // clearInterval(interval);
         // connection.stop();

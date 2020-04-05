@@ -3,6 +3,7 @@
 const createSignalRConnection = () => {
     const conn = new signalR.HubConnectionBuilder()
         .withUrl("/hub")
+        .withAutomaticReconnect()
         .configureLogging(signalR.LogLevel.Information)
         .build();
     conn.serverTimeoutInMilliseconds = 100000; // 100 second
