@@ -13,6 +13,7 @@ import ExportRequest from '../models/ExportRequest';
 import ExportFormat1 from '../models/ExportFormat1';
 import ExportFormat2 from '../models/ExportFormat2';
 import { renderStripedTable } from '../utils'
+import { ExportMultipleCondition } from '../models/ExportMultipleCondition';
 
 const { Text } = Typography
 const { Option } = Select
@@ -30,8 +31,9 @@ const TIME_OPTIONS = {
 }
 const ATTENDANCE_OPTIONS = {
     ALL: 'all',
-    GREATER_THAN_OR_EQUAL: 'greater',
-    LESS_THAN_OR_EQUAL: 'less'
+    GREATER_THAN: 'greater',
+    LESS_THAN: 'less',
+    EQUAL: 'equal'
 }
 const ATTENDANCE_STATUS_OPTIONS = {
     ALL: 'all',
@@ -52,7 +54,7 @@ interface ModalExportComponentStates {
     timePicker: string,
     fileName: string,
     isPresent: string,
-    isGreaterThanOrEqual: string,
+    multipleDateCondition: string,
     attendancePercent: number,
     csvData: any,
     exportStatus: string,
@@ -77,7 +79,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
         timePicker: TIME_OPTIONS.RANGE_DATE,
         fileName: "",
         isPresent: ATTENDANCE_STATUS_OPTIONS.ALL,
-        isGreaterThanOrEqual: ATTENDANCE_OPTIONS.ALL,
+        multipleDateCondition: ATTENDANCE_OPTIONS.ALL,
         attendancePercent: 100,
         csvData: [],
         exportStatus: "Generate",
@@ -101,18 +103,30 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                 startDate: this.state.startDate.format("YYYY-MM-DD"),
                 endDate: this.state.endDate.format("YYYY-MM-DD"),
                 isPresent: this.state.isPresent == ATTENDANCE_STATUS_OPTIONS.PRESENT,
-                isGreaterThanOrEqual: this.state.isGreaterThanOrEqual == ATTENDANCE_OPTIONS.GREATER_THAN_OR_EQUAL,
+                multipleDateCondition: this.getMultipleDateCondition(),
                 attendancePercent: this.state.attendancePercent
             };
             this.props.startGenerateExport(exportRequest, this.generateSuccess, this.setCsvData);
-            
+
         }
     }
 
     private isWithCondition = () => {
         //(Single date && condition is not all) || (Range date && condition is not all)
         return (this.state.timePicker == TIME_OPTIONS.SINGLE_DATE && this.state.isPresent != ATTENDANCE_STATUS_OPTIONS.ALL) ||
-            (this.state.timePicker != TIME_OPTIONS.SINGLE_DATE && this.state.isGreaterThanOrEqual != ATTENDANCE_OPTIONS.ALL);
+            (this.state.timePicker != TIME_OPTIONS.SINGLE_DATE && this.state.multipleDateCondition != ATTENDANCE_OPTIONS.ALL);
+    }
+
+    private getMultipleDateCondition = () => {
+        switch (this.state.multipleDateCondition) {
+            case ATTENDANCE_OPTIONS.GREATER_THAN:
+                return ExportMultipleCondition.Greater;
+            case ATTENDANCE_OPTIONS.LESS_THAN:
+                return ExportMultipleCondition.Less;
+            case ATTENDANCE_OPTIONS.EQUAL:
+                return ExportMultipleCondition.Equal
+        };
+        return ExportMultipleCondition.Greater;
     }
 
     private generateSuccess = (exportRequest: ExportRequest) => {
@@ -168,9 +182,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 
     private onAttendanceOptionChange = (value: string) => {
-        this.setState({
-            isGreaterThanOrEqual: value
-        });
+        this.setState({ multipleDateCondition: value });
     }
 
     private onPercentChange = (value: number | undefined) => {
@@ -206,7 +218,6 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                 };
                 csvData2.push(row);
             });
-            csvData2 = data;
             this.setState({
                 csvData: csvData2
             });
@@ -217,7 +228,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
         var updatedFileName = this.props.group.code + "_" + this.props.group.name;
         if (this.state.timePicker == TIME_OPTIONS.SINGLE_DATE) {
             var date = this.state.singleDate;
-            updatedFileName += "_" + date.toISOString().substring(0, 10);
+            updatedFileName += "_" + date.format("YYYY-MM-DD");
             if (this.state.isPresent != ATTENDANCE_STATUS_OPTIONS.ALL) {
                 updatedFileName += "_" + this.state.isPresent + ".csv";
             } else {
@@ -229,11 +240,11 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
             return;
         } else {
             var date = this.state.startDate;
-            updatedFileName += "_" + date.toISOString().substring(0, 10);
+            updatedFileName += "_" + date.format("YYYY-MM-DD");
             date = this.state.endDate;
-            updatedFileName += "_" + date.toISOString().substring(0, 10);
-            if (this.state.isGreaterThanOrEqual != ATTENDANCE_OPTIONS.ALL) {
-                updatedFileName += "_" + this.state.isGreaterThanOrEqual + "_" + this.state.attendancePercent + "percent" + ".csv";
+            updatedFileName += "_" + date.format("YYYY-MM-DD");
+            if (this.state.multipleDateCondition != ATTENDANCE_OPTIONS.ALL) {
+                updatedFileName += "_" + this.state.multipleDateCondition + "_" + this.state.attendancePercent + "percent" + ".csv";
             } else {
                 updatedFileName += ".csv";
             }
@@ -312,7 +323,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     private onPageChange = (page: number) => {
         this.setState({
             page: page
-        })
+        });
     }
 
     private onExport = () => {
@@ -398,15 +409,18 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                                             onChange={this.onAttendanceOptionChange}>
                                             <Option value={ATTENDANCE_OPTIONS.ALL}>
                                                 All
-                                         </Option>
-                                            <Option value={ATTENDANCE_OPTIONS.GREATER_THAN_OR_EQUAL}>
-                                                Presence Greater Than Or Equal To
-                                         </Option>
-                                            <Option value={ATTENDANCE_OPTIONS.LESS_THAN_OR_EQUAL}>
-                                                Presence Less Than Or Equal To
-                                         </Option>
+                                            </Option>
+                                            <Option value={ATTENDANCE_OPTIONS.GREATER_THAN}>
+                                                Presence Greater Than
+                                            </Option>
+                                            <Option value={ATTENDANCE_OPTIONS.LESS_THAN}>
+                                                Presence Less Than
+                                            </Option>
+                                            <Option value={ATTENDANCE_OPTIONS.EQUAL}>
+                                                Presence Equal To
+                                            </Option>
                                         </Select>
-                                        {this.state.isGreaterThanOrEqual != ATTENDANCE_OPTIONS.ALL ?
+                                        {this.state.multipleDateCondition != ATTENDANCE_OPTIONS.ALL ?
                                             (<InputNumber
                                                 defaultValue={this.state.attendancePercent}
                                                 min={0}
