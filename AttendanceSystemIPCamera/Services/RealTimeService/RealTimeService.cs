@@ -65,13 +65,19 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         }
         public async Task MarkAttendeeAsPresentBatch(ICollection<string> codes)
         {
-            var codeString = Join(codes);
-            await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_PRESENTED_BATCH, codeString);
+            if (codes.Count > 0)
+            {
+                var codeString = Join(codes);
+                await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_PRESENTED_BATCH, codeString);
+            }
         }
         public async Task MarkAttendeeAsUnknownBatch(ICollection<string> images)
         {
-            var imageString = Join(images);
-            await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_UNKNOWN_BATCH, imageString);
+            if (images.Count > 0)
+            {
+                var imageString = Join(images);
+                await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_UNKNOWN_BATCH, imageString);
+            }
         }
         public async Task NewChangeRequestAdded()
         {

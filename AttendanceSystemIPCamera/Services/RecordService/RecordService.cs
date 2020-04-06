@@ -238,13 +238,16 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             {
                 if (attendeesMap.ContainsKey(code))
                 {
-                    var record = recordsMap[code];
-                    if (record != null)
+                    if (recordsMap.ContainsKey(code))
                     {
-                        record.Present = true;
-                        record.UpdateTime = DateTime.Now;
-                        recordRepository.Update(record);
-                        recordResults.Add(record);
+                        var record = recordsMap[code];
+                        if (record != null)
+                        {
+                            record.Present = true;
+                            record.UpdateTime = DateTime.Now;
+                            recordRepository.Update(record);
+                            recordResults.Add(record);
+                        }
                     }
                     else
                     {
