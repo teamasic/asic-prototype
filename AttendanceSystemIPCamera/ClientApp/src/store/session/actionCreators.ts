@@ -141,17 +141,17 @@ const createOrUpdateRecord = (
 	updateInfo: UpdateRecord,
 	assumeSuccess: boolean = true
 ): AppThunkAction => async dispatch => {
-	const temporaryUpdatedRecord: Record = {
-		id: -1,
-		attendee: {
-			id: updateInfo.attendeeId,
-			code: '',
-			name: '',
-			avatar: ''
-		},
-		present: updateInfo.present
-	};
 	if (assumeSuccess) {
+		const temporaryUpdatedRecord: Record = {
+			id: -1,
+			attendee: {
+				id: updateInfo.attendeeId,
+				code: '',
+				name: '',
+				avatar: ''
+			},
+			present: updateInfo.present
+		};
 		dispatch(updateAttendeeRecord(updateInfo, temporaryUpdatedRecord));
 	}
 	const apiResponse: ApiResponse = await updateRecord(updateInfo);

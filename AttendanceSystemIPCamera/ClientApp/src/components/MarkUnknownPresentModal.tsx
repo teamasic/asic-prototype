@@ -46,12 +46,23 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
     private handleModalOk = async () => {
         const { attendeeId } = { ...this.state };
         if (attendeeId == -1) {
-            error("Please choose room and unit");
+            error("Please select an attendee.");
             return;
         }
-        this.props.markAsPresent(attendeeId);
-        this.props.removeUnknownImage(this.props.unknownImage);
-        this.props.hideModal();
+        confirm({
+            title: "Do you want to mark this attendee as present?",
+            okType: "primary",
+            onOk: () => {
+                const pair = this.props.attendeeRecords
+                    .find(ar => ar.attendee.id === attendeeId);
+                const present = pair && pair.record != null && pair.record.present;
+                if (!present) {
+                    this.props.markAsPresent(attendeeId);
+                }
+                this.props.removeUnknownImage(this.props.unknownImage);
+                this.props.hideModal();
+            },
+        });
     }
 
     private handleModalCancel = () => {
@@ -65,9 +76,11 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
     }
     private renderAttendeeOptions = () => {
         return this.props.attendeeRecords.map(ar => {
-            const disabled = ar.record != null && ar.record.present;
+            const present = ar.record != null && ar.record.present;
             return <Option key={ar.attendee.id}
-                disabled={disabled}
+                className={classNames({
+                    'option-present': present
+                })}
                 value={ar.attendee.id}>
                 {ar.attendee.code} - {ar.attendee.name}
             </Option>
