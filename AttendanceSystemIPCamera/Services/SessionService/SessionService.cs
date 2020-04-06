@@ -341,7 +341,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         svm.Records = mapper.ProjectTo<Record, RecordNetworkViewModel>(s.Records)?.ToList();
                         return svm;
                     });
-
+                    
                     var groupSession = new GroupNetworkViewModel()
                     {
                         Code = group.Code,
