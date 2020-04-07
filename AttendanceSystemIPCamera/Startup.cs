@@ -33,6 +33,7 @@ using AttendanceSystemIPCamera.Services.UserService;
 using AttendanceSystemIPCamera.Services.SettingsService;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
+using AttendanceSystemIPCamera.Services.ScheduleService;
 
 namespace AttendanceSystemIPCamera
 {
@@ -188,6 +189,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<SettingsUtils>();
             services.AddHttpClient();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<IGlobalStateService, GlobalStateService>();
         }
         private void SetupRepositories(IServiceCollection services)

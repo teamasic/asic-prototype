@@ -151,6 +151,7 @@ const startUpdateGroup = (group: Group, success: Function): AppThunkAction => as
     const apiResponse: ApiResponse = await updateGroup(group.id, group);
     if (apiResponse.success) {
         dispatch(updateGroupNameSuccess(apiResponse.data));
+        success();
     } else {
         console.log("Update group error: " + apiResponse.errors.toString());
     }

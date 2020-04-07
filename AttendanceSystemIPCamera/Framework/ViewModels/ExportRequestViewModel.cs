@@ -14,7 +14,14 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public bool IsPresent { get; set; }
-        public bool IsGreaterThanOrEqual { get; set; }
+        public ExportMultipleCondition multipleDateCondition { get; set; }
         public float AttendancePercent { get; set; }
+    }
+
+    public enum ExportMultipleCondition
+    {
+        Greater,
+        Less,
+        Equal
     }
 }
