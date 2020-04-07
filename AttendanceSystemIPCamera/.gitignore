@@ -236,3 +236,6 @@ app.db
 
 #Log file
 Logs
+
+#Sync file
+LatestSync.txt
