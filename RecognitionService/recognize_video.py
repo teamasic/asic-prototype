@@ -25,7 +25,7 @@ if __name__ == "__main__":
                     help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
     ap.add_argument("-t", "--time", default=30000,
                     help="Time for recognition in video in milliseconds")
-    ap.add_argument("-a", "--attendance", default=True,
+    ap.add_argument("-a", "--attendance", default=False,
                     help="Open video stream for checking attendance or not")
     args = vars(ap.parse_args())
 
@@ -38,6 +38,7 @@ if __name__ == "__main__":
 
     # transfer rtsp to http
     httpString = my_service.transfer_rtsp_to_http(rtspString)
+    time.sleep(2)
 
     # flag to handle api exeption
     connectQueue = Queue()

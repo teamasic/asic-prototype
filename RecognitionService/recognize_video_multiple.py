@@ -24,22 +24,27 @@ def recognition_multiple(image, isProcess, isForCheckingAttendance):
     imageResize = imageResize[my_constant.cropTop:h - my_constant.cropBottom,
                   my_constant.cropleft: w - my_constant.cropRight]
     results = my_service.recognize_image_after_read_multiple(imageResize)
-    codes = []
-    unknowns = []
-    for result in results:
-        (box, name, proba) = result
-        # Show and call API
-        if isForCheckingAttendance:
-            if name == "unknown":
-                imageName = my_utils.saveImageFunction(image, box)
-                unknowns.append(imageName)
-            else:
-                codes.append(name)
-    print(codes)
-    print(unknowns)
+    if isForCheckingAttendance:
+        codes = []
+        unknowns = []
+        for result in results:
+            (box, name, proba) = result
+            # Show and call API
+            if isForCheckingAttendance:
+                if name == "unknown":
+                    imageName = my_utils.saveImageFunction(image, box)
+                    unknowns.append(imageName)
+                else:
+                    codes.append(name)
+        print(codes)
+        print(unknowns)
+        recognition_api.recognize_multiple_faces(codes, unknowns)
     print(results)
-    recognition_api.recognize_multiple_faces(codes, unknowns)
     isProcess.value = 0
+
+
+def startProcess(image, isProcess, isForCheckingAttendance):
+    Process(target=recognition_multiple, args=(image, isProcess, isForCheckingAttendance)).start()
 
 
 if __name__ == "__main__":
@@ -47,7 +52,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.4:8554/unicast",
                     help="path to rtsp string")
-    ap.add_argument("-a", "--attendance", default=True,
+    ap.add_argument("-a", "--attendance", default=False,
                     help="Open video stream for checking attendance or not")
     args = vars(ap.parse_args())
 
@@ -57,6 +62,7 @@ if __name__ == "__main__":
 
     # transfer rtsp to http
     httpString = my_service.transfer_rtsp_to_http(rtspString)
+    time.sleep(2)
 
     # flag to handle api exeption
     isProcess = multiprocessing.Value('i', 0)
@@ -87,9 +93,9 @@ if __name__ == "__main__":
                 break
             elif k % 256 == 32:
                 if isProcess.value == 0:
+                    print("Snapshot saved")
                     isProcess.value = 1
-                    p = Process(target=recognition_multiple, args=(image, isProcess, isForCheckingAttendance))
-                    p.start()
+                    Thread(target=startProcess, args=(image, isProcess, isForCheckingAttendance)).start()
         fps.stop()
         print("FPS: {}".format(fps.fps()))
         print("Time elapsed: {}".format(fps.elapsed()))
