@@ -6,7 +6,7 @@ from helper import my_service, recognition_api
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image", default="images/photo-1-1485350050252.jpg",
+ap.add_argument("-i", "--image", default="images/unknown/1.jpg",
                 help="path to input image")
 ap.add_argument("-u", "--upSample", default=3,
                 help="path to input image")
@@ -22,8 +22,8 @@ for result in results:
     (box, name, proba) = result
     (top, right, bottom, left) = box
     # Show and call API
-    if name != "unknown":
-        recognition_api.recognize_face_new_thread(name)
+    # if name != "unknown":
+    #     recognition_api.recognize_face_new_thread(name)
 
     # draw the predicted face name on the image
     text = "{}: {:.2f}%".format(name, proba * 100)
