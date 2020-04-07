@@ -19,6 +19,8 @@ namespace AttendanceSystemIPCamera.Framework
             public const string AES_KEY_PATH = "aes";
             public const string LATEST_SYNC_PATH = "LatestSync.txt";
             public const string SHUT_DOWN_PATH = "ShutDownTime.txt";
+
+            public const string LOG_TEMPLATE = "Logs/supervisor-log-{0}.txt";
         }
 
         public class ErrorMessage

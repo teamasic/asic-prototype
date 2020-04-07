@@ -25,7 +25,8 @@ namespace AttendanceSystemIPCamera.Controllers
         private readonly IChangeRequestService changeRequestService;
         private readonly IMapper mapper;
 
-        public ChangeRequestController(IChangeRequestService changeRequestService, IMapper mapper)
+        public ChangeRequestController(IChangeRequestService changeRequestService, IMapper mapper,
+            ILogger<BaseController> logger) : base(logger)
         {
             this.changeRequestService = changeRequestService;
             this.mapper = mapper;

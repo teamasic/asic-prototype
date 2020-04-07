@@ -34,6 +34,9 @@ using AttendanceSystemIPCamera.Services.SettingsService;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 using AttendanceSystemIPCamera.Services.ScheduleService;
+using AttendanceSystemIPCamera.Framework;
+using static AttendanceSystemIPCamera.Framework.Constants;
+using AttendanceSystemIPCamera.Services.LogService;
 
 namespace AttendanceSystemIPCamera
 {
@@ -111,8 +114,7 @@ namespace AttendanceSystemIPCamera
                     pattern: "{controller}/{action=Index}/{id?}");
                 endpoints.MapHub<RealTimeService>("/hub");
             });
-
-            loggerFactory.AddFile("Logs/supervisor-log-{Date}.txt");
+            loggerFactory.AddFile(string.Format($"{Constant.LOG_TEMPLATE}", "{Date}"));
 
             //app.UseSpa(spa =>
             //{
@@ -191,6 +193,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<IGlobalStateService, GlobalStateService>();
+            services.AddScoped<ILogService, LogService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {

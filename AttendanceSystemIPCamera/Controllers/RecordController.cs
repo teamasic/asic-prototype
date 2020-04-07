@@ -11,6 +11,7 @@ using AutoMapper;
 using AttendanceSystemIPCamera.Services.RecordService;
 using AttendanceSystemIPCamera.Services.AttendeeService;
 using AttendanceSystemIPCamera.Framework.GlobalStates;
+using Microsoft.Extensions.Logging;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -24,7 +25,8 @@ namespace AttendanceSystemIPCamera.Controllers
         private readonly IRealTimeService realTimeService;
         private readonly IMapper mapper;
         public RecordController(IRecordService recordService, IGlobalStateService globalStateService,
-            IAttendeeService attendeeService, IRealTimeService realTimeService, IMapper mapper)
+            IAttendeeService attendeeService, IRealTimeService realTimeService, IMapper mapper,
+            ILogger<BaseController> logger) : base(logger)
         {
             this.recordService = recordService;
             this.globalStateService = globalStateService;

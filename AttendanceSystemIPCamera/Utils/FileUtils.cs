@@ -58,5 +58,10 @@ namespace AttendanceSystemIPCamera.Utils
             var parentDirectory = Directory.GetParent(currentDirectory).FullName;
             return Path.Combine(parentDirectory, folder);
         }
+
+        public static string ReadFile(string fileName)
+        {
+            return File.ReadAllText(fileName);
+        }
     }
 }

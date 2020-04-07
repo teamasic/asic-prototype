@@ -31,7 +31,8 @@ namespace AttendanceSystemIPCamera.Controllers
 
         public TestController(SupervisorNetworkService service, IMapper mapper,
             IRecognitionService recognitionService, IRecordService recordService,
-            ILogger<TestController> logger)
+            ILogger<TestController> logger,
+            ILogger<BaseController> baseLogger) : base(baseLogger)
         {
             this.service = service;
             this.mapper = mapper;
