@@ -82,6 +82,7 @@ class TakeAttendanceModal extends React.PureComponent<ModalProps, TakeAttendance
 				sessionId: this.props.sessionId,
 				startTime: this.props.startTime.format('YYYY-MM-DD HH:mm'),
 				endTime: this.props.endTime.format('YYYY-MM-DD HH:mm'),
+				multiple: false
 			})
 			if (data.success == false){
 				error("Error while taking attendance, please try again")

@@ -22,6 +22,8 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public Task MarkAttendeeAsUnknown(string imageName);
         public Task SessionEnded(int sessionId);
         public Task NewChangeRequestAdded();
+        public Task MarkAttendeeAsPresentBatch(ICollection<string> codes);
+        public Task MarkAttendeeAsUnknownBatch(ICollection<string> images);
     }
 
     public class HubMethods
@@ -31,6 +33,8 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public static string SESSION_ENDED = "sessionEnded";
         public static string KEEP_ALIVE = "keepAlive";
         public static string NEW_CHANGE_REQUEST = "newChangeRequest";
+        public static string ATTENDEE_PRESENTED_BATCH = "attendeePresentedBatch";
+        public static string ATTENDEE_UNKNOWN_BATCH = "attendeeUnknownBatch";
     }
 
     public class RealTimeService : Hub, IRealTimeService
@@ -47,6 +51,10 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             };
             timer.AutoReset = true;
         }
+        private string Join(ICollection<string> list)
+        {
+            return string.Join(",", list);
+        }
         public async Task MarkAttendeeAsPresent(string attendeeCode)
         {
             await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_PRESENTED, attendeeCode);
@@ -54,6 +62,22 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public async Task MarkAttendeeAsUnknown(string imageName)
         {
             await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_UNKNOWN, imageName);
+        }
+        public async Task MarkAttendeeAsPresentBatch(ICollection<string> codes)
+        {
+            if (codes.Count > 0)
+            {
+                var codeString = Join(codes);
+                await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_PRESENTED_BATCH, codeString);
+            }
+        }
+        public async Task MarkAttendeeAsUnknownBatch(ICollection<string> images)
+        {
+            if (images.Count > 0)
+            {
+                var imageString = Join(images);
+                await hubContext.Clients.All.SendAsync(HubMethods.ATTENDEE_UNKNOWN_BATCH, imageString);
+            }
         }
         public async Task NewChangeRequestAdded()
         {

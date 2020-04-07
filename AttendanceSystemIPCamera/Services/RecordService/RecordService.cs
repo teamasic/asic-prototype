@@ -29,6 +29,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public IEnumerable<RecordInSyncData> SyncAttendanceData();
 
         IEnumerable<Record> GetRecords();
+        public Task<IEnumerable<SetRecordViewModel>> RecordAttendanceBatch(ICollection<string> codes);
     }
 
     public class RecordService : BaseService<Record>, IRecordService
@@ -171,7 +172,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 unitOfWork.Commit();
                 var newRecordList = await recordRepository.GetRecordsBySessionId(activeSession.Id);
                 await realTimeService.SessionEnded(activeSession.Id);
-                sessionRepository.SetActiveSession(-1);
+                sessionRepository.RemoveActiveSession();
                 return mapper.ProjectTo<Record, SetRecordViewModel>(newRecordList);
             }
             else
@@ -217,6 +218,57 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public IEnumerable<Record> GetRecords()
         {
             return this.recordRepository.GetRecords();
+        }
+
+        public async Task<IEnumerable<SetRecordViewModel>> RecordAttendanceBatch(ICollection<string> codes)
+        {
+            // check not exist active session
+            var activeSession = await sessionRepository.GetActiveSession();
+            var records = activeSession.Records;
+            if (activeSession == null)
+            {
+                throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NO_ACTIVE_SESSION);
+            }
+
+            var attendeesMap = activeSession.Group.Attendees.ToDictionary(a => a.Code, a => a);
+            var recordsMap = records.ToDictionary(r => r.Attendee.Code, r => r);
+
+            ICollection<Record> recordResults = new List<Record>();
+            foreach (var code in codes)
+            {
+                if (attendeesMap.ContainsKey(code))
+                {
+                    if (recordsMap.ContainsKey(code))
+                    {
+                        var record = recordsMap[code];
+                        if (record != null)
+                        {
+                            record.Present = true;
+                            record.UpdateTime = DateTime.Now;
+                            recordRepository.Update(record);
+                            recordResults.Add(record);
+                        }
+                    }
+                    else
+                    {
+                        var attendee = attendeesMap[code];
+                        var newRecord = new Record
+                        {
+                            Session = activeSession,
+                            Attendee = attendee,
+                            AttendeeCode = attendee.Code,
+                            SessionName = activeSession.Name,
+                            StartTime = activeSession.StartTime,
+                            EndTime = activeSession.EndTime,
+                            Present = true
+                        };
+                        await recordRepository.Add(newRecord);
+                        recordResults.Add(newRecord);
+                    }
+                }
+            }
+            unitOfWork.Commit();
+            return mapper.ProjectTo<Record, SetRecordViewModel>(recordResults);
         }
     }
 }

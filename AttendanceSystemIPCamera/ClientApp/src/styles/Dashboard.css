@@ -68,10 +68,11 @@
 .group-grid .fixed-grid--around {
     display: grid;
     grid-gap: 2em;
-    grid-template-columns: repeat(auto-fill, minmax(380px,1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
     justify-items: center;
 }
 /* both should run fixed width elements equal to the declared in the container */
 .group-grid .grid-element {
-    width: calc(380px);
+    width: 100%;
 }
+

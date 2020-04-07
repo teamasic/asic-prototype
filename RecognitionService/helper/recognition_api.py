@@ -35,3 +35,13 @@ def recognize_unknown_new_thread(name, image, box, connectQueue):
     thread = Thread(target=_recognize_unknown, args=(name, image, box, connectQueue,), daemon=True)
     thread.start()
     return None
+
+
+def recognize_multiple_faces(codes, unknowns):
+    try:
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+        payload = {"codes": codes, "unknowns": unknowns}
+        r = requests.post("https://localhost:44359/api/record/endSnapshot", json=payload, verify=False, headers=headers)
+        print(r)
+    except Exception as e:
+        print("Error: Cannot check attendance")

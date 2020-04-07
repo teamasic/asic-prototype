@@ -108,6 +108,16 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 		});
 	}
 
+	private removeImage(img: string) {
+		confirm({
+			title: "Do you want to remove this unknown attendee?",
+			okType: "danger",
+			onOk: () => {
+				this.props.removeUnknownImage(img);
+			}
+		});
+	}
+
 	private getPresentSection() {
 		const records = this.props.attendeeRecords.filter(ar => ar.record != null);
 		const presentRecords = records
@@ -124,14 +134,16 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 									className="attendee-box grid-element">
 									<div className="inner-box">
 										{this.getImageBox(`url(/api/avatars/${ar.attendee.avatar})`)}
-										<Tooltip title="Mark attendee absent">
-											<Button
-												onClick={() => this.confirmMarkAbsent(ar)}
-												size="small"
-												type="danger"
-												shape="circle"
-												icon="close" />
-										</Tooltip>
+										<div className="inner-box-actions">
+											<Tooltip title="Mark attendee absent">
+												<Button
+													onClick={() => this.confirmMarkAbsent(ar)}
+													size="small"
+													type="danger"
+													shape="circle"
+													icon="close" />
+											</Tooltip>
+										</div>
 									</div>
 									<div className="code">{ar.attendee.code}</div>
 									<div className="name">{ar.attendee.name}</div>
@@ -157,15 +169,25 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 									className="attendee-box grid-element">
 									<div className="inner-box">
 										{this.getImageBox(`url(/api/unknown/${img})`)}
-										<Tooltip title="Mark attendee present">
-											<Button
-												onClick={() => this.openUnknownModal(img)}
-												className=""
-												type="primary"
-												size="small"
-												shape="circle"
-												icon="issues-close" />
-										</Tooltip>
+										<div className="inner-box-actions">
+											<Tooltip title="Remove this image">
+												<Button
+													onClick={() => this.removeImage(img)}
+													size="small"
+													type="danger"
+													shape="circle"
+													icon="close" />
+											</Tooltip>
+											<Tooltip title="Mark attendee present">
+												<Button
+													onClick={() => this.openUnknownModal(img)}
+													className=""
+													type="primary"
+													size="small"
+													shape="circle"
+													icon="issues-close" />
+											</Tooltip>
+										</div>
 									</div>
 								</div>
 							)
@@ -193,9 +215,8 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 					<Col>
 						<div className="row centered">
 							<Button type="primary"
-								className="take-attendance-button"
-								disabled={true}>
-								Start taking attendance
+								className="take-attendance-button">
+								Stop taking attendance
 							</Button>
 						</div>
 					</Col>

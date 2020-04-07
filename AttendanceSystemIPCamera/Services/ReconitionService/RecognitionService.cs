@@ -23,6 +23,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
     {
         ResponsePython RecognitionImage(string imageString);
         Task<ResponsePython> StartRecognition(int durationBeforeStartInMinutes, int durationWhileRunningInMinutes, string rtspString);
+        public Task<ResponsePython> StartRecognitionMultiple(string rtspString);
 
     }
     public class RecognitionService : IRecognitionService
@@ -39,6 +40,10 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
         public async Task<ResponsePython> StartRecognition(int durationBeforeStartInMinutes, int durationWhileRunningInMinutes, string rtspString)
         {
             return await RecognitionByVideo(durationBeforeStartInMinutes, durationWhileRunningInMinutes, rtspString);
+        }
+        public async Task<ResponsePython> StartRecognitionMultiple(string rtspString)
+        {
+            return await RecognitionByVideoMultiple(rtspString);
         }
         public ResponsePython RecognitionImage(string imageString)
         {
@@ -159,7 +164,80 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
                 using (var scope = serviceScopeFactory.CreateScope())
                 {
                     var sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
-                    sessionRepository.SetActiveSession(-1);
+                    sessionRepository.RemoveActiveSession();
+                }
+                throw new AppException(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
+        }
+
+        private async Task<ResponsePython> RecognitionByVideoMultiple(string rtspString)
+        {
+            try
+            {
+                // Get start info
+                var cmd = myConfiguration.RecognitionProgramMultiplePath;
+                var args = "";
+
+                // rtsp string of camera
+                args += string.Format(@"--rtsp {0}", rtspString);
+
+                // set flag for checking attendance
+                args += string.Format(@" --attendance {0}", "True");
+                var startInfo = GetProcessStartInfo(cmd, args);
+                // Handle outputs and errors
+                StringBuilder output = new StringBuilder();
+                StringBuilder error = new StringBuilder();
+                using (Process process = new Process())
+                {
+                    process.StartInfo = startInfo;
+                    process.OutputDataReceived += (sender, e) =>
+                    {
+                        if (e.Data != null)
+                        {
+                            output.AppendLine(e.Data);
+                        }
+                    };
+
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        if (e.Data != null)
+                        {
+                            error.AppendLine(e.Data);
+                        }
+                    };
+                    //Start process 
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    // Wait for exit
+                    process.WaitForExit();
+                    if (process.ExitCode == 0)
+                    {
+                        using var scope = serviceScopeFactory.CreateScope();
+                        var recordService = scope.ServiceProvider.GetRequiredService<IRecordService>();
+                        await recordService.UpdateRecordsAfterEndSession();
+                    }
+                    // exception
+                    else if (process.ExitCode == 1)
+                    {
+                        throw new AppException(HttpStatusCode.InternalServerError, error.ToString());
+                    }
+                }
+                return new ResponsePython()
+                {
+                    Errors = error.ToString(),
+                    Results = output.ToString()
+                };
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.Message);
+                using (var scope = serviceScopeFactory.CreateScope())
+                {
+                    var sessionRepository = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
+                    sessionRepository.RemoveActiveSession();
                 }
                 throw new AppException(HttpStatusCode.InternalServerError, ex.Message);
             }

@@ -156,6 +156,21 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 			endTime: time
 		})
 	}
+
+	private takeAttendanceMultiple = async () => {
+		if (this.props.activeSession != null) {
+			this.props.startTakingAttendance(this.props.activeSession);
+		}
+		const data = await takeAttendance({
+			sessionId: this.props.sessionId,
+			multiple: true
+		});
+		if (data.success == false) {
+			error("Error while taking attendance, please try again")
+		}
+		this.props.startTakingAttendance(null);
+		this.props.endTakingAttendance();
+	}
 	
 	private renderOnRow = (record: any, index: number) => {
 		if (index % 2 == 0) {
@@ -253,6 +268,12 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 								className="take-attendance-button"
 								onClick={this.openModelTakingAttendance}>
 								Start taking attendance
+							</Button>
+							<span className="or-separator"> or </span>
+							<Button
+								className="take-attendance-multiple-button"
+								onClick={this.takeAttendanceMultiple}>
+								Take attendance of multiple at once
 							</Button>
 						</div>
 					</Col>

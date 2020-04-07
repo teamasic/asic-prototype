@@ -190,6 +190,7 @@ namespace AttendanceSystemIPCamera
             services.AddHttpClient();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IScheduleService, ScheduleService>();
+            services.AddScoped<IGlobalStateService, GlobalStateService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
@@ -231,10 +232,11 @@ namespace AttendanceSystemIPCamera
         }
 
         private void UseStaticFiles(IApplicationBuilder app, string path, string requestPath) {
+            var combinedPath = Path.Combine(Directory.GetCurrentDirectory(), path);
+            Directory.CreateDirectory(combinedPath);
             app.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new PhysicalFileProvider(
-                    Path.Combine(Directory.GetCurrentDirectory(), path)),
+                FileProvider = new PhysicalFileProvider(combinedPath),
                 RequestPath = requestPath
             });
         }
