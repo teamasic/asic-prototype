@@ -1,5 +1,5 @@
 ﻿import * as React from 'react';
-import { Modal, DatePicker, Typography, Select, Row, Col, Input, InputNumber, Button, Table } from 'antd'
+import { Modal, DatePicker, Typography, Select, Row, Col, Input, InputNumber, Button, Table, Form } from 'antd'
 import { GroupsState } from '../store/group/state';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import { RouteComponentProps } from 'react-router';
@@ -13,6 +13,8 @@ import ExportRequest from '../models/ExportRequest';
 import ExportFormat1 from '../models/ExportFormat1';
 import ExportFormat2 from '../models/ExportFormat2';
 import { renderStripedTable } from '../utils'
+import { ExportMultipleCondition } from '../models/ExportMultipleCondition';
+import { FormComponentProps } from 'antd/lib/form';
 
 const { Text } = Typography
 const { Option } = Select
@@ -30,8 +32,9 @@ const TIME_OPTIONS = {
 }
 const ATTENDANCE_OPTIONS = {
     ALL: 'all',
-    GREATER_THAN_OR_EQUAL: 'greater',
-    LESS_THAN_OR_EQUAL: 'less'
+    GREATER_THAN: 'greater',
+    LESS_THAN: 'less',
+    EQUAL: 'equal'
 }
 const ATTENDANCE_STATUS_OPTIONS = {
     ALL: 'all',
@@ -39,7 +42,7 @@ const ATTENDANCE_STATUS_OPTIONS = {
     ABSENT: 'absent'
 }
 
-interface Props {
+interface Props extends FormComponentProps {
     modalVisible: boolean,
     group: Group,
     closeModal: Function
@@ -52,7 +55,7 @@ interface ModalExportComponentStates {
     timePicker: string,
     fileName: string,
     isPresent: string,
-    isGreaterThanOrEqual: string,
+    multipleDateCondition: string,
     attendancePercent: number,
     csvData: any,
     exportStatus: string,
@@ -77,7 +80,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
         timePicker: TIME_OPTIONS.RANGE_DATE,
         fileName: "",
         isPresent: ATTENDANCE_STATUS_OPTIONS.ALL,
-        isGreaterThanOrEqual: ATTENDANCE_OPTIONS.ALL,
+        multipleDateCondition: ATTENDANCE_OPTIONS.ALL,
         attendancePercent: 100,
         csvData: [],
         exportStatus: "Generate",
@@ -88,31 +91,46 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 
     private generate = () => {
-        if (!this.state.isGenerated) {
-            this.setState({
-                isGenerating: true
-            })
-            this.setFileName();
-            var exportRequest = {
-                groupId: this.props.group.id,
-                isSingleDate: this.state.timePicker == TIME_OPTIONS.SINGLE_DATE,
-                withCondition: this.isWithCondition(),
-                singleDate: this.state.singleDate.format("YYYY-MM-DD"),
-                startDate: this.state.startDate.format("YYYY-MM-DD"),
-                endDate: this.state.endDate.format("YYYY-MM-DD"),
-                isPresent: this.state.isPresent == ATTENDANCE_STATUS_OPTIONS.PRESENT,
-                isGreaterThanOrEqual: this.state.isGreaterThanOrEqual == ATTENDANCE_OPTIONS.GREATER_THAN_OR_EQUAL,
-                attendancePercent: this.state.attendancePercent
-            };
-            this.props.startGenerateExport(exportRequest, this.generateSuccess, this.setCsvData);
-            
-        }
+        this.props.form.validateFields((err: any, values: any) => {
+            if (!err) {
+                if (!this.state.isGenerated) {
+                    this.setState({
+                        isGenerating: true
+                    })
+                    this.setFileName();
+                    var exportRequest = {
+                        groupId: this.props.group.id,
+                        isSingleDate: this.state.timePicker == TIME_OPTIONS.SINGLE_DATE,
+                        withCondition: this.isWithCondition(),
+                        singleDate: this.state.singleDate.format("YYYY-MM-DD"),
+                        startDate: this.state.startDate.format("YYYY-MM-DD"),
+                        endDate: this.state.endDate.format("YYYY-MM-DD"),
+                        isPresent: this.state.isPresent == ATTENDANCE_STATUS_OPTIONS.PRESENT,
+                        multipleDateCondition: this.getMultipleDateCondition(),
+                        attendancePercent: this.state.attendancePercent
+                    };
+                    this.props.startGenerateExport(exportRequest, this.generateSuccess, this.setCsvData);
+                }
+            }
+        });
     }
 
     private isWithCondition = () => {
         //(Single date && condition is not all) || (Range date && condition is not all)
         return (this.state.timePicker == TIME_OPTIONS.SINGLE_DATE && this.state.isPresent != ATTENDANCE_STATUS_OPTIONS.ALL) ||
-            (this.state.timePicker != TIME_OPTIONS.SINGLE_DATE && this.state.isGreaterThanOrEqual != ATTENDANCE_OPTIONS.ALL);
+            (this.state.timePicker != TIME_OPTIONS.SINGLE_DATE && this.state.multipleDateCondition != ATTENDANCE_OPTIONS.ALL);
+    }
+
+    private getMultipleDateCondition = () => {
+        switch (this.state.multipleDateCondition) {
+            case ATTENDANCE_OPTIONS.GREATER_THAN:
+                return ExportMultipleCondition.Greater;
+            case ATTENDANCE_OPTIONS.LESS_THAN:
+                return ExportMultipleCondition.Less;
+            case ATTENDANCE_OPTIONS.EQUAL:
+                return ExportMultipleCondition.Equal
+        };
+        return ExportMultipleCondition.Greater;
     }
 
     private generateSuccess = (exportRequest: ExportRequest) => {
@@ -168,9 +186,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 
     private onAttendanceOptionChange = (value: string) => {
-        this.setState({
-            isGreaterThanOrEqual: value
-        });
+        this.setState({ multipleDateCondition: value });
     }
 
     private onPercentChange = (value: number | undefined) => {
@@ -206,7 +222,6 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                 };
                 csvData2.push(row);
             });
-            csvData2 = data;
             this.setState({
                 csvData: csvData2
             });
@@ -217,7 +232,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
         var updatedFileName = this.props.group.code + "_" + this.props.group.name;
         if (this.state.timePicker == TIME_OPTIONS.SINGLE_DATE) {
             var date = this.state.singleDate;
-            updatedFileName += "_" + date.toISOString().substring(0, 10);
+            updatedFileName += "_" + date.format("YYYY-MM-DD");
             if (this.state.isPresent != ATTENDANCE_STATUS_OPTIONS.ALL) {
                 updatedFileName += "_" + this.state.isPresent + ".csv";
             } else {
@@ -229,11 +244,11 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
             return;
         } else {
             var date = this.state.startDate;
-            updatedFileName += "_" + date.toISOString().substring(0, 10);
+            updatedFileName += "_" + date.format("YYYY-MM-DD");
             date = this.state.endDate;
-            updatedFileName += "_" + date.toISOString().substring(0, 10);
-            if (this.state.isGreaterThanOrEqual != ATTENDANCE_OPTIONS.ALL) {
-                updatedFileName += "_" + this.state.isGreaterThanOrEqual + "_" + this.state.attendancePercent + "percent" + ".csv";
+            updatedFileName += "_" + date.format("YYYY-MM-DD");
+            if (this.state.multipleDateCondition != ATTENDANCE_OPTIONS.ALL) {
+                updatedFileName += "_" + this.state.multipleDateCondition + "_" + this.state.attendancePercent + "percent" + ".csv";
             } else {
                 updatedFileName += ".csv";
             }
@@ -312,7 +327,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     private onPageChange = (page: number) => {
         this.setState({
             page: page
-        })
+        });
     }
 
     private onExport = () => {
@@ -326,6 +341,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
 
     public render() {
         var modalTitle = this.props.group.code + " - " + this.props.group.name;
+        const { getFieldDecorator } = this.props.form;
         return (
             <div>
                 <Modal
@@ -360,20 +376,50 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                             {
                                 this.state.timePicker == TIME_OPTIONS.SINGLE_DATE ?
                                     (
-                                        <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.SINGLE)}
-                                            value={this.state.singleDate}
-                                            style={{ width: '50%' }} />
+                                        <Form layout="inline">
+                                            <Row>
+                                                <Col span={24}>
+                                                    <Form.Item>
+                                                        {getFieldDecorator('singleDate', {
+                                                            initialValue: this.state.singleDate,
+                                                            rules: [{ required: true, message: 'Please choose date' }],
+                                                        })(
+                                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.SINGLE)}
+                                                                style={{ width: '100%' }} />
+                                                        )}
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                        </Form>
                                     )
                                     :
                                     (
-                                        <InputGroup compact>
-                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.START_DATE)}
-                                                value={this.state.startDate}
-                                                style={{ width: '50%' }} />
-                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.END_DATE)}
-                                                value={this.state.endDate}
-                                                style={{ width: '50%' }} />
-                                        </InputGroup>
+                                        <Form layout="inline">
+                                            <Row>
+                                                <Col span={12}>
+                                                    <Form.Item>
+                                                        {getFieldDecorator('startDate', {
+                                                            initialValue: this.state.startDate,
+                                                            rules: [{ required: true, message: 'Please choose date' }],
+                                                        })(
+                                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.START_DATE)}
+                                                                style={{ width: '100%' }} />
+                                                        )}
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col span={12}>
+                                                    <Form.Item>
+                                                        {getFieldDecorator('endDate', {
+                                                            initialValue: this.state.endDate,
+                                                            rules: [{ required: true, message: 'Please choose date' }],
+                                                        })(
+                                                            <DatePicker onChange={(date: any, dateString: string) => this.onDatePickerChange(date, dateString, DatePickerOption.END_DATE)}
+                                                                style={{ width: '100%' }} />
+                                                        )}
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                        </Form>
                                     )
                             }
                         </Col>
@@ -385,7 +431,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                         <Col span={19}>
                             {this.state.timePicker == TIME_OPTIONS.SINGLE_DATE ?
                                 (
-                                    <Select defaultValue={ATTENDANCE_STATUS_OPTIONS.ALL} style={{ width: '50%' }}
+                                    <Select defaultValue={ATTENDANCE_STATUS_OPTIONS.ALL} style={{ width: '47%' }}
                                         onChange={this.onAttendanceStatusChange}>
                                         <Option value={ATTENDANCE_STATUS_OPTIONS.ALL}>All</Option>
                                         <Option value={ATTENDANCE_STATUS_OPTIONS.PRESENT}>Is Present</Option>
@@ -398,15 +444,18 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                                             onChange={this.onAttendanceOptionChange}>
                                             <Option value={ATTENDANCE_OPTIONS.ALL}>
                                                 All
-                                         </Option>
-                                            <Option value={ATTENDANCE_OPTIONS.GREATER_THAN_OR_EQUAL}>
-                                                Presence Greater Than Or Equal To
-                                         </Option>
-                                            <Option value={ATTENDANCE_OPTIONS.LESS_THAN_OR_EQUAL}>
-                                                Presence Less Than Or Equal To
-                                         </Option>
+                                            </Option>
+                                            <Option value={ATTENDANCE_OPTIONS.GREATER_THAN}>
+                                                Presence Greater Than
+                                            </Option>
+                                            <Option value={ATTENDANCE_OPTIONS.LESS_THAN}>
+                                                Presence Less Than
+                                            </Option>
+                                            <Option value={ATTENDANCE_OPTIONS.EQUAL}>
+                                                Presence Equal To
+                                            </Option>
                                         </Select>
-                                        {this.state.isGreaterThanOrEqual != ATTENDANCE_OPTIONS.ALL ?
+                                        {this.state.multipleDateCondition != ATTENDANCE_OPTIONS.ALL ?
                                             (<InputNumber
                                                 defaultValue={this.state.attendancePercent}
                                                 min={0}
@@ -457,11 +506,11 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 }
 
-export default connect(
+export default Form.create<Props>({ name: 'export_form' })(connect(
     (state: ApplicationState, ownProps: Props) =>
         ({
             ...state,
             ...ownProps
         }), // Selects which state properties are merged into the component's props
     dispatch => bindActionCreators(sessionActionCreators, dispatch) // Selects which action creators are merged into the component's props
-)(ModalExport as any);
+)(ModalExport as any));

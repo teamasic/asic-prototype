@@ -52,7 +52,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private readonly IRecognitionService recognitionService;
         private readonly IMapper mapper;
 
-        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, IMapper mapper, 
+        public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, IMapper mapper,
             IRecognitionService recognitionService) : base(unitOfWork)
         {
             sessionRepository = unitOfWork.SessionRepository;
@@ -167,7 +167,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         {
             var sessions = sessionRepository.GetSessionExport(groupId, date);
             var sessionExport = new List<SessionExportViewModel>();
-            if(sessions.Count > 0)
+            if (sessions.Count > 0)
             {
                 var firstSessionInList = sessions[0];
                 var count = GetIndexOf(groupId, firstSessionInList);
@@ -203,7 +203,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         }
 
         private List<SessionExportWithConditionViewModel> ExportRangeDateWithCondition
-            (int groupId, DateTime startDate, DateTime endDate, bool isGreaterOrEqual, float attendancePercent)
+            (int groupId, DateTime startDate, DateTime endDate, ExportMultipleCondition multipleDateCondition, float attendancePercent)
         {
             var group = groupRepository.GetById(groupId).Result;
             if (group != null)
@@ -217,24 +217,21 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                     var records = recordService.GetRecordsBySessionId(session.Id);
                     foreach (var record in records)
                     {
-                        if (record.Present)
+                        if (!temps.ContainsKey(record.Attendee.Code))
                         {
-                            if (!temps.ContainsKey(record.Attendee.Code))
+                            var tempAttendee = new TempExport
                             {
-                                var tempAttendee = new TempExport
-                                {
-                                    Code = record.Attendee.Code,
-                                    Name = record.Attendee.Name,
-                                    Count = 1
-                                };
-                                temps.Add(tempAttendee.Code, tempAttendee);
-                            }
-                            else
-                            {
-                                var updatedAttendee = new TempExport();
-                                temps.TryGetValue(record.Attendee.Code, out updatedAttendee);
-                                updatedAttendee.Count++;
-                            }
+                                Code = record.Attendee.Code,
+                                Name = record.Attendee.Name,
+                                Count = record.Present ? 1 : 0
+                            };
+                            temps.Add(tempAttendee.Code, tempAttendee);
+                        }
+                        else
+                        {
+                            var updatedAttendee = new TempExport();
+                            temps.TryGetValue(record.Attendee.Code, out updatedAttendee);
+                            updatedAttendee.Count++;
                         }
                     }
                 }
@@ -243,25 +240,44 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 {
                     float calculatedPercent = item.Count * 100 / group.MaxSessionCount;
                     var exportData = new SessionExportWithConditionViewModel();
-                    if (isGreaterOrEqual && calculatedPercent >= attendancePercent)
+                    switch(multipleDateCondition)
                     {
-                        exportData = new SessionExportWithConditionViewModel()
-                        {
-                            AttendeeCode = item.Code,
-                            AttendeeName = item.Name,
-                            AttendancePercent = calculatedPercent
-                        };
-                        sessionExport.Add(exportData);
-                    }
-                    else if (!isGreaterOrEqual && calculatedPercent <= attendancePercent)
-                    {
-                        exportData = new SessionExportWithConditionViewModel()
-                        {
-                            AttendeeCode = item.Code,
-                            AttendeeName = item.Name,
-                            AttendancePercent = calculatedPercent
-                        };
-                        sessionExport.Add(exportData);
+                        case ExportMultipleCondition.Greater:
+                            if(calculatedPercent > attendancePercent)
+                            {
+                                exportData = new SessionExportWithConditionViewModel()
+                                {
+                                    AttendeeCode = item.Code,
+                                    AttendeeName = item.Name,
+                                    AttendancePercent = calculatedPercent
+                                };
+                                sessionExport.Add(exportData);
+                            }
+                            break;
+                        case ExportMultipleCondition.Less:
+                            if (calculatedPercent < attendancePercent)
+                            {
+                                exportData = new SessionExportWithConditionViewModel()
+                                {
+                                    AttendeeCode = item.Code,
+                                    AttendeeName = item.Name,
+                                    AttendancePercent = calculatedPercent
+                                };
+                                sessionExport.Add(exportData);
+                            }
+                            break;
+                        case ExportMultipleCondition.Equal:
+                            if (calculatedPercent == attendancePercent)
+                            {
+                                exportData = new SessionExportWithConditionViewModel()
+                                {
+                                    AttendeeCode = item.Code,
+                                    AttendeeName = item.Name,
+                                    AttendancePercent = calculatedPercent
+                                };
+                                sessionExport.Add(exportData);
+                            }
+                            break;
                     }
                 }
                 return sessionExport;
@@ -301,7 +317,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private int GetIndexOf(int groupId, Session session)
         {
             var sessions = sessionRepository.GetSessionByGroupId(groupId).OrderBy(s => s.Id).ToList();
-            if(sessions.Count > 0)
+            if (sessions.Count > 0)
             {
                 return sessions.IndexOf(session) + 1;
             }
@@ -325,7 +341,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         svm.Records = mapper.ProjectTo<Record, RecordNetworkViewModel>(s.Records)?.ToList();
                         return svm;
                     });
-
+                    
                     var groupSession = new GroupNetworkViewModel()
                     {
                         Code = group.Code,
@@ -395,7 +411,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 {
                     return ExportRangeDateWithCondition
                         (exportRequest.GroupId, exportRequest.StartDate,
-                        exportRequest.EndDate, exportRequest.IsGreaterThanOrEqual,
+                        exportRequest.EndDate, exportRequest.multipleDateCondition,
                         exportRequest.AttendancePercent)
                         .Cast<Object>().ToList();
                 }
