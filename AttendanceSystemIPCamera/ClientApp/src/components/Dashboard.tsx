@@ -160,9 +160,9 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                         }, () => { reject(); });
                     }
                 }, error: function (errors: any, file: File) {
-                    message.error("Upload error: " + errors, 3);
                     thisState.setState({
-                        importAttendees: []
+                        importAttendees: [], 
+                        msgImportCSV: "Upload error: " + errors
                     }, () => { reject(); });
                 }
             });
