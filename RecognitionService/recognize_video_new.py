@@ -1,22 +1,20 @@
 # import the necessary packages
 import argparse
 import copy
-import time
 import multiprocessing
+import time
 
 import cv2
 import imutils
-import requests
-from imutils import paths
 from imutils.video import FPS
 
 from config import my_constant
-from helper import stream_video, my_service, recognition_api, my_face_detection, my_utils
+from helper import stream_video, my_service, recognition_api, my_face_detection
 from helper.my_utils import remove_all_files
 
 
-def recognitionProcess(imageProcessQueue, isForCheckingAttendance):
-    connectQueue = multiprocessing.Queue()
+def recognitionProcess(imageProcessQueue, isForCheckingAttendance, pRegError):
+    connectQueueApiError = multiprocessing.Queue()
     while True:
         if imageProcessQueue.empty() is False:
             image, boxes = imageProcessQueue.get()
@@ -26,20 +24,18 @@ def recognitionProcess(imageProcessQueue, isForCheckingAttendance):
                 (box, name, proba) = result
                 # Show and call API
                 if isForCheckingAttendance:
-                    if connectQueue.empty() is False:
-                        if connectQueue.get() is True:
+                    if connectQueueApiError.empty() is False:
+                        if connectQueueApiError.get() is True:
                             if name == "unknown":
                                 recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(image), box,
-                                                                             connectQueue)
+                                                                             connectQueueApiError)
                             else:
-                                recognition_api.recognize_face_new_thread(name, connectQueue)
+                                recognition_api.recognize_face_new_thread(name, connectQueueApiError)
                         else:
-                            cv2.destroyAllWindows()
-                            vs.stop()
-                            remove_all_files(my_constant.unknownDir)
-                            raise Exception("Cannot check attendance")
+                            pRegError.value = 1
+                            return
                     else:
-                        recognition_api.recognize_face_new_thread(name, connectQueue)
+                        recognition_api.recognize_face_new_thread(name, connectQueueApiError)
 
 
 if __name__ == "__main__":
@@ -51,7 +47,7 @@ if __name__ == "__main__":
                     help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
     ap.add_argument("-t", "--time", default=120000,
                     help="Time for recognition in video in milliseconds")
-    ap.add_argument("-a", "--attendance", default=False,
+    ap.add_argument("-a", "--attendance", default=True,
                     help="Open video stream for checking attendance or not")
     args = vars(ap.parse_args())
 
@@ -67,7 +63,9 @@ if __name__ == "__main__":
 
     # Process for recognition
     imageProcessQueue = multiprocessing.Manager().Queue()
-    pReg = multiprocessing.Process(target=recognitionProcess, args=(imageProcessQueue, isForCheckingAttendance, ))
+    pRegError = multiprocessing.Value("i", 0)
+    pReg = multiprocessing.Process(target=recognitionProcess,
+                                   args=(imageProcessQueue, isForCheckingAttendance, pRegError,))
     pReg.daemon = True
     pReg.start()
 
@@ -83,6 +81,9 @@ if __name__ == "__main__":
         fps = FPS().start()
         startTimeMilli = int(round(time.time() * 1000))
         while int(round(time.time() * 1000)) - startTimeMilli < durationForRecognitionMilli:
+            # Check sub process error
+            if pRegError.value == 1:
+                break
             # retrieve the frame from the threaded video stream
             image = vs.read()
             image = imutils.resize(image, width=600)
@@ -110,4 +111,6 @@ if __name__ == "__main__":
         cv2.destroyAllWindows()
         vs.stop()
         remove_all_files(my_constant.unknownDir)
+        if pRegError.value == 1:
+            raise Exception("Cannot check attendance")
     print("Terminating...")
