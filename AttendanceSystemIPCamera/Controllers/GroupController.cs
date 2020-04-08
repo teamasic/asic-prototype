@@ -28,7 +28,8 @@ namespace AttendanceSystemIPCamera.Controllers
         private readonly IMapper mapper;
         public GroupController
             (IGroupService service, IAttendeeService attendeeService,
-             IAttendeeGroupService attendeeGroupService, IMapper mapper)
+             IAttendeeGroupService attendeeGroupService, IMapper mapper,
+            ILogger<BaseController> logger) : base(logger)
         {
             this.service = service;
             this.attendeeService = attendeeService;

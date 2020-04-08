@@ -10,6 +10,7 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface IScheduleRepository : IRepository<Schedule>
     {
         Schedule GetByGroupId(int groupId);
+        Schedule GetScheduleNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
     }
     public class ScheduleRepository : Repository<Schedule>, IScheduleRepository
     {
@@ -20,6 +21,14 @@ namespace AttendanceSystemIPCamera.Repositories
         public Schedule GetByGroupId(int groupId)
         {
             return Get(s => s.GroupId == groupId).FirstOrDefault();
+        }
+
+        public Schedule GetScheduleNeedsToActivate(TimeSpan activatedTimeBeforeStartTime)
+        {
+            var compareTime = DateTime.Now.Add(activatedTimeBeforeStartTime);
+            return Get(s => s.Active == false
+                            && compareTime >= s.StartTime)
+                .FirstOrDefault();
         }
     }
 }
