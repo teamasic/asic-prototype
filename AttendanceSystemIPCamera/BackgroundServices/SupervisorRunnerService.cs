@@ -1,5 +1,7 @@
 ﻿using AttendanceSystemIPCamera.Services.NetworkService;
+using AttendanceSystemIPCamera.Services.OtherSettingsService;
 using AttendanceSystemIPCamera.Services.RecordService;
+using AttendanceSystemIPCamera.Services.ScheduleService;
 using AttendanceSystemIPCamera.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,12 +30,33 @@ namespace AttendanceSystemIPCamera.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            logger.LogInformation("SupervisorRunnerService: Network worker starting");
+            RegisterNetworkTask(stoppingToken);
+            
+            RegisterSyncTask(stoppingToken);
+
+            RegisterScheduleTask(stoppingToken);
+
+            await Task.CompletedTask;
+        }
+
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            logger.LogInformation("SupervisorRunnerService stopping");
+            FileUtils.UpdateShutDownTime(DateTime.Now);
+            await Task.CompletedTask;
+        }
+
+        private void RegisterNetworkTask(CancellationToken stoppingToken)
+        {
+            logger.LogInformation("SupervisorRunnerService: Network service starting");
             var networkTask = Task.Factory.StartNew(() =>
             {
                 HandleNetworkOperation();
             }, stoppingToken);
-            //
+        }
+
+        private void RegisterSyncTask(CancellationToken stoppingToken)
+        {
             logger.LogInformation("SupervisorRunnerService: Sync timer starting");
             var syncTask = Task.Factory.StartNew(async () =>
             {
@@ -59,16 +82,25 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                     waitingTime = TimeSpan.FromMilliseconds(Constant.DEFAULT_SYNC_MILISECONDS);
                 }
             }, stoppingToken);
-
-            await Task.CompletedTask;
         }
 
-        public override async Task StopAsync(CancellationToken cancellationToken)
+        private void RegisterScheduleTask(CancellationToken stoppingToken)
         {
-            logger.LogInformation("SupervisorRunnerService stopping");
-            FileUtils.UpdateShutDownTime(DateTime.Now);
-            await Task.CompletedTask;
+            var activateScheduleTask = Task.Factory.StartNew(async () =>
+            {
+                HandleActivateScheduleOperation();
+                var waitingTime = new TimeSpan(0, 5, 0);
+                logger.LogInformation("Activate schedule task executing - {0}", DateTime.Now);
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    await Task.Delay(waitingTime, stoppingToken);
+                    logger.LogInformation("Activate schedule task executing - {0}", DateTime.Now);
+                    HandleActivateScheduleOperation();
+                }
+            }, stoppingToken);
+
         }
+
         private void HandleNetworkOperation()
         {
             try
@@ -97,6 +129,21 @@ namespace AttendanceSystemIPCamera.BackgroundServices
             catch (Exception ex)
             {
                 logger.LogError("Sync Error: " + ex);
+            }
+        }
+        private void HandleActivateScheduleOperation()
+        {
+            try
+            {
+                using (var scope = serviceScopeFactory.CreateScope())
+                {
+                    var scheduleService = scope.ServiceProvider.GetRequiredService<IScheduleService>();
+                    scheduleService.ActivateSchedule();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Activate schedule error: " + ex);
             }
         }
     }

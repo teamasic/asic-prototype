@@ -34,6 +34,10 @@ using AttendanceSystemIPCamera.Services.SettingsService;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 using AttendanceSystemIPCamera.Services.ScheduleService;
+using AttendanceSystemIPCamera.Framework;
+using static AttendanceSystemIPCamera.Framework.Constants;
+using AttendanceSystemIPCamera.Services.LogService;
+using AttendanceSystemIPCamera.Services.OtherSettingsService;
 
 namespace AttendanceSystemIPCamera
 {
@@ -111,8 +115,7 @@ namespace AttendanceSystemIPCamera
                     pattern: "{controller}/{action=Index}/{id?}");
                 endpoints.MapHub<RealTimeService>("/hub");
             });
-
-            loggerFactory.AddFile("Logs/supervisor-log-{Date}.txt");
+            loggerFactory.AddFile(string.Format($"{Constant.LOG_TEMPLATE}", "{Date}"));
 
             //app.UseSpa(spa =>
             //{
@@ -169,8 +172,8 @@ namespace AttendanceSystemIPCamera
             SetupServices(services);
             SetupRepositories(services);
             SetupUnitConfig(services);
+            SetupOtherSettings(services);
             SetupGlobalStateManager(services);
-
         }
 
         private void SetupServices(IServiceCollection services)
@@ -191,6 +194,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<IGlobalStateService, GlobalStateService>();
+            services.AddScoped<ILogService, LogService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
@@ -213,6 +217,13 @@ namespace AttendanceSystemIPCamera
         {
             UnitService unitServiceInstance = UnitServiceFactory.Create(Configuration.GetValue<string>("UnitConfigFile"));
             services.AddSingleton(unitServiceInstance);
+        }
+
+        private void SetupOtherSettings(IServiceCollection services)
+        {
+            OtherSettingsService otherSettingsService = OtherSettingsServiceFactory
+                                .Create(Configuration.GetValue<string>("FilesConfiguration:SettingsConfigFile"));
+            services.AddSingleton(otherSettingsService);
         }
 
         private void SetupGlobalStateManager(IServiceCollection services)
