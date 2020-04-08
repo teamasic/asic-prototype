@@ -57,6 +57,16 @@ namespace AttendanceSystemIPCamera.Framework
             public const string LoginApi = "api/user/login";
 
             public static string SyncApi = "api/record/sync";
+
+            public static class SettingsDownloadAPI
+            {
+                private const string BASE = "/api/settings/";
+                public const string MODEL = BASE + "model";
+                public const string ROOM = BASE + "room";
+                public const string UNIT = BASE + "unit";
+                public const string OTHERS = BASE + "others";
+                public const string LAST_UPDATED = BASE + "last-updated";
+            }
         }
     }
 }
