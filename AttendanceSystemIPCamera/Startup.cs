@@ -37,6 +37,7 @@ using AttendanceSystemIPCamera.Services.ScheduleService;
 using AttendanceSystemIPCamera.Framework;
 using static AttendanceSystemIPCamera.Framework.Constants;
 using AttendanceSystemIPCamera.Services.LogService;
+using AttendanceSystemIPCamera.Services.OtherSettingsService;
 
 namespace AttendanceSystemIPCamera
 {
@@ -171,8 +172,8 @@ namespace AttendanceSystemIPCamera
             SetupServices(services);
             SetupRepositories(services);
             SetupUnitConfig(services);
+            SetupOtherSettings(services);
             SetupGlobalStateManager(services);
-
         }
 
         private void SetupServices(IServiceCollection services)
@@ -216,6 +217,13 @@ namespace AttendanceSystemIPCamera
         {
             UnitService unitServiceInstance = UnitServiceFactory.Create(Configuration.GetValue<string>("UnitConfigFile"));
             services.AddSingleton(unitServiceInstance);
+        }
+
+        private void SetupOtherSettings(IServiceCollection services)
+        {
+            OtherSettingsService otherSettingsService = OtherSettingsServiceFactory
+                                .Create(Configuration.GetValue<string>("FilesConfiguration:SettingsConfigFile"));
+            services.AddSingleton(otherSettingsService);
         }
 
         private void SetupGlobalStateManager(IServiceCollection services)

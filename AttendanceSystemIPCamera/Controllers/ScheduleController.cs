@@ -30,5 +30,15 @@ namespace AttendanceSystemIPCamera.Controllers
                 return service.GetByGroupId(id);
             });
         }
+
+        [HttpPost("activate")]
+        public async Task<dynamic> ActivateSchedule()
+        {
+            return await ExecuteInMonitoring(async () =>
+            {
+                await service.ActivateSchedule();
+                return "";
+            });
+        }
     }
 }

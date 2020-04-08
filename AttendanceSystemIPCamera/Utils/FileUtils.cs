@@ -1,4 +1,5 @@
 ﻿using AttendanceSystemIPCamera.Framework;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -62,6 +63,32 @@ namespace AttendanceSystemIPCamera.Utils
         public static string ReadFile(string fileName)
         {
             return File.ReadAllText(fileName);
+        }
+
+        public static T ParseJsonFile<T>(string fileName) where T : new()
+        {
+            T expectedOutput = new T();
+            try
+            {
+                using StreamReader file = File.OpenText(fileName);
+                JsonSerializer serializer = new JsonSerializer();
+                expectedOutput = (T)serializer.Deserialize(file, typeof(T));
+            }
+            catch (Exception)
+            {
+            }
+            return expectedOutput;
+        }
+        public static void UpdateJsonFile(string fileName, object newObject)
+        {
+            try
+            {
+                var contents = JsonConvert.SerializeObject(newObject);
+                File.WriteAllText(fileName, contents);
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }
