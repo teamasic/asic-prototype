@@ -65,6 +65,7 @@ if __name__ == "__main__":
             image = vs.read()
             image = imutils.resize(image, width=600)
             (h, w) = image.shape[:2]
+            image = image[0:h, 100:w - 100]
             boxes = my_face_detection.face_locations(image)
             if 0 < len(boxes) <= maxNumOfPeople:
                 results = my_service.get_label_after_detect_multiple(image, boxes)
