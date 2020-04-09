@@ -15,27 +15,30 @@ import { sessionActionCreators } from '../store/session/actionCreators';
 import { ChangeRequestStatusFilter } from '../models/ChangeRequest';
 import { constants } from '../constant';
 import * as firebase from '../firebase';
+import { UserState } from '../store/user/userState';
+import { userActionCreators } from '../store/user/userActionCreators';
 const { Header, Sider, Content, Footer } = Layout;
 
 // At runtime, Redux will merge together...
 type LayoutProps =
 	ChangeRequestState & // ... state we've requested from the Redux store
+	UserState &
 	typeof changeRequestActionCreators &
 	typeof sessionActionCreators &
+	typeof userActionCreators &
 	RouteComponentProps<{}>; // ... plus incoming routing parameters
+
 
 class PageLayout extends React.Component<
 	LayoutProps,
 	{
 		collapsed: boolean;
 		selectedKeys: string[];
-		isLoggingOut: boolean;
 	}
 	> {
 	state = {
 		collapsed: false,
 		selectedKeys: ['groups'],
-		isLoggingOut: false
 	};
 
 	onCollapse = (collapsed: boolean) => {
@@ -59,9 +62,8 @@ class PageLayout extends React.Component<
 	}
 
 	render() {
-		const authData = localStorage.getItem(constants.AUTH_IN_LOCAL_STORAGE);
 		console.log(this.props.history.location.pathname)
-		return (<>{ authData ? this.renderLayout() : this.renderEmty()}</>);
+		return (<>{ this.props.isLogin ? this.renderLayout() : this.renderEmty()}</>);
 	}
 
 	private renderEmty() {
@@ -141,13 +143,10 @@ class PageLayout extends React.Component<
 	}
 
 	private logout() {
-		this.setState({ isLoggingOut: true });
-		const authData = localStorage.getItem(constants.AUTH_IN_LOCAL_STORAGE);
-		if (authData != null) {
+		if (this.props.isLogin) {
 			firebase.auth.doSignOut().then(() => {
 				localStorage.removeItem(constants.AUTH_IN_LOCAL_STORAGE);
-				window.location.href = "/";
-				this.setState({ isLoggingOut: false });
+				this.props.logout();
 			});
 		}
 	}
@@ -158,10 +157,12 @@ class PageLayout extends React.Component<
 
 export default withRouter(connect(
 	(state: ApplicationState) => ({
-		...state.changeRequests
+		...state.changeRequests,
+		...state.user
 	}), // Selects which state properties are merged into the component's props
 	dispatch => bindActionCreators({
 		...changeRequestActionCreators,
-		...sessionActionCreators
+		...sessionActionCreators,
+		...userActionCreators
 	}, dispatch) // Selects which action creators are merged into the component's props
 )(PageLayout as any));
