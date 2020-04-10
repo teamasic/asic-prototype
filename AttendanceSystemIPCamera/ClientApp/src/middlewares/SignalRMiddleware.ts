@@ -38,6 +38,7 @@ export function attachEvents(connection: signalR.HubConnection, dispatch: any) {
     const interval = setInterval(() => {
         if (connection.state === signalR.HubConnectionState.Connected) {
             connection.send('heartbeat');
+            // console.log('heartbeat');
         }
     }, 10000);
 
@@ -72,6 +73,7 @@ export function attachEvents(connection: signalR.HubConnection, dispatch: any) {
     });
 
     connection.on("keepAlive", () => {
+        // console.log('keep alive');
     });
 
     connection.on("newChangeRequest", () => {

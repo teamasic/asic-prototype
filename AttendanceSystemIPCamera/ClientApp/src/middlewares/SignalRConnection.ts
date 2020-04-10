@@ -4,7 +4,7 @@ const createSignalRConnection = () => {
     const conn = new signalR.HubConnectionBuilder()
         .withUrl("/hub")
         .withAutomaticReconnect()
-        .configureLogging(signalR.LogLevel.Information)
+        .configureLogging(signalR.LogLevel.Debug)
         .build();
     conn.serverTimeoutInMilliseconds = 100000; // 100 second
     return conn;

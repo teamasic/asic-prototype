@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { ApplicationState } from '../store';
 import { bindActionCreators } from 'redux';
-import { Container } from 'reactstrap';
 import { connect } from 'react-redux';
 import NavMenu from './NavMenu';
-import { Layout, Menu, Breadcrumb, Icon, Badge, Row, Col, Spin } from 'antd';
+import { Layout, Menu, Breadcrumb, Icon, Dropdown, Badge, Row, Col, Spin, Avatar, Button } from 'antd';
 import classNames from 'classnames';
 import '../styles/Layout.css';
 import { Link, withRouter } from 'react-router-dom';
@@ -15,10 +14,12 @@ import { sessionActionCreators } from '../store/session/actionCreators';
 import { ChangeRequestStatusFilter } from '../models/ChangeRequest';
 import { constants } from '../constant';
 import * as firebase from '../firebase';
+import { UserState } from '../store/user/userState';
 const { Header, Sider, Content, Footer } = Layout;
 
 // At runtime, Redux will merge together...
 type LayoutProps =
+	UserState &
 	ChangeRequestState & // ... state we've requested from the Redux store
 	typeof changeRequestActionCreators &
 	typeof sessionActionCreators &
@@ -77,7 +78,18 @@ class PageLayout extends React.Component<
 	}
 
 	renderLayout() {
-		
+		const menu = (
+			<Menu>
+				<Menu.Item key="logout" onClick={() => this.logout()}>Log out</Menu.Item>
+			</Menu>
+		);
+		const notificationMenu = (
+			<Menu>
+				<Menu.Item>Noti 1</Menu.Item>
+				<Menu.Item>Noti 2</Menu.Item>
+				<Menu.Item>Noti 3</Menu.Item>
+			</Menu>
+		);
 		return (
 				<Layout className="layout">
 					<Sider
@@ -132,6 +144,15 @@ class PageLayout extends React.Component<
 					'inner-layout': true,
 					'with-sidebar-collapsed': this.state.collapsed
 				})}>
+					<Content className="menu-bar row">
+						<div className="fullname">You are: {this.props.currentUser.fullname}</div>
+						<Dropdown overlay={menu} trigger={['click']}>
+							<Avatar className="avatar" size="large" icon="user" />
+						</Dropdown>
+						<Dropdown overlay={notificationMenu} trigger={['click']}>
+							<Button type="link" icon="bell" size="large" />
+						</Dropdown>
+					</Content>
 					<Content className="content">
 						{this.props.children}
 					</Content>
@@ -158,7 +179,8 @@ class PageLayout extends React.Component<
 
 export default withRouter(connect(
 	(state: ApplicationState) => ({
-		...state.changeRequests
+		...state.changeRequests,
+		...state.user
 	}), // Selects which state properties are merged into the component's props
 	dispatch => bindActionCreators({
 		...changeRequestActionCreators,

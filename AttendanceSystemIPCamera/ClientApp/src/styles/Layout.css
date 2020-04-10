@@ -28,6 +28,22 @@
 	min-height: 100vh;
 }
 
+.menu-bar {
+	background: #fff;
+	margin: 0 !important;
+	padding: 16px;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.menu-bar .fullname {
+	margin: 0 10px;
+}
+
+.menu-bar .avatar {
+	cursor: pointer;
+}
+
 .menu-item {
 	margin-top: 0 !important;
 	margin-bottom: 12px !important;
