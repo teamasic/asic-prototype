@@ -54,6 +54,7 @@ def recognize_image_after_read_multiple(image, numberOfTimesToUpSample=1):
 
 
 def get_label_after_detect_multiple(image, boxes):
+    print(os.getpid())
     vecs = my_face_recognition.face_encodings(image, boxes)
     results = []
     for i, vec in enumerate(vecs):
