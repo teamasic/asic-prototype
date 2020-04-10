@@ -35,11 +35,23 @@ if __name__ == "__main__":
 
 	# transfer rtsp to http
 	# httpString = my_service.transfer_rtsp_to_http(rtspString)
-	httpString = "http://localhost:{}".format(my_constant.portHttpStream)
-	vs = stream_video.CustomVideoStream(src=httpString)
-	time.sleep(2.0)
+
+
+	countTryOpenStream = 0
+	isOpenStreamOk = False
+	vs = None
 	try:
-		if vs.stream.isOpened() is False:
+		while countTryOpenStream < 3 and isOpenStreamOk is False:
+			countTryOpenStream += 1
+			if countTryOpenStream == 1:
+				httpString = "http://localhost:{}".format(my_constant.portHttpStream)
+			else:
+				httpString = my_service.transfer_rtsp_to_http(rtspString)
+			vs = stream_video.CustomVideoStream(src=httpString)
+			# time.sleep(2.0)
+			if vs.stream.isOpened():
+				isOpenStreamOk = True
+		if isOpenStreamOk is False:
 			print("Cannot read video stream")
 			raise Exception("Cannot read video stream")
 		else:
