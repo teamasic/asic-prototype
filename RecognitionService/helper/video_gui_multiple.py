@@ -47,6 +47,9 @@ class PhotoBoothApp:
 		self.btn.pack(side="bottom", fill="both", expand="yes", padx=10,
 			pady=10)
 
+		self.timeLabel = tki.Label(self.root, text="Total time")
+		self.timeLabel.pack(side="bottom", expand="yes")
+
 		# start a thread that constantly pools the video sensor for
 		# the most recently read frame
 		# self.stopEvent = threading.Event()
@@ -99,6 +102,8 @@ class PhotoBoothApp:
 			print("[INFO] caught a RuntimeError")
 
 	def takeSnapshot(self):
+		print("Start now")
+		self.startTime = datetime.datetime.now()
 		self.stopRunVideo.put(1)
 		threading.Thread(target=self.recognition_multiple_new, args=(self.frame.copy(), None, self.isForCheckingAttendance, self.stopRunVideo, self.isError)).start()
 	def onClose(self):
@@ -108,15 +113,15 @@ class PhotoBoothApp:
 		# self.stopEvent.set()
 		self.root.quit()
 
-	def 	recognition_multiple_new(self, image, boxes, isForCheckingAttendance, isCheckAttendanceDoneQueue, isErrorQueue):
-		startTime = datetime.datetime.now()
+	def recognition_multiple_new(self, image, boxes, isForCheckingAttendance, isCheckAttendanceDoneQueue, isErrorQueue):
+		# image = cv2.imread("images/class3.jpg")
+		imageCvt = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 		if boxes == None:
-			boxes = my_face_detection.face_locations(image)
+			boxes = my_face_detection.face_locations(imageCvt)
 		resultFull = self.pool.starmap(my_service.get_label_after_detect_multiple,
-								  [(copy.deepcopy(image), [copy.deepcopy(box)]) for box in boxes])
+								  [(imageCvt, [box]) for box in boxes])
 		results = [result[0] for result in resultFull]
 		print(results)
-		print(datetime.datetime.now() - startTime)
 		if isForCheckingAttendance:
 			codes = []
 			unknowns = []
@@ -132,3 +137,4 @@ class PhotoBoothApp:
 			except:
 				isErrorQueue.put(1)
 		isCheckAttendanceDoneQueue.get()
+		self.timeLabel['text'] = "Total Time: " + str(datetime.datetime.now() - self.startTime)
