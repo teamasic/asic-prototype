@@ -10,18 +10,10 @@ namespace AttendanceSystemIPCamera.Models
     {
         SESSION
     }
-    public abstract class Notification<T>
+    public class Notification
     {
-        public NotificationType Type { get; protected set; }
-        public T Data;
-        public DateTime TimeSent;
-    }
-
-    public class SessionNotification: Notification<SessionViewModel>
-    {
-        public SessionNotification()
-        {
-            Type = NotificationType.SESSION;
-        }
+        public NotificationType Type { get; set; }
+        public dynamic Data { get; set; }
+        public DateTime TimeSent { get; set; }
     }
 }

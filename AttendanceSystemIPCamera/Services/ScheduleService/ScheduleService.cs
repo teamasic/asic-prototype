@@ -81,9 +81,7 @@ namespace AttendanceSystemIPCamera.Services.ScheduleService
                             await sessionRepository.Add(session);
                             unitOfWork.Commit();
                             trans.Commit();
-                            //using realtimeService to send notification
-
-
+                            await SendSessionNotification(session);
                         }
                         else
                         {
@@ -101,6 +99,13 @@ namespace AttendanceSystemIPCamera.Services.ScheduleService
 
 
             }
+        }
+
+        private async Task SendSessionNotification(Session session)
+        {
+            var sessionViewModel = mapper.Map<SessionNotificationViewModel>(session);
+            sessionViewModel.GroupName = session.Group.Name;
+            await realTimeService.SendNotification(NotificationType.SESSION, sessionViewModel);
         }
 
         public ScheduleViewModel GetByGroupId(int groupId)

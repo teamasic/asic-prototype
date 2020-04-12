@@ -16,13 +16,15 @@ import { constants } from '../constant';
 import * as firebase from '../firebase';
 import { UserState } from '../store/user/userState';
 import { userActionCreators } from '../store/user/userActionCreators';
+import { NotificationState } from '../store/notification/state';
+import MenuBar from './MenuBar';
 const { Header, Sider, Content, Footer } = Layout;
 
 // At runtime, Redux will merge together...
 type LayoutProps =
 	UserState &
 	ChangeRequestState & // ... state we've requested from the Redux store
-	UserState &
+	NotificationState &
 	typeof changeRequestActionCreators &
 	typeof sessionActionCreators &
 	typeof userActionCreators &
@@ -79,18 +81,6 @@ class PageLayout extends React.Component<
 	}
 
 	renderLayout() {
-		const menu = (
-			<Menu>
-				<Menu.Item key="logout" onClick={() => this.logout()}>Log out</Menu.Item>
-			</Menu>
-		);
-		const notificationMenu = (
-			<Menu>
-				<Menu.Item>Noti 1</Menu.Item>
-				<Menu.Item>Noti 2</Menu.Item>
-				<Menu.Item>Noti 3</Menu.Item>
-			</Menu>
-		);
 		return (
 				<Layout className="layout">
 					<Sider
@@ -145,15 +135,7 @@ class PageLayout extends React.Component<
 					'inner-layout': true,
 					'with-sidebar-collapsed': this.state.collapsed
 				})}>
-					<Content className="menu-bar row">
-						<div className="fullname">You are: {this.props.currentUser.fullname}</div>
-						<Dropdown overlay={menu} trigger={['click']}>
-							<Avatar className="avatar" size="large" icon="user" />
-						</Dropdown>
-						<Dropdown overlay={notificationMenu} trigger={['click']}>
-							<Button type="link" icon="bell" size="large" />
-						</Dropdown>
-					</Content>
+					<MenuBar />
 					<Content className="content">
 						{this.props.children}
 					</Content>
@@ -178,7 +160,8 @@ class PageLayout extends React.Component<
 export default withRouter(connect(
 	(state: ApplicationState) => ({
 		...state.changeRequests,
-		...state.user
+		...state.user,
+		...state.notifications
 	}), // Selects which state properties are merged into the component's props
 	dispatch => bindActionCreators({
 		...changeRequestActionCreators,

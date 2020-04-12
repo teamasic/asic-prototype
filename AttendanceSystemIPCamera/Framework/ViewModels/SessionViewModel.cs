@@ -43,4 +43,14 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public GroupInSyncData Group { get; set; }
     }
 
+    public class SessionNotificationViewModel : BaseViewModel<Session>
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public int GroupId { get; set; }
+        public string GroupName { get; set; }
+        public string RoomName { get; set; }
+    }
 }
