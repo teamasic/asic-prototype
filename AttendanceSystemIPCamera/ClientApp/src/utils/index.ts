@@ -47,3 +47,12 @@ export const formatDateDistanceToNow = (time: Date | string) => formatDistanceTo
 export const formatTimeOnly = (time: Date | string) => format(new Date(time), 'hh:mm');
 
 export const generateUniqueId = () => uniqid.time();
+
+
+export const getErrors = (errors: any[])=>{
+    const values = []
+    for(const key in errors){
+        values.push(errors[key]);
+    }
+    return values.toString();
+}
