@@ -86,7 +86,10 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public Task<Session> GetSessionWithGroupAndTime(int groupId, DateTime startTime, DateTime endTime)
         {
-            return dbSet.FirstOrDefaultAsync(s => s.GroupId.Equals(groupId) && s.StartTime.CompareTo(startTime) == 0 && s.EndTime.CompareTo(endTime) == 0);
+            return dbSet
+                .Include(s => s.Group)
+                .FirstOrDefaultAsync(s => s.GroupId.Equals(groupId) && 
+                s.StartTime.CompareTo(startTime) == 0 && s.EndTime.CompareTo(endTime) == 0);
         }
 
         public List<Session> GetSessionExport(int groupId, DateTime date)

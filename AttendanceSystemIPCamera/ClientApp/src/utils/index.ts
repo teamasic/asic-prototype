@@ -1,6 +1,8 @@
 ﻿import format from 'date-fns/format';
+import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import moment from 'moment';
 import Swal from 'sweetalert2';
+import uniqid from 'uniqid';
 
 export const formatFullDateTimeString = (time: Date | string) => format(new Date(time), 'EEEE, MMMM d, yyyy');
 
@@ -39,3 +41,9 @@ export const warning = (msg: string) => {
         text: msg
     });
 }
+
+export const formatDateDistanceToNow = (time: Date | string) => formatDistanceToNow(new Date(time));
+
+export const formatTimeOnly = (time: Date | string) => format(new Date(time), 'hh:mm');
+
+export const generateUniqueId = () => uniqid.time();

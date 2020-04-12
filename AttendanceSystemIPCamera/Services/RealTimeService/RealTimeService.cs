@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Http;
 using AttendanceSystemIPCamera.Repositories;
 using Microsoft.AspNetCore.SignalR;
 using System.Timers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace AttendanceSystemIPCamera.Services.RecordService
 {
@@ -24,6 +26,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public Task NewChangeRequestAdded();
         public Task MarkAttendeeAsPresentBatch(ICollection<string> codes);
         public Task MarkAttendeeAsUnknownBatch(ICollection<string> images);
+        public Task SendNotification(NotificationType type, dynamic data);
     }
 
     public class HubMethods
@@ -35,6 +38,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public static string NEW_CHANGE_REQUEST = "newChangeRequest";
         public static string ATTENDEE_PRESENTED_BATCH = "attendeePresentedBatch";
         public static string ATTENDEE_UNKNOWN_BATCH = "attendeeUnknownBatch";
+        public static string NOTIFICATION_SENT = "notificationSent";
     }
 
     public class RealTimeService : Hub, IRealTimeService
@@ -104,6 +108,23 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         {
             timer?.Stop();
             return Task.CompletedTask;
+        }
+        public async Task SendNotification(NotificationType type, dynamic data)
+        {
+            await hubContext.Clients.All.SendAsync(HubMethods.NOTIFICATION_SENT,
+                Jsonify(new Notification {
+                    Type = type,
+                    Data = data,
+                    TimeSent = DateTime.Now
+                }));
+        }
+
+        private string Jsonify(object obj)
+        {
+            return JsonConvert.SerializeObject(obj, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
         }
     }
 }

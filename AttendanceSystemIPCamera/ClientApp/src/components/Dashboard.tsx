@@ -410,8 +410,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
             <div className="group-grid">
                 <div className="fixed-grid--around">
                     {
-                        this.props.paginatedGroupList!.list.map(group => 
-                            <div className="grid-element">
+                        this.props.paginatedGroupList!.list.map(group =>
+                            <div key={group.id} className="grid-element">
                                 <GroupCard redirect={url => this.redirect(url)}
                                 group={group}
                                 roomList={this.props.roomList}
