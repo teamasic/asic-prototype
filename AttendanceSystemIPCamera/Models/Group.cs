@@ -26,7 +26,10 @@ namespace AttendanceSystemIPCamera.Models
         public bool Deleted { get; set; }
         public virtual ICollection<AttendeeGroup> AttendeeGroups { get; set; }
         [NotMapped]
-        public ICollection<Attendee> Attendees => AttendeeGroups.Select(ag => ag.Attendee).ToList();
+        public ICollection<Attendee> Attendees => AttendeeGroups
+            .Where(ag => ag.IsActive)
+            .Select(ag => ag.Attendee)
+            .ToList();
         public virtual ICollection<Session> Sessions { get; set; }
         public virtual ICollection<Schedule> Schedules { get; set; }
     }

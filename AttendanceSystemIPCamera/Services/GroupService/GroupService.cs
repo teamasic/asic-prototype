@@ -57,7 +57,8 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                     {
                         Attendee = attendeeInDb,
                         AttendeeId = attendeeInDb.Id,
-                        GroupId = groupId
+                        GroupId = groupId,
+                        IsActive = true
                     };
                     await attendeeGroupService.AddAsync(attendeeGroup);
                     return attendeeInDb;
@@ -71,7 +72,8 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                         {
                             Attendee = attendeeInDb,
                             AttendeeId = attendeeInDb.Id,
-                            GroupId = groupId
+                            GroupId = groupId,
+                            IsActive = true
                         };
                         await attendeeGroupService.AddAsync(attendeeGroup);
                         return attendeeInDb;

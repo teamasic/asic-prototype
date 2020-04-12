@@ -12,7 +12,6 @@ namespace AttendanceSystemIPCamera.Repositories
         Task Add(AttendeeGroup entity);
         Task Add(IEnumerable<AttendeeGroup> entities);
         IEnumerable<AttendeeGroup> GetByGroupId(int groupId);
-        AttendeeGroup Delete(AttendeeGroup attendeeGroup);
         AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId);
 
     }
@@ -42,19 +41,11 @@ namespace AttendanceSystemIPCamera.Repositories
             return dbSet.Where(ag => ag.GroupId == groupId).ToList();
         }
 
-        public AttendeeGroup Delete(AttendeeGroup attendeeGroup)
-        {
-            var deletedAttendeeGroup = attendeeGroup;
-            if(attendeeGroup != null)
-            {
-               deletedAttendeeGroup =  dbSet.Remove(attendeeGroup).Entity;
-            }
-            return deletedAttendeeGroup;
-        }
-
         public AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId)
         {
-            return dbSet.Where(ag => ag.AttendeeId == attendeeId && ag.GroupId == groupId).FirstOrDefault();
+            return dbSet.Where(ag => ag.AttendeeId == attendeeId 
+            && ag.GroupId == groupId && ag.IsActive)
+                .FirstOrDefault();
         }
 
         #region IDisposable Support

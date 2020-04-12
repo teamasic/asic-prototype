@@ -73,8 +73,8 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             // this is in case attendees get removed from group or haven't had a record yet (for an active session)
             var session = await sessionRepository.GetById(sessionId);
             var groupAttendees = session.Group.Attendees;
-            var recordAttendees = session.Records.Select(r => r.Attendee);
-            var attendeeRecordMap = session.Records.ToDictionary(record => record.Attendee, record => record);
+            var recordAttendees = session.Records.Select(r => r.AttendeeGroup.Attendee);
+            var attendeeRecordMap = session.Records.ToDictionary(record => record.AttendeeGroup.Attendee, record => record);
             foreach (var attendee in groupAttendees)
             {
                 if (!attendeeRecordMap.ContainsKey(attendee))
@@ -86,7 +86,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             {
                 if (record != null)
                 {
-                    record.Attendee = null;
+                    record.AttendeeGroup = null;
                 }
             }
             return attendeeRecordMap.Select(ar => new AttendeeRecordPair
@@ -184,7 +184,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         {
                             SessionIndex = count.ToString(),
                             AttendeeCode = record.AttendeeCode,
-                            AttendeeName = record.Attendee.Name,
+                            AttendeeName = record.AttendeeGroup.Attendee.Name,
                             Present = record.Present.ToString()
                         };
                         sessionExport.Add(exportModel);
@@ -222,7 +222,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                             var tempAttendee = new TempExport
                             {
                                 Code = record.AttendeeCode,
-                                Name = record.Attendee.Name,
+                                Name = record.AttendeeGroup.Attendee.Name,
                                 Count = record.Present ? 1 : 0
                             };
                             temps.Add(tempAttendee.Code, tempAttendee);
@@ -303,7 +303,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         {
                             SessionIndex = count.ToString(),
                             AttendeeCode = record.AttendeeCode,
-                            AttendeeName = record.Attendee.Name,
+                            AttendeeName = record.AttendeeGroup.Attendee.Name,
                             Present = record.Present.ToString()
                         };
                         sessionExports.Add(viewModel);

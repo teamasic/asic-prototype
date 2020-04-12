@@ -83,6 +83,7 @@ namespace AttendanceSystemIPCamera.Services.ChangeRequestService
                 changeRequest.Record.Present = false;
                 changeRequest.Status = ChangeRequestStatus.REJECTED;
             }
+            recordRepository.Update(changeRequest.Record);
             changeRequestRepository.Update(changeRequest);
             unitOfWork.Commit();
             return changeRequest;

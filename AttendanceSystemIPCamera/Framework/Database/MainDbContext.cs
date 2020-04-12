@@ -10,14 +10,14 @@ namespace AttendanceSystemIPCamera.Framework.Database
 {
     public class MainDbContext: DbContext
     {
-        public DbSet<Attendee> Attendees { get; set; }
-        public DbSet<AttendeeGroup> AttendeeGroups { get; set; }
-        public DbSet<Group> Groups { get; set; }
-        public DbSet<Record> Records { get; set; }
-        public DbSet<Session> Sessions { get; set; }
-        public DbSet<Room> Rooms { get; set; }
-        public DbSet<ChangeRequest> ChangeRequests { get; set; }
-        public DbSet<Schedule> Schedules { get; set; }
+        public DbSet<Attendee> Attendee { get; set; }
+        public DbSet<AttendeeGroup> AttendeeGroup { get; set; }
+        public DbSet<Group> Group { get; set; }
+        public DbSet<Record> Record { get; set; }
+        public DbSet<Session> Session { get; set; }
+        public DbSet<Room> Room { get; set; }
+        public DbSet<ChangeRequest> ChangeRequest { get; set; }
+        public DbSet<Schedule> Schedule { get; set; }
 
         public MainDbContext(DbContextOptions<MainDbContext> options): base(options)
         { }
@@ -29,7 +29,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
                 entity.HasIndex(e => e.Code)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Code).HasColumnType("varchar (255)");
 
@@ -61,7 +61,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
                 entity.HasIndex(e => e.RecordId)
                     .HasName("IX_ChangeRequests_RecordId");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.RecordId).HasColumnType("int");
 
@@ -78,7 +78,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
                 entity.HasIndex(e => e.Code)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Code).HasColumnType("varchar (255)");
 
@@ -96,7 +96,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
                 entity.HasIndex(e => new { e.AttendeeId, e.GroupId, e.SessionId })
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.AttendeeCode)
                     .IsRequired()
@@ -123,7 +123,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
 
             modelBuilder.Entity<Room>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -134,7 +134,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
 
             modelBuilder.Entity<Schedule>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Active).HasDefaultValueSql("0");
 
@@ -160,7 +160,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
 
             modelBuilder.Entity<Session>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.EndTime)
                     .IsRequired()

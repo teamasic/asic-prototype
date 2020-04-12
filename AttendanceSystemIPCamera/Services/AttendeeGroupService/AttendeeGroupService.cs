@@ -48,7 +48,10 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
 
         public IEnumerable<AttendeeGroup> GetByGroupId(int groupId)
         {
-            var attendeeGroups = attendeeGroupRepository.GetByGroupId(groupId).ToList();
+            var attendeeGroups = attendeeGroupRepository
+                .GetByGroupId(groupId)
+                .Where(ag => ag.IsActive)
+                .ToList();
             attendeeGroups.ForEach(ag => { ag.Attendee = attendeeService.GetById(ag.AttendeeId).Result;});
             return attendeeGroups;
         }
@@ -58,9 +61,8 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
             var attendeeGroupInDb = attendeeGroupRepository.GetByAttendeeIdAndGroupId(attendeeId, groupId);
             if(attendeeGroupInDb != null)
             {
-                var deletedAttendee = attendeeGroupRepository.Delete(attendeeGroupInDb);
+                attendeeGroupInDb.IsActive = false;
                 unitOfWork.Commit();
-                return deletedAttendee;
             }
             return attendeeGroupInDb;
         }

@@ -45,7 +45,12 @@ namespace AttendanceSystemIPCamera.Repositories
                 .Where(g => g.Name.ToLower().Contains(groupSearchViewModel.NameContains.ToLower())
                             && g.Deleted == false);
             query = orderFunction(query);
-            return await PaginatedList<Group>.CreateAsync(query, groupSearchViewModel.Page, groupSearchViewModel.PageSize);
+            var list = await PaginatedList<Group>.CreateAsync(query, groupSearchViewModel.Page, groupSearchViewModel.PageSize);
+            foreach (var group in list)
+            {
+                group.AttendeeGroups = group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
+            }
+            return list;
         }
         //public new async Task<Group> GetById(object id)
         //{
@@ -54,9 +59,11 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public async Task<bool> CheckAttendeeExistedInGroup(int id, string attendeeCode)
         {
-            var group = await dbSet.Include(g => g.AttendeeGroups).ThenInclude(a => a.Attendee).FirstOrDefaultAsync(g => g.Id == id);
-            return group.Attendees.Any(a => a.Code.Equals(attendeeCode));
-                
+            var group = await dbSet
+                .Include(g => g.AttendeeGroups)
+                    .ThenInclude(a => a.Attendee)
+                .FirstOrDefaultAsync(g => g.Id == id);
+            return group.AttendeeGroups.Any(ag => ag.IsActive && ag.Attendee.Code == attendeeCode);
         }
 
         public Group GetByCode(string code)

@@ -53,24 +53,30 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public async Task<Session> GetActiveSession()
         {
-            return await dbSet
+            var session = await dbSet
                 .Include(s => s.Records)
-                    .ThenInclude(r => r.Attendee)
+                    .ThenInclude(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Include(s => s.Group)
                     .ThenInclude(g => g.AttendeeGroups)
                         .ThenInclude(ag => ag.Attendee)
                 .FirstOrDefaultAsync(x => x.Id == globalState.CurrentActiveSession);
+            session.Group.AttendeeGroups = session.Group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
+            return session;
         }
 
         public new async Task<Session> GetById(object id)
         {
-            return await dbSet
+            var session = await dbSet
                 .Include(s => s.Records)
-                    .ThenInclude(r => r.Attendee)
+                    .ThenInclude(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Include(s => s.Group)
                     .ThenInclude(g => g.AttendeeGroups)
                         .ThenInclude(ag => ag.Attendee)
                 .FirstOrDefaultAsync(x => (int) id == x.Id);
+            session.Group.AttendeeGroups = session.Group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
+            return session;
         }
 
         public List<Session> GetSessionsWithRecords(List<int> groups)

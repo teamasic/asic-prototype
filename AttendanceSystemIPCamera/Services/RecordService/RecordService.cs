@@ -96,6 +96,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 var newRecord = new Record
                 {
                     Session = activeSession,
+                    GroupId = activeSession.GroupId,
                     AttendeeId = attendee.Id,
                     AttendeeCode = attendee.Code,
                     SessionName = activeSession.Name,
@@ -128,6 +129,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 {
                     Session = session,
                     AttendeeId = attendee.Id,
+                    GroupId = session.GroupId,
                     AttendeeCode = attendee.Code,
                     SessionName = session.Name,
                     StartTime = session.StartTime,
@@ -160,6 +162,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                     Record record = new Record
                     {
                         Session = activeSession,
+                        GroupId = activeSession.GroupId,
                         AttendeeId = attendee.Id,
                         AttendeeCode = attendee.Code,
                         SessionName = activeSession.Name,
@@ -255,6 +258,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                         var newRecord = new Record
                         {
                             Session = activeSession,
+                            GroupId = activeSession.GroupId,
                             AttendeeId = attendee.Id,
                             AttendeeCode = attendee.Code,
                             SessionName = activeSession.Name,

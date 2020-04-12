@@ -40,14 +40,16 @@ namespace AttendanceSystemIPCamera.Repositories
         public async Task<IEnumerable<Record>> GetRecordsBySessionId(int sessionId)
         {
             return await dbSet
-                .Include(r => r.Attendee)
+                    .Include(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Where(r => r.Session.Id == sessionId).ToListAsync();
         }
 
         public new async Task<Record> GetById(object id)
         {
             return await dbSet
-                .Include(r => r.Attendee)
+                    .Include(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Include(r => r.Session)
                     .ThenInclude(s => s.Group)
                 .Where(r => r.Id == (int) id)
@@ -58,7 +60,7 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             var data = Get(r => (r.StartTime >= fromTime && r.StartTime <= toTime) // from <= start <= to
                                     || (r.UpdateTime >= fromTime && r.UpdateTime <= toTime), //from <= update <= to
-                includeProperties: "Attendee,Session,Session.Group").ToList();
+                includeProperties: "AttendeeGroup,AttendeeGroup.Attendee,Session,Session.Group").ToList();
             return data;
         }
 

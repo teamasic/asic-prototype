@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AttendanceSystemIPCamera.Models
 {
@@ -24,5 +25,7 @@ namespace AttendanceSystemIPCamera.Models
         public virtual AttendeeGroup AttendeeGroup { get; set; }
         public virtual Session Session { get; set; }
         public virtual ICollection<ChangeRequest> ChangeRequest { get; set; }
+        [NotMapped]
+        public Attendee Attendee => AttendeeGroup?.Attendee;
     }
 }
