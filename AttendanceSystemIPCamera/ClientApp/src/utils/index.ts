@@ -3,6 +3,7 @@ import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import moment from 'moment';
 import Swal from 'sweetalert2';
 import uniqid from 'uniqid';
+import { detect, Browser } from 'detect-browser';
 
 export const formatFullDateTimeString = (time: Date | string) => format(new Date(time), 'EEEE, MMMM d, yyyy');
 
@@ -56,3 +57,8 @@ export const getErrors = (errors: any[])=>{
     }
     return values.toString();
 }
+
+export const isChromium = (): boolean => {
+    const browser = detect();
+    return browser != null && browser.name !== 'firefox';
+};
