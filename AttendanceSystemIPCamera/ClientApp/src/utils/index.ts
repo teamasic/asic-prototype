@@ -32,3 +32,10 @@ export const error = (msg: string) => {
         text: msg
     });
 }
+
+export const warning = (msg: string) => {
+    Swal.fire({
+        icon: 'warning',
+        text: msg
+    });
+}

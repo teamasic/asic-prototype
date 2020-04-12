@@ -23,11 +23,20 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpGet("group")]
-        public BaseResponse<ScheduleViewModel> GetByGroupId([FromQuery] int id)
+        public BaseResponse<List<ScheduleViewModel>> GetByGroupId([FromQuery] int groupId)
         {
             return ExecuteInMonitoring(() =>
             {
-                return service.GetByGroupId(id);
+                return service.GetByGroupId(groupId);
+            });
+        }
+
+        [HttpPost]
+        public Task<BaseResponse<List<ScheduleCreateViewModel>>> Create([FromBody] List<ScheduleCreateViewModel> schedules)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                return await service.AddRangeAsync(schedules);
             });
         }
 

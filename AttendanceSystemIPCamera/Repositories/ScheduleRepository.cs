@@ -9,7 +9,9 @@ namespace AttendanceSystemIPCamera.Repositories
 {
     public interface IScheduleRepository : IRepository<Schedule>
     {
-        Schedule GetByGroupId(int groupId);
+        List<Schedule> GetByGroupId(int groupId);
+        Task AddAsync(List<Schedule> schedules);
+        Schedule GetBySlotAndDate(string slot, DateTime date);        
         Schedule GetScheduleNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
     }
     public class ScheduleRepository : Repository<Schedule>, IScheduleRepository
@@ -18,9 +20,20 @@ namespace AttendanceSystemIPCamera.Repositories
         {
         }
 
-        public Schedule GetByGroupId(int groupId)
+        public async Task AddAsync(List<Schedule> schedules)
         {
-            return Get(s => s.GroupId == groupId).FirstOrDefault();
+            await Add(schedules);
+            context.SaveChanges();
+        }
+
+        public List<Schedule> GetByGroupId(int groupId)
+        {
+            return Get(s => s.GroupId == groupId).ToList();
+        }
+
+        public Schedule GetBySlotAndDate(string slot, DateTime date)
+        {
+            return Get(s => s.Slot.Equals(slot) && s.StartTime.Date == date.Date).FirstOrDefault();
         }
 
         public Schedule GetScheduleNeedsToActivate(TimeSpan activatedTimeBeforeStartTime)

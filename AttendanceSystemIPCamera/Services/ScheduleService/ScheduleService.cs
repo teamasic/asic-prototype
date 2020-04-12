@@ -8,19 +8,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using AttendanceSystemIPCamera.Services.RoomService;
-using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Services.RecordService;
-using AttendanceSystemIPCamera.Services.SettingsService;
-using AttendanceSystemIPCamera.Framework.GlobalStates;
-using AttendanceSystemIPCamera.Services.OtherSettingsService;
 using Microsoft.Extensions.Logging;
 
 namespace AttendanceSystemIPCamera.Services.ScheduleService
 {
     public interface IScheduleService : IBaseService<Schedule>
     {
-        ScheduleViewModel GetByGroupId(int groupId);
+        List<ScheduleViewModel> GetByGroupId(int groupId);
+        Task<List<ScheduleCreateViewModel>> AddRangeAsync(List<ScheduleCreateViewModel> schedules);
         Task ActivateSchedule();
     }
     public class ScheduleService : BaseService<Schedule>, IScheduleService
@@ -31,6 +27,7 @@ namespace AttendanceSystemIPCamera.Services.ScheduleService
 
         private readonly IRealTimeService realTimeService;
         private readonly OtherSettingsService.OtherSettingsService otherSettingsService;
+        private readonly UnitService.UnitService unitService;
 
         private readonly IMapper mapper;
         private TimeSpan activatedTimeBeforeStartTime;
@@ -39,15 +36,16 @@ namespace AttendanceSystemIPCamera.Services.ScheduleService
 
         public ScheduleService(MyUnitOfWork unitOfWork, IMapper mapper, 
             IRealTimeService realTimeService, OtherSettingsService.OtherSettingsService otherSettingsService,
-            ILogger<IScheduleService> logger) : base(unitOfWork)
+            ILogger<IScheduleService> logger, UnitService.UnitService unitService) : base(unitOfWork)
         {
             scheduleRepository = unitOfWork.ScheduleRepository;
-            this.sessionRepository = unitOfWork.SessionRepository;
-            this.roomRepository = unitOfWork.RoomRepository;
+            sessionRepository = unitOfWork.SessionRepository;
+            roomRepository = unitOfWork.RoomRepository;
             this.otherSettingsService = otherSettingsService;
+            this.unitService = unitService;
 
             this.realTimeService = realTimeService;
-            this.activatedTimeBeforeStartTime = otherSettingsService.Settings.ActivatedTimeOfScheduleBeforeStartTime;
+            activatedTimeBeforeStartTime = otherSettingsService.Settings.ActivatedTimeOfScheduleBeforeStartTime;
 
             this.mapper = mapper;
             this.logger = logger;
@@ -82,8 +80,6 @@ namespace AttendanceSystemIPCamera.Services.ScheduleService
                             unitOfWork.Commit();
                             trans.Commit();
                             //using realtimeService to send notification
-
-
                         }
                         else
                         {
@@ -98,17 +94,55 @@ namespace AttendanceSystemIPCamera.Services.ScheduleService
                     trans.Rollback();
                     throw ex;
                 }
-
-
             }
         }
 
-        public ScheduleViewModel GetByGroupId(int groupId)
+        public async Task<List<ScheduleCreateViewModel>> AddRangeAsync(List<ScheduleCreateViewModel> schedules)
         {
-            var schedule = scheduleRepository.GetByGroupId(groupId);
-            return mapper.Map<ScheduleViewModel>(schedule);
+            var units = unitService.Units;
+            var results = new List<Schedule>();
+            var createdSchedules = new List<ScheduleCreateViewModel>();
+            foreach (var createSchedule in schedules)
+            {
+                var schedule = mapper.Map<Schedule>(createSchedule);
+                var date = createSchedule.Date;
+                var unit = units.Select(u => new Unit
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    StartTime = u.StartTime,
+                    EndTime = u.EndTime
+                }).Where(u => u.Name.Equals(createSchedule.Slot)).FirstOrDefault();
+                var roomInDB = roomRepository.GetRoomByName(createSchedule.Room).Result;
+                if(unit != null && roomInDB != null)
+                {
+                    var existed = scheduleRepository.GetBySlotAndDate(unit.Name, createSchedule.Date);
+                    if(existed == null)
+                    {
+                        var startTime = new DateTime(date.Year, date.Month, date.Day,
+                        unit.StartTime.Hour, unit.StartTime.Minute, unit.StartTime.Second);
+                        var endTime = new DateTime(date.Year, date.Month, date.Day,
+                            unit.EndTime.Hour, unit.EndTime.Minute, unit.EndTime.Second);
+                        schedule.StartTime = startTime;
+                        schedule.EndTime = endTime;
+                        results.Add(schedule);
+                        createdSchedules.Add(createSchedule);
+                    }
+                }
+            }
+            await scheduleRepository.AddAsync(results);
+            return createdSchedules;
         }
 
-       
+        public List<ScheduleViewModel> GetByGroupId(int groupId)
+        {
+            var schedules = scheduleRepository.GetByGroupId(groupId);
+            var results = new List<ScheduleViewModel>();
+            foreach (var item in schedules)
+            {
+                results.Add(mapper.Map<ScheduleViewModel>(item));
+            }
+            return results;
+        }
     }
 }

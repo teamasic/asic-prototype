@@ -22,6 +22,7 @@ import { EditTwoTone } from '@ant-design/icons';
 import TopBar from './TopBar';
 import StartSessionModal from './StartSessionModal';
 import { FormComponentProps } from 'antd/lib/form';
+import Schedule from './Schedule';
 
 const { Title } = Typography;
 const { Paragraph } = Typography
@@ -203,7 +204,10 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                     <TabPane tab="Group Information" key="1">
                         <GroupInfo attendees={this.props.selectedGroup.attendees} attendeeLoading={this.state.attendeeLoading} />
                     </TabPane>
-                    <TabPane tab="Past Session" key="2">
+                    <TabPane tab="Schedule" key="2">
+                        <Schedule/>
+                    </TabPane>
+                    <TabPane tab="Past Session" key="3">
                         <PastSession group={this.props.selectedGroup} redirect={url => this.redirect(url)} />
                     </TabPane>
                 </Tabs>
