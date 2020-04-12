@@ -103,14 +103,15 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
                             placeholder="Select attendee"
                             optionFilterProp="children"
                             onChange={(id: any) => this.onChangeAttendee(id)}
-                            filterOption={(input: any, option: any) =>
-                                option.props.children.toLowerCase()
-                                    .indexOf(input.toLowerCase()) >= 0
-                            }
+                            filterOption={(input: string, option: any) => {
+                                const children: string[] = option.props.children;
+                                const label = children.join(' ');
+                                return label.toLowerCase().includes(input.toLowerCase());
+                            }}
                         >
                             {this.renderAttendeeOptions()}
                         </Select>
-                        <Text type="secondary">Grayed out attendees are already present.</Text>
+                        <Text type="secondary">Attendees with blue names are already present.</Text>
                     </Col>
                 </Row>
                 {this.state.isError ? <Row type="flex" justify="start" align="top" gutter={[16, 16]}>
