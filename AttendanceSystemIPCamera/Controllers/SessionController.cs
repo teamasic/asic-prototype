@@ -22,7 +22,8 @@ namespace AttendanceSystemIPCamera.Controllers
     {
         private readonly ISessionService sessionService;
         private readonly IMapper mapper;
-        public SessionController(ISessionService sessionService, IMapper mapper)
+        public SessionController(ISessionService sessionService, IMapper mapper,
+            ILogger<BaseController> logger) : base(logger)
         {
             this.sessionService = sessionService;
             this.mapper = mapper;

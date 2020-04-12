@@ -2,6 +2,7 @@
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Services.ScheduleService;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,8 @@ namespace AttendanceSystemIPCamera.Controllers
     {
         private readonly IScheduleService service;
 
-        public ScheduleController(IScheduleService service)
+        public ScheduleController(IScheduleService service,
+            ILogger<BaseController> logger) : base(logger)
         {
             this.service = service;
         }
@@ -35,6 +37,16 @@ namespace AttendanceSystemIPCamera.Controllers
             return ExecuteInMonitoring(async () =>
             {
                 return await service.AddRangeAsync(schedules);
+            });
+        }
+
+        [HttpPost("activate")]
+        public async Task<dynamic> ActivateSchedule()
+        {
+            return await ExecuteInMonitoring(async () =>
+            {
+                await service.ActivateSchedule();
+                return "";
             });
         }
     }

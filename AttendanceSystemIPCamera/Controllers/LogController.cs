@@ -13,36 +13,35 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
 using AttendanceSystemIPCamera.Services.RoomService;
+using AttendanceSystemIPCamera.Services.LogService;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class RoomController : BaseController
+    public class LogController : BaseController
     {
-        private readonly IRoomService roomService;
-        public RoomController(IRoomService roomService,
+        private readonly ILogService service;
+        public LogController(ILogService logService,
             ILogger<BaseController> logger) : base(logger)
         {
-            this.roomService = roomService;
+            this.service = logService;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="date">string with format yyyMMdd</param>
+        /// <returns>log values in date</returns>
         [HttpGet]
-        public Task<BaseResponse<IEnumerable<RoomViewModel>>> GetAllRoom()
+        public dynamic GetLog(string date)
         {
-            return ExecuteInMonitoring(async () =>
+            return ExecuteInMonitoring(() =>
             {
-                return await roomService.GetAllRoom();
+                if (date == null) date = DateTime.Now.ToString("yyyyMMdd");
+                return service.ReadLogFromFile(date);
             });
         }
 
-        [HttpGet("search")]
-        public Task<BaseResponse<RoomViewModel>> GetByName([FromQuery] string name)
-        {
-            return ExecuteInMonitoring(async () =>
-            {
-                return await roomService.GetRoomByName(name);
-            });
-        }
     }
 }

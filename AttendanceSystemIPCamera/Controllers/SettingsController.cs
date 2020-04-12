@@ -6,6 +6,7 @@ using AttendanceSystemIPCamera.Services.SettingsService;
 using AttendanceSystemIPCamera.Services.UnitService;
 using AttendanceSystemIPCamera.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,8 @@ namespace AttendanceSystemIPCamera.Controllers
         private readonly ISettingsService service;
         private readonly UnitService unitService;
 
-        public SettingsController(ISettingsService service, UnitService unitService)
+        public SettingsController(ISettingsService service, UnitService unitService,
+            ILogger<BaseController> logger) : base(logger)
         {
             this.service = service;
             this.unitService = unitService;

@@ -184,6 +184,10 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
 
                 // set flag for checking attendance
                 args += string.Format(@" --attendance {0}", "True");
+
+                // show box or not
+                args += string.Format(@" --box {0}", "False");
+
                 var startInfo = GetProcessStartInfo(cmd, args);
                 // Handle outputs and errors
                 StringBuilder output = new StringBuilder();

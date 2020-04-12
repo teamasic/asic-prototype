@@ -8,27 +8,93 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using AttendanceSystemIPCamera.Services.RecordService;
+using Microsoft.Extensions.Logging;
 
 namespace AttendanceSystemIPCamera.Services.ScheduleService
 {
-    public interface IScheduleService: IBaseService<Schedule>
+    public interface IScheduleService : IBaseService<Schedule>
     {
         List<ScheduleViewModel> GetByGroupId(int groupId);
         Task<List<ScheduleCreateViewModel>> AddRangeAsync(List<ScheduleCreateViewModel> schedules);
+        Task ActivateSchedule();
     }
     public class ScheduleService : BaseService<Schedule>, IScheduleService
     {
         private readonly IScheduleRepository scheduleRepository;
+        private readonly ISessionRepository sessionRepository;
         private readonly IRoomRepository roomRepository;
+
+        private readonly IRealTimeService realTimeService;
+        private readonly OtherSettingsService.OtherSettingsService otherSettingsService;
         private readonly UnitService.UnitService unitService;
+
         private readonly IMapper mapper;
-        public ScheduleService(MyUnitOfWork unitOfWork, IMapper mapper,
-            UnitService.UnitService unitService, IRoomRepository roomRepository) : base(unitOfWork)
+        private TimeSpan activatedTimeBeforeStartTime;
+
+        private readonly ILogger logger;
+
+        public ScheduleService(MyUnitOfWork unitOfWork, IMapper mapper, 
+            IRealTimeService realTimeService, OtherSettingsService.OtherSettingsService otherSettingsService,
+            ILogger<IScheduleService> logger, UnitService.UnitService unitService) : base(unitOfWork)
         {
             scheduleRepository = unitOfWork.ScheduleRepository;
-            this.roomRepository = roomRepository;
-            this.mapper = mapper;
+            sessionRepository = unitOfWork.SessionRepository;
+            roomRepository = unitOfWork.RoomRepository;
+            this.otherSettingsService = otherSettingsService;
             this.unitService = unitService;
+
+            this.realTimeService = realTimeService;
+            activatedTimeBeforeStartTime = otherSettingsService.Settings.ActivatedTimeOfScheduleBeforeStartTime;
+
+            this.mapper = mapper;
+            this.logger = logger;
+        }
+
+        public async Task ActivateSchedule()
+        {
+            logger.LogInformation(activatedTimeBeforeStartTime.ToString());
+            using (var trans = unitOfWork.CreateTransaction())
+            {
+                try
+                {
+                    var scheduleNeedToActivate = scheduleRepository
+                                .GetScheduleNeedsToActivate(activatedTimeBeforeStartTime);
+                    if (scheduleNeedToActivate != null)
+                    {
+                        var session = await sessionRepository.GetSessionWithGroupAndTime(scheduleNeedToActivate.GroupId,
+                                                scheduleNeedToActivate.StartTime, scheduleNeedToActivate.EndTime);
+                        if (session == null)
+                        {
+                            var room = await roomRepository.GetRoomByName(scheduleNeedToActivate.Room);
+                            session = new Session()
+                            {
+                                GroupId = scheduleNeedToActivate.GroupId,
+                                StartTime = scheduleNeedToActivate.StartTime,
+                                EndTime = scheduleNeedToActivate.EndTime,
+                                Name = scheduleNeedToActivate.Slot,
+                                RoomName = scheduleNeedToActivate.Room,
+                                RtspString = room.RtspString,
+                            };
+                            await sessionRepository.Add(session);
+                            unitOfWork.Commit();
+                            trans.Commit();
+                            //using realtimeService to send notification
+                        }
+                        else
+                        {
+                            scheduleNeedToActivate.Active = true;
+                            unitOfWork.Commit();
+                            trans.Commit();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
         }
 
         public async Task<List<ScheduleCreateViewModel>> AddRangeAsync(List<ScheduleCreateViewModel> schedules)

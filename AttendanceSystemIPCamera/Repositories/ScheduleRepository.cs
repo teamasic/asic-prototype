@@ -11,7 +11,8 @@ namespace AttendanceSystemIPCamera.Repositories
     {
         List<Schedule> GetByGroupId(int groupId);
         Task AddAsync(List<Schedule> schedules);
-        Schedule GetBySlotAndDate(string slot, DateTime date);
+        Schedule GetBySlotAndDate(string slot, DateTime date);        
+        Schedule GetScheduleNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
     }
     public class ScheduleRepository : Repository<Schedule>, IScheduleRepository
     {
@@ -33,6 +34,14 @@ namespace AttendanceSystemIPCamera.Repositories
         public Schedule GetBySlotAndDate(string slot, DateTime date)
         {
             return Get(s => s.Slot.Equals(slot) && s.StartTime.Date == date.Date).FirstOrDefault();
+        }
+
+        public Schedule GetScheduleNeedsToActivate(TimeSpan activatedTimeBeforeStartTime)
+        {
+            var compareTime = DateTime.Now.Add(activatedTimeBeforeStartTime);
+            return Get(s => s.Active == false
+                            && compareTime >= s.StartTime)
+                .FirstOrDefault();
         }
     }
 }

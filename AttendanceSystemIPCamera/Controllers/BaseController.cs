@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Framework.ExeptionHandler;
+using Microsoft.Extensions.Logging;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -13,6 +14,12 @@ namespace AttendanceSystemIPCamera.Controllers
     [ApiController]
     public class BaseController: ControllerBase
     {
+        protected ILogger logger;
+        public BaseController(ILogger<BaseController> logger)
+        {
+            this.logger = logger;
+        }
+      
         protected BaseResponse<T> ExecuteInMonitoring<T>(Func<T> function)
         {
             try
@@ -22,6 +29,7 @@ namespace AttendanceSystemIPCamera.Controllers
             }
             catch (BaseException ex)
             {
+                logger.LogError(ex.ToString());
                 var err = new Dictionary<string, IEnumerable<string>>
                 {
                     { "General", new List<string> { ex.Message } }
@@ -30,6 +38,7 @@ namespace AttendanceSystemIPCamera.Controllers
             }
             catch (Exception ex)
             {
+                logger.LogError(ex.Message);
                 var err = new Dictionary<string, IEnumerable<string>>
                 {
                     { "General", new List<string> { ex.ToString() } }
@@ -47,6 +56,7 @@ namespace AttendanceSystemIPCamera.Controllers
             }
             catch (BaseException ex)
             {
+                logger.LogError(ex.ToString());
                 var err = new Dictionary<string, IEnumerable<string>>
                 {
                     { "General", new List<string> { ex.Message } }
@@ -55,6 +65,7 @@ namespace AttendanceSystemIPCamera.Controllers
             }
             catch (AppException ex)
             {
+                logger.LogError(ex.ToString());
                 var err = new Dictionary<string, IEnumerable<string>>
                 {
                     { "General", new List<string> { ex.Message } }
@@ -63,6 +74,7 @@ namespace AttendanceSystemIPCamera.Controllers
             }
             catch (Exception ex)
             {
+                logger.LogError(ex.ToString());
                 var err = new Dictionary<string, IEnumerable<string>>
                 {
                     { "General", new List<string> { ex.ToString() } }

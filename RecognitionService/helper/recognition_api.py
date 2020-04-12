@@ -44,4 +44,4 @@ def recognize_multiple_faces(codes, unknowns):
         r = requests.post("https://localhost:44359/api/record/endSnapshot", json=payload, verify=False, headers=headers)
         print(r)
     except Exception as e:
-        print("Error: Cannot check attendance")
+        raise Exception("Cannot check attendance")

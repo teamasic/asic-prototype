@@ -4,6 +4,7 @@ using AttendanceSystemIPCamera.Services.AttendeeService;
 using AttendanceSystemIPCamera.Services.UserService;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,8 @@ namespace AttendanceSystemIPCamera.Controllers
         private readonly IUserService service;
         private readonly IMapper mapper;
 
-        public UserController(IUserService attendeeService, IMapper mapper)
+        public UserController(IUserService attendeeService, IMapper mapper,
+            ILogger<BaseController> logger) : base(logger)
         {
             this.service = attendeeService;
             this.mapper = mapper;
