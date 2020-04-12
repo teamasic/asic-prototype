@@ -170,10 +170,9 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     }
 
     public checkValidFileFormat = (attendees: []) => {
-        let temp: { No: number, Code: string, Name: string }[] = attendees;
+        let temp: { Code: string, Name: string }[] = attendees;
         if (temp.length > 0) {
-            if (!isNullOrUndefined(temp[0].No)
-                && !isNullOrUndefined(temp[0].Code)
+            if (!isNullOrUndefined(temp[0].Code)
                 && !isNullOrUndefined(temp[0].Name)) {
                 return true;
             }

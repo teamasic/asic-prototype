@@ -3,38 +3,89 @@ import { Modal, Upload, Row, Col, Button, Icon, Typography, Table } from 'antd';
 import { renderStripedTable } from '../utils';
 import { parse } from 'papaparse';
 import { isNullOrUndefined } from 'util';
+import { ScheduleState } from '../store/schedule/state';
+import { scheduleActionCreators } from '../store/schedule/actionCreators';
+import { RouteComponentProps, withRouter } from 'react-router';
+import { ApplicationState } from '../store';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import ScheduleCreate from '../models/ScheduleCreate';
+import { GroupsState } from '../store/group/state';
 
 const { Text } = Typography;
 
 interface Props {
     modalVisible: boolean,
-    handleCancel: Function
+    handleCancel: Function,
+    reloadSchedules: Function
 }
 
 interface ScheduleImportModalComponentState {
     page: number,
     importSchedules: any,
     msgImportCSV: string,
-    csvFile: File
+    csvFile: File,
+    buttonSaveLoading: boolean 
 }
 
-class ScheduleImportModal extends React.PureComponent<Props, ScheduleImportModalComponentState> {
-    constructor(props: Props) {
+type ScheduleImportModalProps =
+    ScheduleState
+    & GroupsState
+    & Props
+    & typeof scheduleActionCreators
+    & RouteComponentProps<{}>;
+
+class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, ScheduleImportModalComponentState> {
+    constructor(props: ScheduleImportModalProps) {
         super(props);
         this.state = {
             page: 1,
             importSchedules: [],
             msgImportCSV: ' ',
-            csvFile: new File([], 'Null')
+            csvFile: new File([], 'Null'),
+            buttonSaveLoading: false
         }
     }
 
-    private handleSubmit = () => {
-
+    private handleSubmit = (e: any) => {
+        e.preventDefault();
+        var isImportedFile = this.state.csvFile.name !== 'Null';
+        if(!isImportedFile) {
+            this.setState({msgImportCSV: 'Please import csv file'});
+        } else {
+            this.setState({buttonSaveLoading: true});
+            var schedules = new Array<ScheduleCreate>(0);
+            var importSchedules = this.state.importSchedules;
+            importSchedules.forEach((item: any) => {
+                var schedule = {
+                    groupId: this.props.selectedGroup.id,
+                    slot: item.slot,
+                    room: item.room,
+                    date: item.date
+                };
+                schedules.push(schedule);
+            });
+            console.log(schedules);
+            this.props.requestCreateSchedules(schedules, () => {
+                this.setState({buttonSaveLoading: false});
+                this.props.reloadSchedules();
+                this.handleCancel();
+            });
+        }
     }
 
     private handleCancel = () => {
         this.props.handleCancel();
+        this.resetState();
+    }
+
+    private resetState = () => {
+        this.setState({
+            page: 1,
+            importSchedules: [],
+            msgImportCSV: ' ',
+            csvFile: new File([], 'Null')
+        });
     }
 
     private onPageChange = (page: number) => {
@@ -55,7 +106,6 @@ class ScheduleImportModal extends React.PureComponent<Props, ScheduleImportModal
             parse(file, {
                 header: true,
                 complete: function (results: any, file: File) {
-                    console.log(results);
                     if (thisState.checkValidFileFormat(results.data)) {
                         thisState.setState({
                             importSchedules: results.data,
@@ -116,6 +166,7 @@ class ScheduleImportModal extends React.PureComponent<Props, ScheduleImportModal
                 dataIndex: 'date'
             }
         ];
+        var isLoading = this.state.buttonSaveLoading;
         return (
             <React.Fragment>
                 <Modal
@@ -125,6 +176,7 @@ class ScheduleImportModal extends React.PureComponent<Props, ScheduleImportModal
                     centered
                     width='80%'
                     onOk={this.handleSubmit}
+                    okButtonProps={{loading: isLoading}}
                     onCancel={this.handleCancel}
                 >
                     <Row gutter={[0, 32]}>
@@ -173,4 +225,14 @@ class ScheduleImportModal extends React.PureComponent<Props, ScheduleImportModal
     }
 }
 
-export default ScheduleImportModal;
+const mapStateToProps = (state: ApplicationState, ownProps: Props) => (
+    { 
+        ...state.schedules, 
+        ...state.groups, 
+        ...ownProps
+    })
+
+export default connect(
+    mapStateToProps, // Selects which state properties are merged into the component's props
+    dispatch => bindActionCreators(scheduleActionCreators, dispatch) // Selects which action creators are merged into the component's props
+)(ScheduleImportModal as any)
