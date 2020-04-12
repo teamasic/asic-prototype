@@ -1,15 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Models
 {
-    public class AttendeeGroup
+    public partial class AttendeeGroup
     {
+        public AttendeeGroup()
+        {
+            Record = new HashSet<Record>();
+        }
+
         public int AttendeeId { get; set; }
-        public virtual Attendee Attendee { get; set; }
         public int GroupId { get; set; }
+        public bool IsActive { get; set; }
+
+        public virtual Attendee Attendee { get; set; }
         public virtual Group Group { get; set; }
+        public virtual ICollection<Record> Record { get; set; }
     }
 }

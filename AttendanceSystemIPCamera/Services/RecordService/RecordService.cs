@@ -96,7 +96,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 var newRecord = new Record
                 {
                     Session = activeSession,
-                    Attendee = attendee,
+                    AttendeeId = attendee.Id,
                     AttendeeCode = attendee.Code,
                     SessionName = activeSession.Name,
                     StartTime = activeSession.StartTime,
@@ -127,7 +127,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 record = new Record
                 {
                     Session = session,
-                    Attendee = attendee,
+                    AttendeeId = attendee.Id,
                     AttendeeCode = attendee.Code,
                     SessionName = session.Name,
                     StartTime = session.StartTime,
@@ -152,7 +152,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             if (activeSession != null)
             {
                 var allAttendeeIds = activeSession.Group.AttendeeGroups.Select(ag => ag.AttendeeId).ToList();
-                var attendedAttendeeIds = (await recordRepository.GetRecordsBySessionId(activeSession.Id)).Select(ar => ar.Attendee.Id).ToList();
+                var attendedAttendeeIds = (await recordRepository.GetRecordsBySessionId(activeSession.Id)).Select(ar => ar.AttendeeId).ToList();
                 var notRecordIds = allAttendeeIds.Where(id => !attendedAttendeeIds.Contains(id)).ToList();
                 notRecordIds.ForEach(async (attendeeId) =>
                 {
@@ -160,7 +160,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                     Record record = new Record
                     {
                         Session = activeSession,
-                        Attendee = attendee,
+                        AttendeeId = attendee.Id,
                         AttendeeCode = attendee.Code,
                         SessionName = activeSession.Name,
                         StartTime = activeSession.StartTime,
@@ -231,7 +231,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             }
 
             var attendeesMap = activeSession.Group.Attendees.ToDictionary(a => a.Code, a => a);
-            var recordsMap = records.ToDictionary(r => r.Attendee.Code, r => r);
+            var recordsMap = records.ToDictionary(r => r.AttendeeCode, r => r);
 
             ICollection<Record> recordResults = new List<Record>();
             foreach (var code in codes)
@@ -255,7 +255,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                         var newRecord = new Record
                         {
                             Session = activeSession,
-                            Attendee = attendee,
+                            AttendeeId = attendee.Id,
                             AttendeeCode = attendee.Code,
                             SessionName = activeSession.Name,
                             StartTime = activeSession.StartTime,

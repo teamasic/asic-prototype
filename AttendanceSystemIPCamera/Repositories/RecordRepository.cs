@@ -29,12 +29,12 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public Record GetRecordBySessionAndAttendee(int sessionId, int attendeeId)
         {
-            return dbSet.Where(record => record.Session.Id == sessionId && record.Attendee.Id == attendeeId).FirstOrDefault();
+            return dbSet.Where(record => record.Session.Id == sessionId && record.AttendeeId == attendeeId).FirstOrDefault();
         }
 
         public async Task<Record> GetRecordBySessionAndAttendeeCode(int sesionId, string attendeeCode)
         {
-            return await dbSet.FirstOrDefaultAsync(r => r.Session.Id == sesionId && r.Attendee.Code.Equals(attendeeCode));
+            return await dbSet.FirstOrDefaultAsync(r => r.Session.Id == sesionId && r.AttendeeCode.Equals(attendeeCode));
         }
 
         public async Task<IEnumerable<Record>> GetRecordsBySessionId(int sessionId)

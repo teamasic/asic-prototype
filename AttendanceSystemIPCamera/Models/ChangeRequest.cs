@@ -17,11 +17,13 @@ namespace AttendanceSystemIPCamera.Models
     {
         [Key]
         public int Id { get; set; }
-        public Record Record { get; set; }
         public string Comment { get; set; }
-        public ChangeRequestStatus Status { get; set; } = ChangeRequestStatus.UNRESOLVED;
+        public int RecordId { get; set; }
         [NotMapped]
         public bool IsResolved => Status != ChangeRequestStatus.UNRESOLVED;
-        public int RecordId { get; set; }
+
+        public Record Record { get; set; }
+        public ChangeRequestStatus Status { get; set; } = ChangeRequestStatus.UNRESOLVED;
+        
     }
 }

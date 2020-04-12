@@ -19,5 +19,7 @@ namespace AttendanceSystemIPCamera.Models
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public bool Active { get; set; }
+
+        public virtual Group Group { get; set; }
     }
 }

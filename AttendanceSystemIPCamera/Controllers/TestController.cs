@@ -79,7 +79,7 @@ namespace AttendanceSystemIPCamera.Controllers
                 }
                 else
                 {
-                    r.AttendeeCode = r.Attendee.Code;
+                    r.AttendeeCode = r.AttendeeCode;
                     r.SessionName = r.Session.Name;
                     r.StartTime = r.Session.StartTime;
                     r.EndTime = r.Session.EndTime;

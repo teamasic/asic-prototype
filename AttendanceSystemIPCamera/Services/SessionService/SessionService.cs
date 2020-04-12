@@ -183,7 +183,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         var exportModel = new SessionExportViewModel()
                         {
                             SessionIndex = count.ToString(),
-                            AttendeeCode = record.Attendee.Code,
+                            AttendeeCode = record.AttendeeCode,
                             AttendeeName = record.Attendee.Name,
                             Present = record.Present.ToString()
                         };
@@ -217,11 +217,11 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                     var records = recordService.GetRecordsBySessionId(session.Id);
                     foreach (var record in records)
                     {
-                        if (!temps.ContainsKey(record.Attendee.Code))
+                        if (!temps.ContainsKey(record.AttendeeCode))
                         {
                             var tempAttendee = new TempExport
                             {
-                                Code = record.Attendee.Code,
+                                Code = record.AttendeeCode,
                                 Name = record.Attendee.Name,
                                 Count = record.Present ? 1 : 0
                             };
@@ -230,7 +230,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         else
                         {
                             var updatedAttendee = new TempExport();
-                            temps.TryGetValue(record.Attendee.Code, out updatedAttendee);
+                            temps.TryGetValue(record.AttendeeCode, out updatedAttendee);
                             updatedAttendee.Count++;
                         }
                     }
@@ -302,7 +302,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         var viewModel = new SessionExportViewModel()
                         {
                             SessionIndex = count.ToString(),
-                            AttendeeCode = record.Attendee.Code,
+                            AttendeeCode = record.AttendeeCode,
                             AttendeeName = record.Attendee.Name,
                             Present = record.Present.ToString()
                         };
