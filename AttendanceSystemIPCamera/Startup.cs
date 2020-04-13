@@ -33,8 +33,6 @@ using AttendanceSystemIPCamera.Services.UserService;
 using AttendanceSystemIPCamera.Services.SettingsService;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
-using AttendanceSystemIPCamera.Services.ScheduleService;
-using AttendanceSystemIPCamera.Framework;
 using static AttendanceSystemIPCamera.Framework.Constants;
 using AttendanceSystemIPCamera.Services.LogService;
 using AttendanceSystemIPCamera.Services.OtherSettingsService;
@@ -201,7 +199,6 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<SettingsUtils>();
             services.AddHttpClient();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<IGlobalStateService, GlobalStateService>();
             services.AddScoped<ILogService, LogService>();
         }

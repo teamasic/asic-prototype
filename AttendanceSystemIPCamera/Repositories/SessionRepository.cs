@@ -9,6 +9,7 @@ using AttendanceSystemIPCamera.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using static AttendanceSystemIPCamera.Framework.Constants;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -26,6 +27,10 @@ namespace AttendanceSystemIPCamera.Repositories
         Task<Session> GetSessionWithGroupAndTime(string groupCode, DateTime startTime, DateTime endTime);
         public ICollection<string> GetSessionUnknownImages(int sessionId);
         public void RemoveActiveSession();
+        List<Session> GetByGroupCodeAndStatus(string groupCode, string status);
+        Session GetByNameAndDate(string name, DateTime date);
+        Task AddRangeAsync(List<Session> sessions);
+        Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
@@ -118,6 +123,30 @@ namespace AttendanceSystemIPCamera.Repositories
                 return globalState.CurrentSessionUnknownImages;
             }
             return new List<string>();
+        }
+
+        public List<Session> GetByGroupCodeAndStatus(string groupCode, string status)
+        {
+            return Get(s => s.GroupCode == groupCode && s.Status == status).ToList();
+        }
+
+        public Session GetByNameAndDate(string name, DateTime date)
+        {
+            return Get(s => s.Name == name && s.StartTime.Date.CompareTo(date) == 0)
+                .FirstOrDefault();
+        }
+
+        public async Task AddRangeAsync(List<Session> sessions)
+        {
+            await Add(sessions);
+            context.SaveChanges();
+        }
+
+        public Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime)
+        {
+            var compareTime = DateTime.Now.Add(activatedTimeBeforeStartTime);
+            return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime)
+                .FirstOrDefault();
         }
     }
 }

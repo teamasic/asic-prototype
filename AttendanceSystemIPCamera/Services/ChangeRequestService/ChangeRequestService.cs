@@ -45,7 +45,7 @@ namespace AttendanceSystemIPCamera.Services.ChangeRequestService
             var record = await recordRepository.GetById(viewModel.RecordId);
             if (record == null)
             {
-                throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_RECORD_WITH_ID, viewModel.RecordId);
+                throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.NOT_FOUND_RECORD_WITH_ID, viewModel.RecordId);
             }
             /*
             if (record.Present == viewModel.Present)

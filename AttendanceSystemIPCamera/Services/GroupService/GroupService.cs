@@ -83,7 +83,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                         attendee.Code, groupInDb.Code);
                 }
             }
-            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, groupCode);
+            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, groupCode);
         }
 
         public async Task<Group> AddIfNotInDb(GroupViewModel groupViewModel)
@@ -115,7 +115,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             }
             else
             {
-                throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, code);
+                throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, code);
             }
         }
 
@@ -131,7 +131,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             {
                 return group;
             }
-            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, code);
+            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, code);
         }
 
         public Group Update(string code, GroupViewModel updatedGroup)
@@ -150,7 +150,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                 }
                 else
                 {
-                    throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, code);
+                    throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, code);
                 }
             }
             var invalidMsg = result.ToString("\n");
