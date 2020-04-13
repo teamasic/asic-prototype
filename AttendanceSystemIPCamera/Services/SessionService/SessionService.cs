@@ -32,7 +32,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 {
     public interface ISessionService : IBaseService<Session>
     {
-        List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds, int attendeeId);
+        List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupCodes(List<string> groupCodes, string attendeeCode);
         public Task<ICollection<AttendeeRecordPair>> GetSessionAttendeeRecordMap(int sessionId);
         bool IsSessionRunning();
         Task<SessionViewModel> GetActiveSession();
@@ -40,7 +40,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         List<Object> Export(ExportRequestViewModel exportRequest);
         Task<SessionViewModel> CreateSession(CreateSessionViewModel createSessionViewModel);
         Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel);
-        List<Session> GetSessionByGroupId(int groupId);
+        List<Session> GetSessionByGroupCode(string groupCode);
         public ICollection<string> GetSessionUnknownImages(int sessionId);
     }
 
@@ -325,7 +325,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         }
         #endregion
 
-        public List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupIDs(
+        public List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupCodes(
             List<string> groupCodes, string attendeeCode)
         {
             var sessions = sessionRepository.GetSessionsWithRecords(groupCodes);
@@ -365,7 +365,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             else
             {
                 var newSession = mapper.Map<Session>(sessionStarterViewModel);
-                newSession.Group = groupRepository.GetByCode(sessionStarterViewModel.GroupCode);
+                newSession.Group = await groupRepository.GetByCode(sessionStarterViewModel.GroupCode);
                 return mapper.Map<SessionViewModel>(await Add(newSession));
             }
         }
@@ -392,7 +392,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 {
                     var durationBeforeStartInMinutes = GetDurationBeforeStartInMinutes(viewModel.StartTime);
                     var durationWhileRunningInMinutes = GetDurationWhileRunningInMinutes(viewModel.StartTime, viewModel.EndTime);
-                    await recognitionService.StartRecognition(durationBeforeStartInMinutes, durationWhileRunningInMinutes, session.RtspString);
+                    await recognitionService.StartRecognition(durationBeforeStartInMinutes, durationWhileRunningInMinutes, session.Room.CameraConnectionString);
                 }
                 return mapper.Map<SessionViewModel>(session);
             }

@@ -164,7 +164,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
 
                 entity.Property(e => e.Status).HasColumnType("varchar ( 50 )");
 
-                entity.HasOne(d => d.Groups)
+                entity.HasOne(d => d.Group)
                     .WithMany(p => p.Sessions)
                     .HasForeignKey(d => d.GroupCode)
                     .OnDelete(DeleteBehavior.ClientSetNull);

@@ -60,7 +60,7 @@ namespace AttendanceSystemIPCamera.Controllers
             return ExecuteInMonitoring(async () =>
             {
                 var group = await service.GetByGroupCode(code);
-                var attendeeGroups = attendeeGroupService.GetByGroupCode(code);
+                var attendeeGroups = await attendeeGroupService.GetByGroupCode(code);
                 group.AttendeeGroups = attendeeGroups.ToList();
                 return mapper.Map<GroupViewModel>(group);
             });
@@ -103,12 +103,12 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPut("{code}")]
-        public BaseResponse<GroupViewModel> Update(string code, [FromBody] GroupViewModel updatedGroup)
+        public Task<BaseResponse<GroupViewModel>> Update(string code, [FromBody] GroupViewModel updatedGroup)
         {
-            return ExecuteInMonitoring(() =>
+            return ExecuteInMonitoring(async () =>
             {
                 var group = service.Update(code, updatedGroup);
-                var attendeeGroup = attendeeGroupService.GetByGroupCode(code);
+                var attendeeGroup = await attendeeGroupService.GetByGroupCode(code);
                 group.AttendeeGroups = attendeeGroup.ToList();
                 return mapper.Map<GroupViewModel>(group);
             });

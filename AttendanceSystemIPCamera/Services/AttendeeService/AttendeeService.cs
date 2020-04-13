@@ -22,7 +22,7 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
     {
         Task<Attendee> AddIfNotInDb(Attendee attendee);
         Attendee GetByAttendeeCodeForNetwork(string code);
-        Attendee GetByAttendeeCode(string code);
+        Task<Attendee> GetByAttendeeCode(string code);
         Attendee GetByAttendeeFaceForNetwork(string faceData);
         public string GetAttendeeAvatarByCode(string code);
     }
@@ -44,7 +44,7 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
 
         public async Task<Attendee> AddIfNotInDb(Attendee attendee)
         {
-            Attendee attendeeInDb = attendeeRepository.GetByCode(attendee.Code);
+            Attendee attendeeInDb = await attendeeRepository.GetByAttendeeCode(attendee.Code);
             if(attendeeInDb == null)
             {
                 return await Add(attendee);
@@ -52,9 +52,9 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
             return attendeeInDb;
         }
 
-        public Attendee GetByAttendeeCode(string code)
+        public async Task<Attendee> GetByAttendeeCode(string code)
         {
-            return attendeeRepository.GetByCode(code);
+            return await attendeeRepository.GetByAttendeeCode(code);
         }
 
         public Attendee GetByAttendeeCodeForNetwork(string code)

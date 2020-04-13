@@ -48,14 +48,13 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             var groupInDb = await groupRepository.GetByCode(groupCode);
             if(groupInDb != null)
             {
-                var attendeeInDb = attendeeService.GetByAttendeeCode(attendee.Code);
+                var attendeeInDb = await attendeeService.GetByAttendeeCode(attendee.Code);
                 if (attendeeInDb == null)
                 {
                     var newAttendee = mapper.Map<Attendee>(attendee);
-                    attendeeInDb = attendeeService.Add(newAttendee).Result;
+                    attendeeInDb = await attendeeService.Add(newAttendee);
                     var attendeeGroup = new AttendeeGroup()
                     {
-                        Attendee = attendeeInDb,
                         AttendeeCode = attendeeInDb.Code,
                         GroupCode = groupCode,
                         IsActive = true

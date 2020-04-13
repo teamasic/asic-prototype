@@ -107,7 +107,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             {
                 attendanceData.AttendeeCode = attendee.Code;
                 attendanceData.AttendeeName = attendee.Name;
-                var groupIds = attendee.AttendeeGroups.Select(ag => ag.GroupId).ToList();
+                var groupCodes = attendee.AttendeeGroups.Select(ag => ag.GroupCode).ToList();
                 attendanceData.Groups = GetGroupNetworkViewModels(attendee);
             }
             //send
@@ -175,7 +175,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 groupSession.Sessions.RemoveAll(s => s.Records.Count == 0);
                 groupSession.Sessions.ForEach(session =>
                 {
-                    session.Records.RemoveAll(r => r.AttendeeId != attendee.Id);
+                    session.Records.RemoveAll(r => r.AttendeeCode != attendee.Code);
                 });
                 groupSession.Sessions.RemoveAll(s => s.Records.Count == 0);
             });
