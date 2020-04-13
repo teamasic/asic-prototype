@@ -76,10 +76,10 @@ function updateGroupNameSuccess(updatedGroup: Group) {
     }
 }
 
-function refreshListAttendeeAfterDeleteSuccess(deletedAttendeeId: number) {
+function refreshListAttendeeAfterDeleteSuccess(deletedAttendeeCode: number) {
     return {
         type: ACTIONS.DELETE_ATTENDEE_GROUP_SUCCESS,
-        attendeeId: deletedAttendeeId
+        attendeeCode: deletedAttendeeCode
     }
 }
 

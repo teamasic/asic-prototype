@@ -42,8 +42,8 @@ const { confirm } = Modal;
 
 interface Props {
 	sessionId: number;
-	markAsPresent: (attendeeId: number) => void;
-	markAsAbsent: (attendeeId: number, assumeSuccess: boolean) => void;
+	markAsPresent: (attendeeCode: string) => void;
+	markAsAbsent: (attendeeCode: string, assumeSuccess: boolean) => void;
 }
 
 // At runtime, Redux will merge together...
@@ -103,7 +103,7 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 			title: "Do you want to mark this attendee as absent?",
 			okType: "danger",
 			onOk: () => {
-				this.props.markAsAbsent(ar.attendee.id, false);
+				this.props.markAsAbsent(ar.attendee.code, false);
 			},
 		});
 	}
@@ -130,10 +130,10 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 					<div className="box-container fixed-grid--around">
 						{
 							presentRecords.map(ar =>
-								<div key={ar.attendee.id}
+								<div key={ar.attendee.code}
 									className="attendee-box grid-element">
 									<div className="inner-box">
-										{this.getImageBox(`url(/api/avatars/${ar.attendee.avatar})`)}
+										{this.getImageBox(`url(/api/avatars/${ar.attendee.image})`)}
 										<div className="inner-box-actions">
 											<Tooltip title="Mark attendee absent">
 												<Button

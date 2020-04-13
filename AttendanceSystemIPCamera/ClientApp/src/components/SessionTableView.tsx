@@ -40,8 +40,8 @@ const { Title } = Typography;
 
 interface Props {
 	sessionId: number;
-	markAsPresent: (attendeeId: number) => void;
-	markAsAbsent: (attendeeId: number) => void;
+	markAsPresent: (attendeeCode: string) => void;
+	markAsAbsent: (attendeeCode: string) => void;
 }
 
 // At runtime, Redux will merge together...

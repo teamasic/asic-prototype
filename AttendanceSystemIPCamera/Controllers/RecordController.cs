@@ -51,8 +51,8 @@ namespace AttendanceSystemIPCamera.Controllers
             {
                 if (viewModel.Code.Equals(Constants.Code.UNKNOWN))
                 {
-                    globalStateService.AddUnknownImage(viewModel.Avatar);
-                    await realTimeService.MarkAttendeeAsUnknown(viewModel.Avatar);
+                    globalStateService.AddUnknownImage(viewModel.Image);
+                    await realTimeService.MarkAttendeeAsUnknown(viewModel.Image);
                     return new SetRecordViewModel {
                         AttendeeCode = Constants.Code.UNKNOWN
                     };
