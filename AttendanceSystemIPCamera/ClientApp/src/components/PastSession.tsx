@@ -134,7 +134,7 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
     }
 
     private loadSession = () => {
-        this.props.startGetPastSession(this.props.group.id, this.reloadSession);
+        this.props.startGetPastSession(this.props.group.code, this.reloadSession);
     }
 }
 

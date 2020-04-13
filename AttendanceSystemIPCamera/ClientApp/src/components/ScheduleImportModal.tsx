@@ -3,14 +3,14 @@ import { Modal, Upload, Row, Col, Button, Icon, Typography, Table } from 'antd';
 import { renderStripedTable } from '../utils';
 import { parse } from 'papaparse';
 import { isNullOrUndefined } from 'util';
-import { ScheduleState } from '../store/schedule/state';
-import { scheduleActionCreators } from '../store/schedule/actionCreators';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { ApplicationState } from '../store';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import ScheduleCreate from '../models/ScheduleCreate';
 import { GroupsState } from '../store/group/state';
+import { sessionActionCreators } from '../store/session/actionCreators';
+import { SessionState } from '../store/session/state';
 
 const { Text } = Typography;
 
@@ -29,10 +29,10 @@ interface ScheduleImportModalComponentState {
 }
 
 type ScheduleImportModalProps =
-    ScheduleState
+    SessionState
     & GroupsState
     & Props
-    & typeof scheduleActionCreators
+    & typeof sessionActionCreators
     & RouteComponentProps<{}>;
 
 class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, ScheduleImportModalComponentState> {
@@ -58,7 +58,7 @@ class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, 
             var importSchedules = this.state.importSchedules;
             importSchedules.forEach((item: any) => {
                 var schedule = {
-                    groupId: this.props.selectedGroup.id,
+                    groupCode: this.props.selectedGroup.code,
                     slot: item.slot,
                     room: item.room,
                     date: item.date
@@ -66,7 +66,7 @@ class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, 
                 schedules.push(schedule);
             });
             console.log(schedules);
-            this.props.requestCreateSchedules(schedules, () => {
+            this.props.requestCreateScheduledSession(schedules, () => {
                 this.setState({buttonSaveLoading: false});
                 this.props.reloadSchedules();
                 this.handleCancel();
@@ -227,12 +227,12 @@ class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, 
 
 const mapStateToProps = (state: ApplicationState, ownProps: Props) => (
     { 
-        ...state.schedules, 
+        ...state.sessions, 
         ...state.groups, 
         ...ownProps
     })
 
 export default connect(
     mapStateToProps, // Selects which state properties are merged into the component's props
-    dispatch => bindActionCreators(scheduleActionCreators, dispatch) // Selects which action creators are merged into the component's props
+    dispatch => bindActionCreators(sessionActionCreators, dispatch) // Selects which action creators are merged into the component's props
 )(ScheduleImportModal as any)

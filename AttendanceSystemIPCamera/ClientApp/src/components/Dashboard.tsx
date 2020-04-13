@@ -119,7 +119,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                 newGroup.name = this.state.groupName;
                 newGroup.code = this.state.groupCode;
                 newGroup.attendees = this.state.importAttendees;
-                newGroup.maxSessionCount = this.state.maxSession;
+                newGroup.totalSession = this.state.maxSession;
                 this.props.postGroup(newGroup, this.createGroupSuccess, error);
             }
         });

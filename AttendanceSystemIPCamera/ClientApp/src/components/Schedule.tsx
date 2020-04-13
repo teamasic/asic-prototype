@@ -2,14 +2,14 @@ import * as React from 'react';
 import { Button, Popconfirm, Table, Icon } from 'antd';
 import { renderStripedTable } from '../utils';
 import ScheduleImportModal from './ScheduleImportModal';
-import { ScheduleState } from '../store/schedule/state';
-import { scheduleActionCreators } from '../store/schedule/actionCreators';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { ApplicationState } from '../store';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { GroupsState } from '../store/group/state';
 import moment from 'moment';
+import { sessionActionCreators } from '../store/session/actionCreators';
+import { SessionState } from '../store/session/state';
 
 interface Props {
 }
@@ -22,10 +22,10 @@ interface ScheduleComponentState {
 }
 
 type ScheduleProps =
-    ScheduleState
+    SessionState
     & GroupsState
     & Props
-    & typeof scheduleActionCreators
+    & typeof sessionActionCreators
     & RouteComponentProps<{}>;
 
 class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState> {
@@ -130,7 +130,7 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
     }
 
     private loadSchedules = () => {
-        this.props.requestGetByGroupId(this.props.selectedGroup.id, (data: any) => {
+        this.props.requestGetScheduledSessionByGroupCode(this.props.selectedGroup.code, (data: any) => {
             this.setState({
                 schedules: data,
                 scheduleLoading: false
@@ -141,12 +141,12 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
 
 const mapStateToProps = (state: ApplicationState, ownProps: Props) => (
     { 
-        ...state.schedules, 
+        ...state.sessions, 
         ...state.groups,
         ...ownProps
     })
 
 export default connect(
     mapStateToProps, // Selects which state properties are merged into the component's props
-    dispatch => bindActionCreators(scheduleActionCreators, dispatch) // Selects which action creators are merged into the component's props
+    dispatch => bindActionCreators(sessionActionCreators, dispatch) // Selects which action creators are merged into the component's props
 )(Schedule as any)
