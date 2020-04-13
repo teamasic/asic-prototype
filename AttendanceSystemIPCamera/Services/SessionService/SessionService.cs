@@ -4,29 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
-using Microsoft.EntityFrameworkCore;
 using AttendanceSystemIPCamera.Repositories.UnitOfWork;
 using AttendanceSystemIPCamera.Services.BaseService;
 using AutoMapper;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using AttendanceSystemIPCamera.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.IO;
-using System.Timers;
 using AttendanceSystemIPCamera.Services.RecordService;
-using System.Configuration;
-using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Framework.ExeptionHandler;
 using System.Net;
-using System.Threading;
 using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
-using Microsoft.Extensions.DependencyInjection;
 using AttendanceSystemIPCamera.Services.RecognitionService;
-using System.Globalization;
-using CsvHelper;
-using AttendanceSystemIPCamera.Services.AttendeeService;
+using Microsoft.Extensions.Logging;
+using AttendanceSystemIPCamera.Framework;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -42,24 +30,41 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel);
         List<Session> GetSessionByGroupCode(string groupCode);
         public ICollection<string> GetSessionUnknownImages(int sessionId);
+        Task<List<SessionRefactorViewModel>> GetByGroupCodeAndStatus(string groupCode, string status);
+        Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions);
+        Task ActivateSchedule();
     }
 
     public class SessionService : BaseService<Session>, ISessionService
     {
         private readonly ISessionRepository sessionRepository;
         private readonly IGroupRepository groupRepository;
+        private readonly IRoomRepository roomRepository;
         private readonly IRecordService recordService;
+        private readonly UnitService.UnitService unitService;
         private readonly IRecognitionService recognitionService;
+        private readonly OtherSettingsService.OtherSettingsService otherSettingsService;
+        private readonly IRealTimeService realTimeService;
         private readonly IMapper mapper;
+        private readonly ILogger logger;
+        private TimeSpan activatedTimeBeforeStartTime;
 
         public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, IMapper mapper,
-            IRecognitionService recognitionService) : base(unitOfWork)
+            IRecognitionService recognitionService, UnitService.UnitService unitService,
+            ILogger<ISessionService> logger, OtherSettingsService.OtherSettingsService otherSettingsService,
+            IRealTimeService realTimeService) : base(unitOfWork)
         {
             sessionRepository = unitOfWork.SessionRepository;
             groupRepository = unitOfWork.GroupRepository;
+            roomRepository = unitOfWork.RoomRepository;
             this.recordService = recordService;
             this.recognitionService = recognitionService;
+            this.unitService = unitService;
+            this.otherSettingsService = otherSettingsService;
+            this.realTimeService = realTimeService;
             this.mapper = mapper;
+            this.logger = logger;
+            activatedTimeBeforeStartTime = otherSettingsService.Settings.ActivatedTimeOfScheduleBeforeStartTime;
         }
 
         public ICollection<string> GetSessionUnknownImages(int sessionId)
@@ -163,14 +168,14 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 
         #region Support methods
 
-        private List<SessionExportViewModel> ExportSingleDate(int groupId, DateTime date, bool withCondition, bool isPresent)
+        private List<SessionExportViewModel> ExportSingleDate(string groupCode, DateTime date, bool withCondition, bool isPresent)
         {
-            var sessions = sessionRepository.GetSessionExport(groupId, date);
+            var sessions = sessionRepository.GetSessionExport(groupCode, date);
             var sessionExport = new List<SessionExportViewModel>();
             if (sessions.Count > 0)
             {
                 var firstSessionInList = sessions[0];
-                var count = GetIndexOf(groupId, firstSessionInList);
+                var count = GetIndexOf(groupCode, firstSessionInList);
                 foreach (var session in sessions)
                 {
                     var records = recordService.GetRecordsBySessionId(session.Id);
@@ -203,12 +208,12 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         }
 
         private List<SessionExportWithConditionViewModel> ExportRangeDateWithCondition
-            (int groupId, DateTime startDate, DateTime endDate, ExportMultipleCondition multipleDateCondition, float attendancePercent)
+            (string groupCode, DateTime startDate, DateTime endDate, ExportMultipleCondition multipleDateCondition, float attendancePercent)
         {
-            var group = groupRepository.GetById(groupId).Result;
+            var group = groupRepository.GetById(groupCode).Result;
             if (group != null)
             {
-                var sessions = sessionRepository.GetSessionExport(groupId, startDate, endDate);
+                var sessions = sessionRepository.GetSessionExport(groupCode, startDate, endDate);
                 var sessionExport = new List<SessionExportWithConditionViewModel>();
                 var temps = new Dictionary<string, TempExport>();
                 //Get all record in session insert into temps
@@ -285,14 +290,14 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             return new List<SessionExportWithConditionViewModel>();
         }
 
-        private List<SessionExportViewModel> ExportRangeDateWithoutCondition(int groupId, DateTime startDate, DateTime endDate)
+        private List<SessionExportViewModel> ExportRangeDateWithoutCondition(string groupCode, DateTime startDate, DateTime endDate)
         {
-            var sessions = sessionRepository.GetSessionExport(groupId, startDate, endDate);
+            var sessions = sessionRepository.GetSessionExport(groupCode, startDate, endDate);
             var sessionExports = new List<SessionExportViewModel>();
             if (sessions.Count > 0)
             {
                 var firstSessionInList = sessions[0];
-                var count = GetIndexOf(groupId, firstSessionInList);
+                var count = GetIndexOf(groupCode, firstSessionInList);
                 //Mapping session to exportViewModel
                 foreach (var item in sessions)
                 {
@@ -379,7 +384,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             var session = await GetById(viewModel.SessionId);
             if (session == null)
             {
-                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ID_NOT_EXISTED, viewModel.SessionId);
+                throw new AppException(HttpStatusCode.BadRequest, null, ErrorMessage.SESSION_ID_NOT_EXISTED, viewModel.SessionId); ;
             }
             else
             {
@@ -403,7 +408,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             if (exportRequest.IsSingleDate)
             {
                 return ExportSingleDate
-                    (exportRequest.GroupId, exportRequest.SingleDate, exportRequest.WithCondition, exportRequest.IsPresent)
+                    (exportRequest.GroupCode, exportRequest.SingleDate, exportRequest.WithCondition, exportRequest.IsPresent)
                     .Cast<Object>().ToList();
             }
             else
@@ -411,7 +416,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 if (exportRequest.WithCondition)
                 {
                     return ExportRangeDateWithCondition
-                        (exportRequest.GroupId, exportRequest.StartDate,
+                        (exportRequest.GroupCode, exportRequest.StartDate,
                         exportRequest.EndDate, exportRequest.multipleDateCondition,
                         exportRequest.AttendancePercent)
                         .Cast<Object>().ToList();
@@ -419,7 +424,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 else
                 {
                     return ExportRangeDateWithoutCondition
-                        (exportRequest.GroupId, exportRequest.StartDate, exportRequest.EndDate)
+                        (exportRequest.GroupCode, exportRequest.StartDate, exportRequest.EndDate)
                         .Cast<Object>().ToList();
                 }
             }
@@ -444,6 +449,111 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
             }
             return timeDifferenceInMinutes;
+        }
+
+        public async Task<List<SessionRefactorViewModel>> GetByGroupCodeAndStatus(string groupCode, string status)
+        {
+            var groupInDB = await groupRepository.GetByCode(groupCode);
+            if(groupInDB != null)
+            {
+                var sessions = sessionRepository.GetByGroupCodeAndStatus(groupCode, status);
+                var viewModels = new List<SessionRefactorViewModel>();
+                foreach (var item in sessions)
+                {
+                    viewModels.Add(mapper.Map<SessionRefactorViewModel>(item));
+                }
+                return viewModels;
+            }
+            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, groupCode);
+        }
+
+        public async Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions)
+        {
+            var units = unitService.Units;
+            var results = new List<Session>();
+            var createdSessions = new List<SessionCreateViewModel>();
+            foreach (var session in newSessions)
+            {
+                var newSession = mapper.Map<Session>(session);
+                var date = session.Date;
+                var unit = units.Select(u => new Unit
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    StartTime = u.StartTime,
+                    EndTime = u.EndTime
+                }).Where(u => u.Name.Equals(session.Slot)).FirstOrDefault();
+                var roomInDB = roomRepository.GetRoomByName(session.Room).Result;
+                if (unit != null && roomInDB != null)
+                {
+                    var existed = sessionRepository.GetByNameAndDate(unit.Name, session.Date);
+                    if (existed == null)
+                    {
+                        var startTime = new DateTime(date.Year, date.Month, date.Day,
+                        unit.StartTime.Hour, unit.StartTime.Minute, unit.StartTime.Second);
+                        var endTime = new DateTime(date.Year, date.Month, date.Day,
+                            unit.EndTime.Hour, unit.EndTime.Minute, unit.EndTime.Second);
+                        newSession.StartTime = startTime;
+                        newSession.EndTime = endTime;
+                        results.Add(newSession);
+                        createdSessions.Add(session);
+                    }
+                }
+            }
+            await sessionRepository.AddRangeAsync(results);
+            return createdSessions;
+        }
+
+        public async Task ActivateSchedule()
+        {
+            logger.LogInformation(activatedTimeBeforeStartTime.ToString());
+            using (var trans = unitOfWork.CreateTransaction())
+            {
+                try
+                {
+                    var scheduleNeedToActivate = sessionRepository
+                                .GetSessionNeedsToActivate(activatedTimeBeforeStartTime);
+                    if (scheduleNeedToActivate != null)
+                    {
+                        var session = await sessionRepository.GetSessionWithGroupAndTime(scheduleNeedToActivate.GroupCode,
+                                                scheduleNeedToActivate.StartTime, scheduleNeedToActivate.EndTime);
+                        if (session == null)
+                        {
+                            var room = await roomRepository.GetRoomByName(scheduleNeedToActivate.Room.Name);
+                            session = new Session()
+                            {
+                                GroupCode = scheduleNeedToActivate.GroupCode,
+                                StartTime = scheduleNeedToActivate.StartTime,
+                                EndTime = scheduleNeedToActivate.EndTime,
+                                Name = scheduleNeedToActivate.Room.Name,
+                                Room = scheduleNeedToActivate.Room
+                            };
+                            await sessionRepository.Add(session);
+                            unitOfWork.Commit();
+                            trans.Commit();
+                            await SendSessionNotification(session);
+                        }
+                        else
+                        {
+                            scheduleNeedToActivate.Status = Constants.SessionStatus.IN_PROGRESS;
+                            unitOfWork.Commit();
+                            trans.Commit();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
+        }
+
+        private async Task SendSessionNotification(Session session)
+        {
+            var sessionViewModel = mapper.Map<SessionNotificationViewModel>(session);
+            sessionViewModel.GroupName = session.Group.Name;
+            await realTimeService.SendNotification(NotificationType.SESSION, sessionViewModel);
         }
     }
 }

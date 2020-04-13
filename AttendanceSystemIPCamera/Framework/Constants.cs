@@ -68,5 +68,12 @@ namespace AttendanceSystemIPCamera.Framework
                 public const string LAST_UPDATED = BASE + "last-updated";
             }
         }
+
+        public class SessionStatus
+        {
+            public const string SCHEDULED = "SCHEDULED";
+            public const string IN_PROGRESS = "IN_PROGRESS";
+            public const string FINISHED = "FINISHED";
+        }
     }
 }

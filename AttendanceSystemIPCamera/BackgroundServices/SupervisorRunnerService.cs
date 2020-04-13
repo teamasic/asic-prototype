@@ -1,17 +1,13 @@
 ﻿using AttendanceSystemIPCamera.Services.NetworkService;
-using AttendanceSystemIPCamera.Services.OtherSettingsService;
 using AttendanceSystemIPCamera.Services.RecordService;
-using AttendanceSystemIPCamera.Services.ScheduleService;
+using AttendanceSystemIPCamera.Services.SessionService;
 using AttendanceSystemIPCamera.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using static AttendanceSystemIPCamera.Framework.Constants;
 
 namespace AttendanceSystemIPCamera.BackgroundServices
@@ -137,8 +133,8 @@ namespace AttendanceSystemIPCamera.BackgroundServices
             {
                 using (var scope = serviceScopeFactory.CreateScope())
                 {
-                    var scheduleService = scope.ServiceProvider.GetRequiredService<IScheduleService>();
-                    scheduleService.ActivateSchedule();
+                    var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
+                    sessionService.ActivateSchedule();
                 }
             }
             catch (Exception ex)

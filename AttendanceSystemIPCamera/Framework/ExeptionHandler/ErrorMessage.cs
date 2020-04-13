@@ -25,7 +25,7 @@ namespace AttendanceSystemIPCamera.Framework.ExeptionHandler
 
         public static string CHANGE_REQUEST_INVALID = "Change request invalid";
 
-        public static string NOT_FOUND_GROUP_WITH_ID = "Not found group with id {0}";
+        public static string NOT_FOUND_GROUP_WITH_CODE = "Not found group with code {0}";
 
         public static string GROUP_ALREADY_EXISTED = "Group with code {0} is already existed";
 

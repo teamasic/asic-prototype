@@ -26,7 +26,7 @@ namespace AttendanceSystemIPCamera.Framework.ExeptionHandler
         {
             this.StatusCode = statusCode;
         }
-        public AppException(HttpStatusCode statusCode, string message, params object[] args)
+        public AppException(HttpStatusCode statusCode, object nOT_FOUND_GROUP_WITH_CODE, string message, params object[] args)
             : base(string.Format(CultureInfo.CurrentCulture, message, args))
         {
             this.StatusCode = statusCode;
