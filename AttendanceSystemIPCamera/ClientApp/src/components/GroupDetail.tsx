@@ -47,7 +47,7 @@ type GroupDetailProps =
     & typeof unitActionCreators
     & typeof sessionActionCreators
     & RouteComponentProps<{
-        id?: string;
+        code?: string;
     }>; // ... plus incoming routing parameters
 
 
@@ -177,7 +177,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                                         <Form>
                                             <Form.Item>
                                                 {getFieldDecorator('maxSession', {
-                                                    initialValue: this.props.selectedGroup.maxSessionCount,
+                                                    initialValue: this.props.selectedGroup.totalSession,
                                                     rules: [
                                                         { required: true, message: 'Please input max session' }
                                                     ],
@@ -192,7 +192,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                                         </Form>
                                     ) :
                                     (
-                                        <span>Total sessions: {this.props.selectedGroup.maxSessionCount} < EditTwoTone onClick={this.onEditMaxSession} /></span>
+                                        <span>Total sessions: {this.props.selectedGroup.totalSession} < EditTwoTone onClick={this.onEditMaxSession} /></span>
                                     )
                                 }
                             </Title>
@@ -227,10 +227,9 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
     }
 
     private ensureDataFetched() {
-        var strId = this.props.match.params.id;
-        if (strId) {
-            var intId = parseInt(strId);
-            this.props.requestGroupDetail(intId, () => {
+        var code = this.props.match.params.code;
+        if (code) {
+            this.props.requestGroupDetail(code, () => {
                 this.setState({
                     attendeeLoading: false
                 });

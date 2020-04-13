@@ -205,7 +205,7 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				render: (text: string, pair: AttendeeRecordPair) =>
 					<Radio
 					checked={pair.record != null && pair.record.present}
-						onChange={() => this.props.markAsPresent(pair.attendee.id)}>
+						onChange={() => this.props.markAsPresent(pair.attendee.code)}>
 					</Radio>
 			},
 			{
@@ -215,7 +215,7 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				render: (text: string, pair: AttendeeRecordPair) =>
 					<Radio
 						checked={pair.record != null && !pair.record.present}
-						onChange={() => this.props.markAsAbsent(pair.attendee.id)}></Radio>
+						onChange={() => this.props.markAsAbsent(pair.attendee.code)}></Radio>
 			}
 		];
 		const processedList = this.searchAttendeeList(
@@ -302,7 +302,7 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 								dataSource={processedList}
 								bordered
 								pagination={false}
-								rowKey={record => record.attendee.id.toString()}
+								rowKey={record => record.attendee.code}
 								rowClassName={this.renderOnRow}
 							/>
 						)}

@@ -42,7 +42,7 @@ class AppComponent extends React.Component<AppProps> {
 					<Route exact path="/dashboard" component={Dashboard} />
 					<Route exact path="/session/:id" component={Session} />
 					<Route exact path="/group/session/:id" component={Session} />
-					<Route exact path="/group/:id" component={GroupDetail} />
+					<Route exact path="/group/:code" component={GroupDetail} />
 					<Route exact path="/change-requests" component={ChangeRequests} />
 					<Route exact path="/settings" component={Settings} />
 				</Layout>
