@@ -20,8 +20,8 @@ namespace AttendanceSystemIPCamera.Services.GroupService
     {
         public Task<PaginatedList<Group>> GetAll(GroupSearchViewModel groupSearchViewModel);
         public Task<Group> AddIfNotInDb(GroupViewModel groupViewModel);
-        public Group DeactiveGroup(string code);
-        public Group Update(string code, GroupViewModel updatedGroup);
+        public Task<Group> DeactiveGroup(string code);
+        public Task<Group> Update(string code, GroupViewModel updatedGroup);
         public Task<Group> GetByGroupCode(string code);
         public Task<Attendee> AddAttendeeInGroup(string groupCode, AttendeeViewModel attendee);
     }
@@ -93,7 +93,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             if(result.IsValid)
             {
                 var group = mapper.Map<Group>(groupViewModel);
-                var groupInDb = groupRepository.GetByCode(group.Code);
+                var groupInDb = await groupRepository.GetByCode(group.Code);
                 if (groupInDb == null)
                 {
                     return await Add(group);
@@ -104,9 +104,9 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.INVALID_GROUP, invalidMsg);
         }
 
-        public Group DeactiveGroup(string code)
+        public async Task<Group> DeactiveGroup(string code)
         {
-            Group groupInDb = groupRepository.GetByCode(code).Result;
+            Group groupInDb = await groupRepository.GetByCode(code);
             if (groupInDb != null)
             {
                 groupInDb.Deleted = true;
@@ -134,13 +134,13 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, code);
         }
 
-        public Group Update(string code, GroupViewModel updatedGroup)
+        public async Task<Group> Update(string code, GroupViewModel updatedGroup)
         {
             var validator = new UpdateGroupValidator();
             var result = validator.Validate(updatedGroup);
             if(result.IsValid)
             {
-                var groupInDb = groupRepository.GetByCode(code).Result;
+                var groupInDb = await groupRepository.GetByCode(code);
                 if (groupInDb != null)
                 {
                     groupInDb.Name = updatedGroup.Name;

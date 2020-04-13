@@ -107,7 +107,7 @@ namespace AttendanceSystemIPCamera.Controllers
         {
             return ExecuteInMonitoring(async () =>
             {
-                var group = service.Update(code, updatedGroup);
+                var group = await service.Update(code, updatedGroup);
                 var attendeeGroup = await attendeeGroupService.GetByGroupCode(code);
                 group.AttendeeGroups = attendeeGroup.ToList();
                 return mapper.Map<GroupViewModel>(group);
@@ -115,11 +115,11 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPut("deactive/{code}")]
-        public BaseResponse<GroupViewModel> DeactiveGroup(string code)
+        public Task<BaseResponse<GroupViewModel>> DeactiveGroup(string code)
         {
-            return ExecuteInMonitoring(() =>
+            return ExecuteInMonitoring(async () =>
            {
-               var deactiveGroup = service.DeactiveGroup(code);
+               var deactiveGroup = await service.DeactiveGroup(code);
                return mapper.Map<GroupViewModel>(deactiveGroup);
            });
         }

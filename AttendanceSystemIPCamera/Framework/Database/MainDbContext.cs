@@ -37,7 +37,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
                 entity.HasIndex(e => new { e.AttendeeCode, e.GroupCode })
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.AttendeeCode)
                     .IsRequired()
@@ -65,7 +65,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
                 entity.HasIndex(e => e.RecordId)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Comment).HasColumnType("varchar ( 255 )");
 
@@ -96,7 +96,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
                 entity.HasIndex(e => new { e.AttendeeGroupId, e.SessionId })
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.AttendeeCode)
                     .IsRequired()
@@ -129,7 +129,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
 
             modelBuilder.Entity<Room>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CameraConnectionString)
                     .IsRequired()
@@ -142,7 +142,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
 
             modelBuilder.Entity<Session>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.EndTime)
                     .IsRequired()
