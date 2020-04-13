@@ -1,7 +1,7 @@
 ﻿import { ExportMultipleCondition } from "./ExportMultipleCondition";
 
 export default interface ExportRequest {
-    groupId: number,
+    groupCode: string,
     isSingleDate: boolean,
     withCondition: boolean,
     singleDate: string,

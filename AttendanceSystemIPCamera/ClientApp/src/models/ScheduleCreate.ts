@@ -1,5 +1,5 @@
 export default interface ScheduleCreate {
-    groupId: number;
+    groupCode: string;
     slot: string;
     room: string;
     date: Date;

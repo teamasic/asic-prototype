@@ -1,6 +1,8 @@
 ﻿import ApiResponse from "../models/ApiResponse";
 import axios from 'axios';
 import ExportRequest from "../models/ExportRequest";
+import SessionStatus from "../models/SessionStatus";
+import ScheduleCreate from "../models/ScheduleCreate";
 
 const baseRoute = 'api/session';
 const apify = (path: string) => `${baseRoute}/${path}`;
@@ -48,6 +50,21 @@ export const getPastSession = async (groupCode: string) => {
 	const response = await axios.get(apify("past"), {
 		params: {
 			groupCode
+		}
+	});
+	return await response.data;
+}
+
+export const createScheduledSessions = async (schedules: ScheduleCreate[]): Promise<ApiResponse> => {
+	const response = await axios.post(apify("scheduled"), schedules);
+	return await response.data;
+}
+
+export const getScheduledSesionByGroupCode = async (groupCode: string): Promise<ApiResponse> => {
+	const response = await axios.get(apify("group"), {
+		params: {
+			code: groupCode,
+			status: SessionStatus.SCHEDULED
 		}
 	});
 	return await response.data;

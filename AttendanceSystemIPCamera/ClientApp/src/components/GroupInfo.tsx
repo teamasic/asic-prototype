@@ -41,14 +41,14 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
         page: 1
     }
 
-    public handleDelete = (attendeeId: number) => {
-        this.props.startDeleteAttendeeGroup(attendeeId,
-            this.props.selectedGroup.id,
+    public handleDelete = (attendeeCode: string) => {
+        this.props.startDeleteAttendeeGroup(attendeeCode,
+            this.props.selectedGroup.code,
             message.success("Delete attendee success!"));
     }
 
     public addAttendee = () => {
-        this.props.startCreateAttendeeInGroup(this.props.selectedGroup.id,
+        this.props.startCreateAttendeeInGroup(this.props.selectedGroup.code,
             this.state.newAttendee,
             this.addAttendeeSuccess,
             this.duplicateAttendee);
@@ -166,7 +166,7 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                 render: (text: any, record: any) =>
                     this.props.attendees != undefined && this.props.attendees.length >= 1 ? (
                         <Popconfirm title="Are you sure to delete this attendee?"
-                            onConfirm={() => this.handleDelete(record.id)}>
+                            onConfirm={() => this.handleDelete(record.code)}>
                             <Button size="small" type="danger" icon="delete"></Button>
                         </Popconfirm>
                     ) : null

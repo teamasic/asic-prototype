@@ -15,6 +15,7 @@ using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using AttendanceSystemIPCamera.Services.RecognitionService;
 using Microsoft.Extensions.Logging;
 using AttendanceSystemIPCamera.Framework;
+using AttendanceSystemIPCamera.Framework;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -245,10 +246,10 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 {
                     float calculatedPercent = item.Count * 100 / group.TotalSession;
                     var exportData = new SessionExportWithConditionViewModel();
-                    switch(multipleDateCondition)
+                    switch (multipleDateCondition)
                     {
                         case ExportMultipleCondition.Greater:
-                            if(calculatedPercent > attendancePercent)
+                            if (calculatedPercent > attendancePercent)
                             {
                                 exportData = new SessionExportWithConditionViewModel()
                                 {
@@ -347,7 +348,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         svm.Records = mapper.ProjectTo<Record, RecordNetworkViewModel>(s.Records)?.ToList();
                         return svm;
                     });
-                    
+
                     var groupSession = new GroupNetworkViewModel()
                     {
                         Code = group.Code,
@@ -454,7 +455,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         public async Task<List<SessionRefactorViewModel>> GetByGroupCodeAndStatus(string groupCode, string status)
         {
             var groupInDB = await groupRepository.GetByCode(groupCode);
-            if(groupInDB != null)
+            if (groupInDB != null)
             {
                 var sessions = sessionRepository.GetByGroupCodeAndStatus(groupCode, status);
                 var viewModels = new List<SessionRefactorViewModel>();
@@ -474,7 +475,6 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             var createdSessions = new List<SessionCreateViewModel>();
             foreach (var session in newSessions)
             {
-                var newSession = mapper.Map<Session>(session);
                 var date = session.Date;
                 var unit = units.Select(u => new Unit
                 {
@@ -493,8 +493,14 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         unit.StartTime.Hour, unit.StartTime.Minute, unit.StartTime.Second);
                         var endTime = new DateTime(date.Year, date.Month, date.Day,
                             unit.EndTime.Hour, unit.EndTime.Minute, unit.EndTime.Second);
-                        newSession.StartTime = startTime;
-                        newSession.EndTime = endTime;
+                        var newSession = new Session()
+                        {
+                            StartTime = startTime,
+                            EndTime = endTime,
+                            Name = session.Slot,
+                            GroupCode = session.GroupCode,
+                            Status = Constants.SessionStatus.SCHEDULED
+                        };
                         results.Add(newSession);
                         createdSessions.Add(session);
                     }
