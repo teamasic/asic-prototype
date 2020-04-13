@@ -5,7 +5,7 @@
 taskkill /f /im "vlc.exe"
 
 :: Run two instances of VLC. These would transcode MP4 rtsp-stream to Motion JPEG http-stream:
-start vlc -vvv -Idummy %1 --sout #transcode{vcodec=MJPG,venc=ffmpeg{strict=1},fps=10,width=1366,height=768}:standard{access=http{mime=multipart/x-mixed-replace;boundary=--7b3cc56e5f51db803f790dad720ed50a},mux=mpjpeg,dst=:%2}
+start vlc -vvv -Idummy %1 --sout #transcode{vcodec=MJPG,venc=ffmpeg{strict=1},fps=50,width=1366,height=768}:standard{access=http{mime=multipart/x-mixed-replace;boundary=--7b3cc56e5f51db803f790dad720ed50a},mux=mpjpeg,dst=:%2}
 
 
 :: In order to execute VLC with `vlc` as in exapmle above, you have to add corresponding value to the PATH variable.

@@ -1,6 +1,7 @@
 import os
 import pickle
 import shutil
+from datetime import datetime
 
 import cv2
 import imutils
@@ -45,7 +46,7 @@ def _get_label(vec):
     name = le.classes_[j]
     if proba > my_constant.threshold:
         return name, proba
-    return "unknown", None
+    return "unknown", 0
 
 
 def recognize_image_after_read_multiple(image, numberOfTimesToUpSample=1):
@@ -55,11 +56,13 @@ def recognize_image_after_read_multiple(image, numberOfTimesToUpSample=1):
 
 def get_label_after_detect_multiple(image, boxes):
     print(os.getpid())
+    startitme = datetime.now()
     vecs = my_face_recognition.face_encodings(image, boxes)
     results = []
     for i, vec in enumerate(vecs):
         name, proba = _get_label(vec)
         results.append((boxes[i], name, proba))
+    print(datetime.now() - startitme)
     return results
 
 
