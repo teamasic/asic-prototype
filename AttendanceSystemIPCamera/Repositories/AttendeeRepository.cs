@@ -45,12 +45,12 @@ namespace AttendanceSystemIPCamera.Repositories
             //            gr => gr.Id,
             //            (attGr, group) => new { group })
             //    .Where(a => a.group.Sessions.Count != 0)
-            //    .Join(context.Set<Session>(),
+            //    .Join(context.Set<Sessions>(),
             //        att => att.group.Id,
             //        sess => sess.GroupId,
             //        (att, session) => new { att.group, session })
             //    .Where(a => a.session.Records.Count != 0)
-            //    .Join(context.Set<Record>(),
+            //    .Join(context.Set<Records>(),
             //    a => a.session.Id,
             //    re => re.SessionId,
             //    (att, record) => new { att.group, att.session, record }).ToList();

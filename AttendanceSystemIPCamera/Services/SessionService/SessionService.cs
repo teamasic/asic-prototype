@@ -151,7 +151,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         //        {
         //            timeDifferenceMilliseconds = 0;
         //        }
-        //        var session = mapper.Map<Session>(sessionStarterViewModel);
+        //        var session = mapper.Map<Sessions>(sessionStarterViewModel);
         //        session.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
         //        var sessionAdded = await Add(session);
         //        var duration = (int)endTime.Subtract(startTime).TotalMinutes;

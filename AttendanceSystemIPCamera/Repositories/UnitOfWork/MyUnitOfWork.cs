@@ -17,7 +17,7 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
         {
             this.globalState = globalState;
         }
-        public IRepository<T> GetRepository<T>() where T: class, BaseEntity
+        public IRepository<T> GetRepository<T>() where T: class
         {
             return new Repository<T>(DbContext);
         }

@@ -7,15 +7,16 @@ namespace AttendanceSystemIPCamera.Models
     {
         public AttendeeGroup()
         {
-            Record = new HashSet<Record>();
+            Records = new HashSet<Record>();
         }
 
-        public int AttendeeId { get; set; }
-        public int GroupId { get; set; }
+        public int Id { get; set; }
+        public string AttendeeCode { get; set; }
+        public string GroupCode { get; set; }
         public bool IsActive { get; set; }
 
         public virtual Attendee Attendee { get; set; }
         public virtual Group Group { get; set; }
-        public virtual ICollection<Record> Record { get; set; }
+        public virtual ICollection<Record> Records { get; set; }
     }
 }
