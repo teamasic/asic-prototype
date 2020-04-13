@@ -44,10 +44,10 @@ export const takeAttendance = async (data: any) => {
 	return await response.data;
 };
 
-export const getPastSession = async (groupId: number) => {
+export const getPastSession = async (groupCode: string) => {
 	const response = await axios.get(apify("past"), {
 		params: {
-			groupId: groupId
+			groupCode
 		}
 	});
 	return await response.data;

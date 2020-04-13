@@ -57,24 +57,13 @@ class GroupCard extends React.PureComponent<GroupProps> {
             this.setState({
                 modelOpen: false,
             })
-            const groupId = this.props.group.id;
-            let currentRoom = this.props.roomList.filter(r => r.id == roomId)[0];
+            const groupCode = this.props.group.code;
             let currentSession = this.props.units[sessionIndex];
-            const abc = {
-                startTime: currentSession.startTime,
-                endTime: currentSession.endTime,
-                rtspString: currentRoom.rtspString,
-                roomName: currentRoom.name,
-                groupId,
-                name: currentSession.name
-            };
-            console.log(abc);
             const data = await createSession({
+                groupCode,
+                roomId,
                 startTime: currentSession.startTime,
                 endTime: currentSession.endTime,
-                rtspString: currentRoom.rtspString,
-                roomName: currentRoom.name,
-                groupId,
                 name: currentSession.name
             });
             if (data != null && data.data != null) {
@@ -95,7 +84,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
 
     private startDeactiveGroup = () => {
         this.props.startDeactiveGroup
-            (this.props.group.id, this.props.groupSearch, this.successDeactive, error);
+            (this.props.group.code, this.props.groupSearch, this.successDeactive, error);
     }
 
     private successDeactive = () => {
@@ -154,7 +143,7 @@ class GroupCard extends React.PureComponent<GroupProps> {
                     </div>
                 </div>
                 <div className="actions">
-                    <Button className="past-button" type="link" onClick={this.props.viewDetail} id={group.id.toString()}>View Detail</Button>
+                    <Button className="past-button" type="link" onClick={this.props.viewDetail} id={group.code}>View Detail</Button>
                     <Button className="take-attendance-button" type="primary" onClick={this.takeAttendance}>New session</Button>
                     <StartSessionModal
                         group={group}

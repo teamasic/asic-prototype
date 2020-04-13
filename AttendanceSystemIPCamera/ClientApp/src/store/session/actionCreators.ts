@@ -145,10 +145,9 @@ const createOrUpdateRecord = (
 		const temporaryUpdatedRecord: Record = {
 			id: -1,
 			attendee: {
-				id: updateInfo.attendeeId,
-				code: '',
+				code: updateInfo.attendeeCode,
 				name: '',
-				avatar: ''
+				image: ''
 			},
 			present: updateInfo.present
 		};
@@ -192,8 +191,8 @@ export const startGenerateExport = (exportRequest: ExportRequest, success: Funct
 	}
 }
 
-export const startGetPastSession = (groupId: number, loadSession: Function): AppThunkAction => async (dispatch, getState) => {
-	const apiResponse: ApiResponse = await getPastSession(groupId);
+export const startGetPastSession = (groupCode: string, loadSession: Function): AppThunkAction => async (dispatch, getState) => {
+	const apiResponse: ApiResponse = await getPastSession(groupCode);
 	if (apiResponse.success) {
 		loadSession(apiResponse.data);
 	} else {

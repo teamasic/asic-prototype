@@ -51,15 +51,13 @@ class StartSessionModal extends React.PureComponent<StartSessionModalProps> {
            error("Please choose room and unit")
         }
         else {
-            const groupId = this.props.group.id;
-            let currentRoom = this.props.roomList.filter(r => r.id == roomId)[0];
+            const groupCode = this.props.group.code;
             let currentSession = this.props.units[sessionIndex];
             const data = await createSession({
+                groupCode,
+                roomId,
                 startTime: currentSession.startTime,
                 endTime: currentSession.endTime,
-                rtspString: currentRoom.rtspString,
-                roomName: currentRoom.name,
-                groupId,
                 name: currentSession.name
             });
             if (data != null && data.data != null) {

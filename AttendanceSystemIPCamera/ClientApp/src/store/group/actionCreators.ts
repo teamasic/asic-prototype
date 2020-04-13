@@ -76,10 +76,10 @@ function updateGroupNameSuccess(updatedGroup: Group) {
     }
 }
 
-function refreshListAttendeeAfterDeleteSuccess(deletedAttendeeId: number) {
+function refreshListAttendeeAfterDeleteSuccess(deletedAttendeeCode: number) {
     return {
         type: ACTIONS.DELETE_ATTENDEE_GROUP_SUCCESS,
-        attendeeId: deletedAttendeeId
+        attendeeCode: deletedAttendeeCode
     }
 }
 
@@ -101,8 +101,8 @@ const requestGroups = (groupSearch: GroupSearch): AppThunkAction => async (dispa
     }
 }
 
-const requestGroupDetail = (id: number, stopLoadingTable: Function): AppThunkAction => async (dispatch, getState) => {
-    const apiResponse: ApiResponse = await getGroupDetail(id);
+const requestGroupDetail = (code: string, stopLoadingTable: Function): AppThunkAction => async (dispatch, getState) => {
+    const apiResponse: ApiResponse = await getGroupDetail(code);
     if (apiResponse.success) {
         dispatch(receiveGroupDetail(apiResponse.data));
         stopLoadingTable();
@@ -131,8 +131,8 @@ const postGroup = (newGroup: Group, reloadGroups: Function, error: Function): Ap
     }
 }
 
-const startDeactiveGroup = (id: number, groupSearch: GroupSearch, success: Function, error: Function): AppThunkAction => async (dispatch, getState) => {
-    const apiResponse: ApiResponse = await deactiveGroup(id);
+const startDeactiveGroup = (code: string, groupSearch: GroupSearch, success: Function, error: Function): AppThunkAction => async (dispatch, getState) => {
+    const apiResponse: ApiResponse = await deactiveGroup(code);
     if (apiResponse.success) {
         success();
         const groupResponse: ApiResponse = await getGroups(groupSearch);
@@ -148,7 +148,7 @@ const startDeactiveGroup = (id: number, groupSearch: GroupSearch, success: Funct
 }
 
 const startUpdateGroup = (group: Group, success: Function): AppThunkAction => async (dispatch, getState) => {
-    const apiResponse: ApiResponse = await updateGroup(group.id, group);
+    const apiResponse: ApiResponse = await updateGroup(group.code, group);
     if (apiResponse.success) {
         dispatch(updateGroupNameSuccess(apiResponse.data));
         success();
@@ -157,8 +157,8 @@ const startUpdateGroup = (group: Group, success: Function): AppThunkAction => as
     }
 }
 
-const startDeleteAttendeeGroup = (attendeeId: number, groupId: number, success: Function): AppThunkAction => async (dispatch, getState) => {
-    const apiResponse: ApiResponse = await deleteAttendeeGroup(attendeeId, groupId);
+const startDeleteAttendeeGroup = (attendeeCode: string, groupCode: string, success: Function): AppThunkAction => async (dispatch, getState) => {
+    const apiResponse: ApiResponse = await deleteAttendeeGroup(attendeeCode, groupCode);
     if (apiResponse.success) {
         console.log(apiResponse.data.attendeeId);
         dispatch(refreshListAttendeeAfterDeleteSuccess(apiResponse.data.attendeeId));
@@ -181,8 +181,8 @@ const startGetAttendeeByCode = (code: string, loadName: Function): AppThunkActio
     }
 }
 
-const startCreateAttendeeInGroup = (groupId: number, newAttendee: Attendee, success: Function, duplicateAttendee: Function): AppThunkAction => async (dispatch, getState) => {
-    const apiResponse: ApiResponse = await createAttendeeInGroup(groupId, newAttendee);
+const startCreateAttendeeInGroup = (groupCode: string, newAttendee: Attendee, success: Function, duplicateAttendee: Function): AppThunkAction => async (dispatch, getState) => {
+    const apiResponse: ApiResponse = await createAttendeeInGroup(groupCode, newAttendee);
     if (apiResponse.success) {
         dispatch(createAttendeeInGroupSuccess(apiResponse.data));
         success();
