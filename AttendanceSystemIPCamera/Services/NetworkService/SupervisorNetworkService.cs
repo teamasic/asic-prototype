@@ -135,7 +135,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 newChangeRequest.Record = null;
                 Send(newChangeRequest);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Send(ErrorMessage.CREATE_REQUEST_ERROR);
             }
@@ -160,7 +160,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 if (attendee != null)
                     return (true, attendee);
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
             return (false, null);
