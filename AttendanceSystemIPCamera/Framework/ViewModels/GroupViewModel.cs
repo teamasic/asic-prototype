@@ -9,7 +9,6 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
     public class GroupViewModel: BaseViewModel<Group>
     {
-        public int Id { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
         public int MaxSessionCount { get; set; }
@@ -28,7 +27,6 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
 
     public class GroupInSyncData : BaseViewModel<Group>
     {
-        public int Id { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
         public int MaxSessionCount { get; set; }

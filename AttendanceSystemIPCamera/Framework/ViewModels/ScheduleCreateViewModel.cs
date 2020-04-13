@@ -7,7 +7,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
     public class ScheduleCreateViewModel
     {
-        public int GroupId { get; set; }
+        public string GroupCode { get; set; }
         public string Slot { get; set; }
         public string Room { get; set; }
         public DateTime Date { get; set; }

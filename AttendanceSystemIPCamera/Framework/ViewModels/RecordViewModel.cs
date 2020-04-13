@@ -18,7 +18,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     public class RecordSearchViewModel
     {
         [Required]
-        public int AttendeeId { get; set; }
+        public string AttendeeCode { get; set; }
         [Required]
         public DateTime StartTime { get; set; }
         [Required]
@@ -28,7 +28,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     public class RecordNetworkViewModel : BaseViewModel<Record>
     {
         [JsonIgnore]
-        public int AttendeeId { get; set; }
+        public string AttendeeCode { get; set; }
         public bool Present { get; set; }
         public ChangeRequestSimpleViewModel ChangeRequest { get; set; }
     }

@@ -13,6 +13,6 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public DateTime EndTime { get; set; }
         public string RtspString { get; set; }
         public string RoomName { get; set; }
-        public int GroupId { get; set; }
+        public string GroupCode { get; set; }
     }
 }

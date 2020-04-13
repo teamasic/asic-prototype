@@ -13,7 +13,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public string Name { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public int GroupId { get; set; }
+        public string GroupCode { get; set; }
         public RecordViewModel Record { get; set; }
         [JsonIgnore]
         public GroupViewModel Group { get; set; }
@@ -24,10 +24,9 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public string Name { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public string RtspString { get; set; }
-        public string RoomName { get; set; }
+        public RoomViewModel Room { get; set; }
         [JsonIgnore]
-        public int GroupId { get; set; }
+        public string GroupCode { get; set; }
         public List<RecordNetworkViewModel> Records { get; set; }
     }
 
@@ -37,9 +36,8 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public string Name { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public string RtspString { get; set; }
-        public string RoomName { get; set; }
-        public int GroupId { get; set; }
+        public RoomViewModel Room { get; set; }
+        public string GroupCode { get; set; }
         public GroupInSyncData Group { get; set; }
     }
 
@@ -49,7 +47,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public string Name { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public int GroupId { get; set; }
+        public string GroupCode { get; set; }
         public string GroupName { get; set; }
         public string RoomName { get; set; }
     }
