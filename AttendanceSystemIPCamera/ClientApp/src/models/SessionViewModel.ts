@@ -10,7 +10,7 @@ export interface SessionNotificationViewModel {
     name: string;
     startTime: string;
     endTime: string;
-    groupId: number;
+    groupCode: string;
     groupName: string;
     roomName: string;
 }

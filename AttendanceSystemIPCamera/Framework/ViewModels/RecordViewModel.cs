@@ -11,7 +11,8 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     public class RecordViewModel : BaseViewModel<Record>
     {
         public int Id { get; set; }
-        public AttendeeViewModel Attendee { get; set; }
+        public AttendeeGroupViewModel AttendeeGroup {get; set;}
+        public AttendeeViewModel Attendee => AttendeeGroup?.Attendee;
         public SessionViewModel Session { get; set; }
         public bool Present { get; set; }
     }

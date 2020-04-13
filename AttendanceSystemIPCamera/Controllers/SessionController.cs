@@ -59,11 +59,11 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpGet("past")]
-        public BaseResponse<IEnumerable<SessionViewModel>> GetPastSessionByGroupId([FromQuery] int groupId)
+        public BaseResponse<IEnumerable<SessionViewModel>> GetPastSessionByGroupId([FromQuery] string groupCode)
         {
             return ExecuteInMonitoring(() =>
            {
-               var sessions = sessionService.GetSessionByGroupId(groupId);
+               var sessions = sessionService.GetSessionByGroupCode(groupCode);
                return mapper.ProjectTo<Session, SessionViewModel>(sessions);
            });
         }
