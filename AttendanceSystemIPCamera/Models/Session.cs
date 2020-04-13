@@ -19,7 +19,7 @@ namespace AttendanceSystemIPCamera.Models
         public string GroupCode { get; set; }
         public int RoomId { get; set; }
 
-        public virtual Group Groups { get; set; }
+        public virtual Group Group { get; set; }
         public virtual Room Room { get; set; }
         public virtual ICollection<Record> Records { get; set; }
     }

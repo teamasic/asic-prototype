@@ -50,7 +50,7 @@ namespace AttendanceSystemIPCamera.Framework.Database
                 entity.Property(e => e.IsActive).HasDefaultValueSql("1");
 
                 entity.HasOne(d => d.Attendee)
-                    .WithMany(p => p.AttendeeGroup)
+                    .WithMany(p => p.AttendeeGroups)
                     .HasForeignKey(d => d.AttendeeCode)
                     .OnDelete(DeleteBehavior.ClientSetNull);
 

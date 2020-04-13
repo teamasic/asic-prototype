@@ -15,9 +15,9 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
     {
         Task AddAsync(AttendeeGroup attendeeGroup);
         Task AddAsync(IEnumerable<AttendeeGroup> attendeeGroups);
-        IEnumerable<AttendeeGroup> GetByGroupId(int groupId);
-        AttendeeGroup Detete(int attendeeId, int groupId);
-        AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId);
+        IEnumerable<AttendeeGroup> GetByGroupCode(string groupCode);
+        AttendeeGroup Detete(string attendeeCode, string groupCode);
+        Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode);
     }
     public class AttendeeGroupService : IAttendeeGroupService
     {
@@ -46,19 +46,20 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
             unitOfWork.Commit();
         }
 
-        public IEnumerable<AttendeeGroup> GetByGroupId(int groupId)
+        public IEnumerable<AttendeeGroup> GetByGroupCode(string groupCode)
         {
             var attendeeGroups = attendeeGroupRepository
-                .GetByGroupId(groupId)
+                .GetByGroupCode(groupCode)
                 .Where(ag => ag.IsActive)
                 .ToList();
-            attendeeGroups.ForEach(ag => { ag.Attendee = attendeeService.GetById(ag.AttendeeId).Result;});
+            attendeeGroups.ForEach(ag => { ag.Attendee = attendeeService.GetByAttendeeCode(ag.AttendeeCode);});
             return attendeeGroups;
         }
 
-        public AttendeeGroup Detete(int attendeeId, int groupId)
+        public async Task<AttendeeGroup> Detete(string attendeeCode, string groupCode)
         {
-            var attendeeGroupInDb = attendeeGroupRepository.GetByAttendeeIdAndGroupId(attendeeId, groupId);
+            var attendeeGroupInDb = await attendeeGroupRepository
+                .GetByAttendeeCodeAndGroupCode(attendeeCode, groupCode);
             if(attendeeGroupInDb != null)
             {
                 attendeeGroupInDb.IsActive = false;
@@ -67,9 +68,9 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
             return attendeeGroupInDb;
         }
 
-        public AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId)
+        public async Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode)
         {
-            return attendeeGroupRepository.GetByAttendeeIdAndGroupId(attendeeId, groupId);
+            return await attendeeGroupRepository.GetByAttendeeCodeAndGroupCode(attendeeCode, groupCode);
         }
     }
 }

@@ -19,11 +19,11 @@ namespace AttendanceSystemIPCamera.Repositories
         public Task<Session> GetActiveSession();
         public void SetActiveSession(int sessionId);
         bool isSessionRunning();
-        List<Session> GetSessionsWithRecords(List<int> groups);
-        List<Session> GetSessionExport(int groupId, DateTime startDate, DateTime endDate);
-        List<Session> GetSessionExport(int groupId, DateTime date);
-        List<Session> GetSessionByGroupId(int groupId);
-        Task<Session> GetSessionWithGroupAndTime(int groupId, DateTime startTime, DateTime endTime);
+        List<Session> GetSessionsWithRecords(List<string> groups);
+        List<Session> GetSessionExport(string groupCode, DateTime startDate, DateTime endDate);
+        List<Session> GetSessionExport(string groupCode, DateTime date);
+        List<Session> GetSessionByGroupCode(string groupCode);
+        Task<Session> GetSessionWithGroupAndTime(string groupCode, DateTime startTime, DateTime endTime);
         public ICollection<string> GetSessionUnknownImages(int sessionId);
         public void RemoveActiveSession();
     }
@@ -60,6 +60,7 @@ namespace AttendanceSystemIPCamera.Repositories
                 .Include(s => s.Group)
                     .ThenInclude(g => g.AttendeeGroups)
                         .ThenInclude(ag => ag.Attendee)
+                .Include(s => s.Room)
                 .FirstOrDefaultAsync(x => x.Id == globalState.CurrentActiveSession);
             session.Group.AttendeeGroups = session.Group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
             return session;
@@ -74,39 +75,40 @@ namespace AttendanceSystemIPCamera.Repositories
                 .Include(s => s.Group)
                     .ThenInclude(g => g.AttendeeGroups)
                         .ThenInclude(ag => ag.Attendee)
+                .Include(s => s.Room)
                 .FirstOrDefaultAsync(x => (int) id == x.Id);
             session.Group.AttendeeGroups = session.Group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
             return session;
         }
 
-        public List<Session> GetSessionsWithRecords(List<int> groups)
+        public List<Session> GetSessionsWithRecords(List<string> groups)
         {
-            return Get(s => groups.Contains(s.GroupId), null, includeProperties: "Records,Group").ToList();
+            return Get(s => groups.Contains(s.GroupCode), null, includeProperties: "Records,Group").ToList();
         }
 
-        public List<Session> GetSessionExport(int groupId, DateTime startDate, DateTime endDate)
+        public List<Session> GetSessionExport(string groupCode, DateTime startDate, DateTime endDate)
         {
-            return Get(s => s.GroupId == groupId && s.StartTime.CompareTo(startDate) > 0 && s.StartTime.CompareTo(endDate) < 0,
+            return Get(s => s.GroupCode == groupCode && s.StartTime.CompareTo(startDate) > 0 && s.StartTime.CompareTo(endDate) < 0,
                 null, includeProperties: "Records,Group").ToList();
         }
 
-        public Task<Session> GetSessionWithGroupAndTime(int groupId, DateTime startTime, DateTime endTime)
+        public Task<Session> GetSessionWithGroupAndTime(string groupCode, DateTime startTime, DateTime endTime)
         {
             return dbSet
                 .Include(s => s.Group)
-                .FirstOrDefaultAsync(s => s.GroupId.Equals(groupId) && 
+                .FirstOrDefaultAsync(s => s.GroupCode.Equals(groupCode) && 
                 s.StartTime.CompareTo(startTime) == 0 && s.EndTime.CompareTo(endTime) == 0);
         }
 
-        public List<Session> GetSessionExport(int groupId, DateTime date)
+        public List<Session> GetSessionExport(string groupCode, DateTime date)
         {
-            return Get(s => s.GroupId == groupId && s.StartTime.Date.CompareTo(date.Date) == 0,
+            return Get(s => s.GroupCode.Equals(groupCode) && s.StartTime.Date.CompareTo(date.Date) == 0,
                 null, includeProperties: "Group").ToList();
         }
 
-        public List<Session> GetSessionByGroupId(int groupId)
+        public List<Session> GetSessionByGroupCode(string groupCode)
         {
-            return Get(s => s.GroupId == groupId).ToList();
+            return Get(s => s.GroupCode.Equals(groupCode)).ToList();
         }
 
         public ICollection<string> GetSessionUnknownImages(int sessionId)

@@ -7,23 +7,18 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Repositories
 {
-    public interface IAttendeeGroupRepository: IDisposable
+    public interface IAttendeeGroupRepository: IRepository<AttendeeGroup>, IDisposable
     {
         Task Add(AttendeeGroup entity);
         Task Add(IEnumerable<AttendeeGroup> entities);
-        IEnumerable<AttendeeGroup> GetByGroupId(int groupId);
-        AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId);
+        IEnumerable<AttendeeGroup> GetByGroupCode(string groupCode);
+        Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode);
 
     }
-    public class AttendeeGroupRepository : IAttendeeGroupRepository
+    public class AttendeeGroupRepository : Repository<AttendeeGroup>, IAttendeeGroupRepository
     {
-        protected readonly DbSet<AttendeeGroup> dbSet;
-        protected readonly DbContext context;
-
-        public AttendeeGroupRepository(DbContext context)
+        public AttendeeGroupRepository(DbContext context): base(context)
         {
-            this.context = context;
-            this.dbSet = context.Set<AttendeeGroup>();
         }
 
         public async Task Add(AttendeeGroup entity)
@@ -36,16 +31,18 @@ namespace AttendanceSystemIPCamera.Repositories
             await dbSet.AddRangeAsync(entities);
         }
 
-        public IEnumerable<AttendeeGroup> GetByGroupId(int groupId)
+        public IEnumerable<AttendeeGroup> GetByGroupCode(string groupCode)
         {
-            return dbSet.Where(ag => ag.GroupId == groupId).ToList();
+            return dbSet.Where(ag => ag.GroupCode.Equals(groupCode)).ToList();
         }
 
-        public AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId)
+        public Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode)
         {
-            return dbSet.Where(ag => ag.AttendeeId == attendeeId 
-            && ag.GroupId == groupId && ag.IsActive)
-                .FirstOrDefault();
+            return dbSet.Where(ag => ag.GroupCode.Equals(groupCode)
+            && ag.AttendeeCode.Equals(attendeeCode) && ag.IsActive)
+                .Include(ag => ag.Attendee)
+                .Include(ag => ag.Group)
+                .FirstOrDefaultAsync();
         }
 
         #region IDisposable Support

@@ -54,13 +54,13 @@ namespace AttendanceSystemIPCamera.Controllers
             });
         }
 
-        [HttpGet("{id}")]
-        public Task<BaseResponse<GroupViewModel>> GetById(int id)
+        [HttpGet("{code}")]
+        public Task<BaseResponse<GroupViewModel>> GetByCode(string code)
         {
             return ExecuteInMonitoring(async () =>
             {
                 var group = await service.GetByGroupId(id);
-                var attendeeGroups = attendeeGroupService.GetByGroupId(group.Id);
+                var attendeeGroups = attendeeGroupService.GetByGroupCode(code);
                 group.AttendeeGroups = attendeeGroups.ToList();
                 return mapper.Map<GroupViewModel>(group);
             });

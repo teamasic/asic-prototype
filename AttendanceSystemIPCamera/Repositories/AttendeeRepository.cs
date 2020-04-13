@@ -16,7 +16,6 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface IAttendeeRepository : IRepository<Attendee>
     {
         Task<Attendee> GetByAttendeeCode(string attendeeCode);
-        Attendee GetByCode(string code);
         Attendee GetByCodeForNetwork(string code);
         List<Attendee> GetAttendanceDataForSync(DateTime latestSyncTime);
     }
@@ -29,11 +28,6 @@ namespace AttendanceSystemIPCamera.Repositories
         public async Task<Attendee> GetByAttendeeCode(string attendeeCode)
         {
             return await dbSet.FirstOrDefaultAsync(a => a.Code.Equals(attendeeCode));
-        }
-
-        public Attendee GetByCode(string code)
-        {
-            return dbSet.Where(a => code.Equals(a.Code)).FirstOrDefault();
         }
 
         public Attendee GetByCodeForNetwork(string code)

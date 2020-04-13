@@ -22,5 +22,7 @@ namespace AttendanceSystemIPCamera.Models
         public virtual ChangeRequest ChangeRequest { get; set; }
         [NotMapped]
         public Attendee Attendee => AttendeeGroup?.Attendee;
+        [NotMapped]
+        public Group Group => AttendeeGroup?.Group;
     }
 }

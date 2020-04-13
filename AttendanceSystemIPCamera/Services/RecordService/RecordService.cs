@@ -37,6 +37,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         private readonly IRecordRepository recordRepository;
         private readonly ISessionRepository sessionRepository;
         private readonly IAttendeeRepository attendeeRepository;
+        private readonly IAttendeeGroupRepository attendeeGroupRepository;
         private readonly IGroupRepository groupRepository;
         private readonly IRealTimeService realTimeService;
         private readonly IMapper mapper;
@@ -50,6 +51,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             sessionRepository = unitOfWork.SessionRepository;
             attendeeRepository = unitOfWork.AttendeeRepository;
             groupRepository = unitOfWork.GroupRepository;
+            attendeeGroupRepository = unitOfWork.AttendeeGroupRepository;
             this.realTimeService = realTimeService;
             this.mapper = mapper;
             this.myConfiguration = myConfiguration;
@@ -72,7 +74,7 @@ namespace AttendanceSystemIPCamera.Services.RecordService
 
             // check record not exist in session and attendee belongs to group
             var record = await recordRepository.GetRecordBySessionAndAttendeeCode(activeSession.Id, viewModel.Code);
-            var isAttendeeInGroup = await groupRepository.CheckAttendeeExistedInGroup(activeSession.Group.Id, viewModel.Code);
+            var isAttendeeInGroup = await groupRepository.CheckAttendeeExistedInGroup(activeSession.Group.Code, viewModel.Code);
 
             if (!isAttendeeInGroup)
             {
@@ -92,17 +94,17 @@ namespace AttendanceSystemIPCamera.Services.RecordService
 
             else
             {
-                var attendee = await attendeeRepository.GetByAttendeeCode(viewModel.Code);
+                var attendeeGroup = await attendeeGroupRepository
+                    .GetByAttendeeCodeAndGroupCode(viewModel.Code, activeSession.Group.Code);
                 var newRecord = new Record
                 {
                     Session = activeSession,
-                    GroupId = activeSession.GroupId,
-                    AttendeeId = attendee.Id,
-                    AttendeeCode = attendee.Code,
+                    AttendeeCode = viewModel.Code,
                     SessionName = activeSession.Name,
                     StartTime = activeSession.StartTime,
                     EndTime = activeSession.EndTime,
-                    Present = true
+                    Present = true,
+                    AttendeeGroup = attendeeGroup
                 };
                 await recordRepository.Add(newRecord);
                 unitOfWork.Commit();
@@ -112,7 +114,8 @@ namespace AttendanceSystemIPCamera.Services.RecordService
 
         public async Task<Record> Set(SetRecordViewModel viewModel)
         {
-            var record = recordRepository.GetRecordBySessionAndAttendee(viewModel.SessionId, viewModel.AttendeeId);
+            var record = recordRepository
+                .GetRecordBySessionAndAttendee(viewModel.SessionId, viewModel.AttendeeCode);
             Session session;
             if (viewModel.SessionId != -1)
             {
@@ -124,19 +127,22 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             }
             if (record == null)
             {
-                var attendee = await attendeeRepository.GetById(viewModel.AttendeeId);
-                record = new Record
+                var attendeeGroup = await attendeeGroupRepository
+                    .GetByAttendeeCodeAndGroupCode(viewModel.AttendeeCode, session.Group.Code);
+                if (attendeeGroup != null)
                 {
-                    Session = session,
-                    AttendeeId = attendee.Id,
-                    GroupId = session.GroupId,
-                    AttendeeCode = attendee.Code,
-                    SessionName = session.Name,
-                    StartTime = session.StartTime,
-                    EndTime = session.EndTime,
-                    Present = viewModel.Present
-                };
-                await recordRepository.Add(record);
+                    record = new Record
+                    {
+                        Session = session,
+                        AttendeeCode = viewModel.AttendeeCode,
+                        SessionName = session.Name,
+                        StartTime = session.StartTime,
+                        EndTime = session.EndTime,
+                        Present = viewModel.Present,
+                        AttendeeGroup = attendeeGroup
+                    };
+                    await recordRepository.Add(record);
+                }
             }
             else
             {
@@ -153,22 +159,21 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             var activeSession = await sessionRepository.GetActiveSession();
             if (activeSession != null)
             {
-                var allAttendeeIds = activeSession.Group.AttendeeGroups.Select(ag => ag.AttendeeId).ToList();
-                var attendedAttendeeIds = (await recordRepository.GetRecordsBySessionId(activeSession.Id)).Select(ar => ar.AttendeeId).ToList();
-                var notRecordIds = allAttendeeIds.Where(id => !attendedAttendeeIds.Contains(id)).ToList();
-                notRecordIds.ForEach(async (attendeeId) =>
+                var allAttendeeGroupIds = activeSession.Group.AttendeeGroups.Select(ag => ag.Id).ToList();
+                var attendedAttendeeGroupIds = (await recordRepository.GetRecordsBySessionId(activeSession.Id)).Select(ar => ar.AttendeeGroupId).ToList();
+                var notRecordIds = allAttendeeGroupIds.Where(id => !attendedAttendeeGroupIds.Contains(id)).ToList();
+                notRecordIds.ForEach(async (attendeeGroupId) =>
                 {
-                    var attendee = await attendeeRepository.GetById(attendeeId);
+                    var attendeeGroup = await attendeeGroupRepository.GetById(attendeeGroupId);
                     Record record = new Record
                     {
                         Session = activeSession,
-                        GroupId = activeSession.GroupId,
-                        AttendeeId = attendee.Id,
-                        AttendeeCode = attendee.Code,
+                        AttendeeCode = attendeeGroup.AttendeeCode,
                         SessionName = activeSession.Name,
                         StartTime = activeSession.StartTime,
                         EndTime = activeSession.EndTime,
-                        Present = false
+                        Present = false,
+                        AttendeeGroup = attendeeGroup
                     };
                     await recordRepository.Add(record);
                 });
@@ -255,16 +260,17 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                     else
                     {
                         var attendee = attendeesMap[code];
+                        var attendeeGroup = await attendeeGroupRepository
+                            .GetByAttendeeCodeAndGroupCode(code, activeSession.GroupCode);
                         var newRecord = new Record
                         {
                             Session = activeSession,
-                            GroupId = activeSession.GroupId,
-                            AttendeeId = attendee.Id,
                             AttendeeCode = attendee.Code,
                             SessionName = activeSession.Name,
                             StartTime = activeSession.StartTime,
                             EndTime = activeSession.EndTime,
-                            Present = true
+                            Present = true,
+                            AttendeeGroup = attendeeGroup
                         };
                         await recordRepository.Add(newRecord);
                         recordResults.Add(newRecord);

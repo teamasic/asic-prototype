@@ -238,7 +238,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 //Filter values in temps that meet the condition
                 foreach (var item in temps.Values)
                 {
-                    float calculatedPercent = item.Count * 100 / group.MaxSessionCount;
+                    float calculatedPercent = item.Count * 100 / group.TotalSession;
                     var exportData = new SessionExportWithConditionViewModel();
                     switch(multipleDateCondition)
                     {
@@ -314,9 +314,9 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             return sessionExports;
         }
 
-        private int GetIndexOf(int groupId, Session session)
+        private int GetIndexOf(string groupCode, Session session)
         {
-            var sessions = sessionRepository.GetSessionByGroupId(groupId).OrderBy(s => s.Id).ToList();
+            var sessions = sessionRepository.GetSessionByGroupCode(groupCode).OrderBy(s => s.Id).ToList();
             if (sessions.Count > 0)
             {
                 return sessions.IndexOf(session) + 1;
@@ -325,17 +325,18 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         }
         #endregion
 
-        public List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupIDs(List<int> groupIds, int attendeeId)
+        public List<GroupNetworkViewModel> GetSessionsWithRecordsByGroupIDs(
+            List<string> groupCodes, string attendeeCode)
         {
-            var sessions = sessionRepository.GetSessionsWithRecords(groupIds);
+            var sessions = sessionRepository.GetSessionsWithRecords(groupCodes);
             var groupSessions = new List<GroupNetworkViewModel>();
-            foreach (var groupId in groupIds)
+            foreach (var groupCode in groupCodes)
             {
-                var sessionsInGroupId = sessions.Where(s => s.GroupId == groupId).ToList();
-                if (sessionsInGroupId != null && sessionsInGroupId.Count > 0)
+                var sessionsInGroupCode = sessions.Where(s => s.GroupCode.Equals(groupCode)).ToList();
+                if (sessionsInGroupCode != null && sessionsInGroupCode.Count > 0)
                 {
-                    var group = sessionsInGroupId.FirstOrDefault().Group;
-                    var sessionViewModels = sessionsInGroupId.Select(s =>
+                    var group = sessionsInGroupCode.FirstOrDefault().Group;
+                    var sessionViewModels = sessionsInGroupCode.Select(s =>
                     {
                         var svm = mapper.Map<Session, SessionNetworkViewModel>(s);
                         svm.Records = mapper.ProjectTo<Record, RecordNetworkViewModel>(s.Records)?.ToList();
@@ -356,7 +357,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 
         public async Task<SessionViewModel> CreateSession(CreateSessionViewModel sessionStarterViewModel)
         {
-            var session = await sessionRepository.GetSessionWithGroupAndTime(sessionStarterViewModel.GroupId, sessionStarterViewModel.StartTime, sessionStarterViewModel.EndTime);
+            var session = await sessionRepository.GetSessionWithGroupAndTime(sessionStarterViewModel.GroupCode, sessionStarterViewModel.StartTime, sessionStarterViewModel.EndTime);
             if (session != null)
             {
                 throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_AlREADY_EXISTED);
@@ -364,7 +365,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             else
             {
                 var newSession = mapper.Map<Session>(sessionStarterViewModel);
-                newSession.Group = await groupRepository.GetById(sessionStarterViewModel.GroupId);
+                newSession.Group = groupRepository.GetByCode(sessionStarterViewModel.GroupCode);
                 return mapper.Map<SessionViewModel>(await Add(newSession));
             }
         }
@@ -385,7 +386,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 sessionRepository.SetActiveSession(viewModel.SessionId);
                 if (viewModel.Multiple)
                 {
-                    await recognitionService.StartRecognitionMultiple(session.RtspString);
+                    await recognitionService.StartRecognitionMultiple(session.Room.CameraConnectionString);
                 }
                 else
                 {
@@ -424,9 +425,9 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
         }
 
-        public List<Session> GetSessionByGroupId(int groupId)
+        public List<Session> GetSessionByGroupCode(string groupCode)
         {
-            return sessionRepository.GetSessionByGroupId(groupId);
+            return sessionRepository.GetSessionByGroupCode(groupCode);
         }
 
         private int GetDurationWhileRunningInMinutes(DateTime startTime, DateTime endTime)

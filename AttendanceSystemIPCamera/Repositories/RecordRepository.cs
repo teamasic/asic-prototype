@@ -15,7 +15,7 @@ namespace AttendanceSystemIPCamera.Repositories
 {
     public interface IRecordRepository: IRepository<Record>
     {
-        public Record GetRecordBySessionAndAttendee(int sessionId, int attendeeId);
+        public Record GetRecordBySessionAndAttendee(int sessionId, string attendeeCode);
         Task<IEnumerable<Record>> GetRecordsBySessionId(int id);
         Task<Record> GetRecordBySessionAndAttendeeCode(int sessionId, string attendeeCode);
         List<Record> GetAttendanceDataForSync(DateTime fromTime, DateTime toTime);
@@ -27,9 +27,9 @@ namespace AttendanceSystemIPCamera.Repositories
         {
         }
 
-        public Record GetRecordBySessionAndAttendee(int sessionId, int attendeeId)
+        public Record GetRecordBySessionAndAttendee(int sessionId, string attendeeCode)
         {
-            return dbSet.Where(record => record.Session.Id == sessionId && record.AttendeeId == attendeeId).FirstOrDefault();
+            return dbSet.Where(record => record.Session.Id == sessionId && record.AttendeeCode.Equals(attendeeCode)).FirstOrDefault();
         }
 
         public async Task<Record> GetRecordBySessionAndAttendeeCode(int sesionId, string attendeeCode)

@@ -22,8 +22,8 @@ namespace AttendanceSystemIPCamera.Services.GroupService
         public Task<Group> AddIfNotInDb(GroupViewModel groupViewModel);
         public Group DeactiveGroup(int groupId);
         public Group Update(int id, GroupViewModel updatedGroup);
-        public Task<Group> GetByGroupId(int id);
-        public Task<Attendee> AddAttendeeInGroup(int groupId, AttendeeViewModel attendee);
+        public Task<Group> GetByGroupCode(string code);
+        public Task<Attendee> AddAttendeeInGroup(string groupCode, AttendeeViewModel attendee);
     }
 
     public class GroupService : BaseService<Group>, IGroupService
@@ -43,9 +43,9 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             this.mapper = mapper;
         }
 
-        public async Task<Attendee> AddAttendeeInGroup(int groupId, AttendeeViewModel attendee)
+        public async Task<Attendee> AddAttendeeInGroup(string groupCode, AttendeeViewModel attendee)
         {
-            var groupInDb = await GetById(groupId);
+            var groupInDb = await groupRepository.GetByCode(groupCode);
             if(groupInDb != null)
             {
                 var attendeeInDb = attendeeService.GetByAttendeeCode(attendee.Code);
@@ -56,8 +56,8 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                     var attendeeGroup = new AttendeeGroup()
                     {
                         Attendee = attendeeInDb,
-                        AttendeeId = attendeeInDb.Id,
-                        GroupId = groupId,
+                        AttendeeCode = attendeeInDb.Code,
+                        GroupCode = groupCode,
                         IsActive = true
                     };
                     await attendeeGroupService.AddAsync(attendeeGroup);
@@ -65,14 +65,15 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                 }
                 else
                 {
-                    var attendeeGroup = attendeeGroupService.GetByAttendeeIdAndGroupId(attendeeInDb.Id, groupId);
+                    var attendeeGroup = await attendeeGroupService
+                        .GetByAttendeeCodeAndGroupCode(attendeeInDb.Code, groupCode);
                     if (attendeeGroup == null)
                     {
                         attendeeGroup = new AttendeeGroup()
                         {
                             Attendee = attendeeInDb,
-                            AttendeeId = attendeeInDb.Id,
-                            GroupId = groupId,
+                            AttendeeCode = attendeeInDb.Code,
+                            GroupCode = groupCode,
                             IsActive = true
                         };
                         await attendeeGroupService.AddAsync(attendeeGroup);
@@ -83,7 +84,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                         attendee.Code, groupInDb.Code);
                 }
             }
-            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, groupId);
+            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, groupCode);
         }
 
         public async Task<Group> AddIfNotInDb(GroupViewModel groupViewModel)
@@ -98,7 +99,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                 {
                     return await Add(group);
                 }
-                throw new AppException(HttpStatusCode.Conflict, ErrorMessage.GROUP_ALREADY_EXISTED, groupInDb.Code);
+                throw new AppException(HttpStatusCode.Conflict, ErrorMessage.GROUP_ALREADY_EXISTED, group.Code);
             }
             var invalidMsg = result.ToString("\n");
             throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.INVALID_GROUP, invalidMsg);
@@ -144,7 +145,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                 if (groupInDb != null)
                 {
                     groupInDb.Name = updatedGroup.Name;
-                    groupInDb.MaxSessionCount = updatedGroup.MaxSessionCount;
+                    groupInDb.TotalSession = updatedGroup.TotalSession;
                     Update(groupInDb);
                     return groupInDb;
                 }
