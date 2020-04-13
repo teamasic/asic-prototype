@@ -31,7 +31,6 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
         private IRoomRepository roomRepository;
         private IAttendeeGroupRepository attendeeGroupRepository;
         private IChangeRequestRepository changeRequestRepository;
-        private IScheduleRepository scheduleRepository;
 
         public IGroupRepository GroupRepository
         {
@@ -110,18 +109,6 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
                     changeRequestRepository = new ChangeRequestRepository(DbContext);
                 }
                 return changeRequestRepository;
-            }
-        }
-
-        public IScheduleRepository ScheduleRepository
-        {
-            get
-            {
-                if(scheduleRepository == null)
-                {
-                    scheduleRepository = new ScheduleRepository(DbContext);
-                }
-                return scheduleRepository;
             }
         }
         #endregion

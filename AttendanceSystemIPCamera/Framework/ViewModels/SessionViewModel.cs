@@ -51,4 +51,21 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public string GroupName { get; set; }
         public string RoomName { get; set; }
     }
+
+    public class SessionRefactorViewModel : BaseViewModel<Session>
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public RoomViewModel room { get; set; }
+    }
+
+    public class SessionCreateViewModel
+    {
+        public string GroupCode { get; set; }
+        public string Slot { get; set; }
+        public string Room { get; set; }
+        public DateTime Date { get; set; }
+    }
 }
