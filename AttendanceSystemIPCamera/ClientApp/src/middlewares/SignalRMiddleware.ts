@@ -4,8 +4,10 @@ import { ApplicationState } from "../store";
 import createSignalRConnection from './SignalRConnection';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import { changeRequestActionCreators } from '../store/changeRequest/actionCreators';
+import { notificationActionCreators } from '../store/notification/actionCreators';
 import { ACTIONS as SESSION_ACTIONS } from '../store/session/actionCreators';
-import { success } from '../utils';
+import Notification from '../models/Notification';
+import { success, generateUniqueId } from '../utils';
 
 const ACTIONS = {
     ...SESSION_ACTIONS
@@ -38,6 +40,7 @@ export function attachEvents(connection: signalR.HubConnection, dispatch: any) {
     const interval = setInterval(() => {
         if (connection.state === signalR.HubConnectionState.Connected) {
             connection.send('heartbeat');
+            // console.log('heartbeat');
         }
     }, 10000);
 
@@ -72,11 +75,24 @@ export function attachEvents(connection: signalR.HubConnection, dispatch: any) {
     });
 
     connection.on("keepAlive", () => {
+        // console.log('keep alive');
     });
 
     connection.on("newChangeRequest", () => {
-        console.log('receiving real time thingy here!');
         dispatch(changeRequestActionCreators.incrementUnresolvedCount());
+    });
+
+    connection.on("notificationSent", (notiJson: string) => {
+        try {
+            const notification = JSON.parse(notiJson) as Notification;
+            notification.id = generateUniqueId();
+            notification.read = false;
+            notification.timeSent = new Date();
+            console.log(notification);
+            dispatch(notificationActionCreators.receiveNotification(notification));
+        } catch (e) {
+            console.log(e);
+        }
     });
 }
 

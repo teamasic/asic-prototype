@@ -7,7 +7,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
     public class ExportRequestViewModel
     {
-        public int GroupId { get; set; }
+        public string GroupCode { get; set; }
         public bool IsSingleDate { get; set; }
         public bool WithCondition { get; set; }
         public DateTime SingleDate { get; set; }

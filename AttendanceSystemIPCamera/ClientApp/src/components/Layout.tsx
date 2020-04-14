@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { ApplicationState } from '../store';
 import { bindActionCreators } from 'redux';
-import { Container } from 'reactstrap';
 import { connect } from 'react-redux';
 import NavMenu from './NavMenu';
-import { Layout, Menu, Breadcrumb, Icon, Badge, Row, Col, Spin } from 'antd';
+import { Layout, Menu, Breadcrumb, Icon, Dropdown, Badge, Row, Col, Spin, Avatar, Button } from 'antd';
 import classNames from 'classnames';
 import '../styles/Layout.css';
 import { Link, withRouter } from 'react-router-dom';
@@ -15,27 +14,33 @@ import { sessionActionCreators } from '../store/session/actionCreators';
 import { ChangeRequestStatusFilter } from '../models/ChangeRequest';
 import { constants } from '../constant';
 import * as firebase from '../firebase';
+import { UserState } from '../store/user/userState';
+import { userActionCreators } from '../store/user/userActionCreators';
+import { NotificationState } from '../store/notification/state';
+import MenuBar from './MenuBar';
 const { Header, Sider, Content, Footer } = Layout;
 
 // At runtime, Redux will merge together...
 type LayoutProps =
+	UserState &
 	ChangeRequestState & // ... state we've requested from the Redux store
+	NotificationState &
 	typeof changeRequestActionCreators &
 	typeof sessionActionCreators &
+	typeof userActionCreators &
 	RouteComponentProps<{}>; // ... plus incoming routing parameters
+
 
 class PageLayout extends React.Component<
 	LayoutProps,
 	{
 		collapsed: boolean;
 		selectedKeys: string[];
-		isLoggingOut: boolean;
 	}
 	> {
 	state = {
 		collapsed: false,
 		selectedKeys: ['groups'],
-		isLoggingOut: false
 	};
 
 	onCollapse = (collapsed: boolean) => {
@@ -59,9 +64,8 @@ class PageLayout extends React.Component<
 	}
 
 	render() {
-		const authData = localStorage.getItem(constants.AUTH_IN_LOCAL_STORAGE);
 		console.log(this.props.history.location.pathname)
-		return (<>{ authData ? this.renderLayout() : this.renderEmty()}</>);
+		return (<>{this.props.isLogin ? this.renderLayout() : this.renderEmty()}</>);
 	}
 
 	private renderEmty() {
@@ -77,54 +81,53 @@ class PageLayout extends React.Component<
 	}
 
 	renderLayout() {
-		
 		return (
-				<Layout className="layout">
-					<Sider
-						className="sider"
-						collapsible
-						collapsed={this.state.collapsed}
-						onCollapse={this.onCollapse}
-					>
-						<div className="logo">ASIC</div>
-						<Menu theme="dark"
-							selectedKeys={this.state.selectedKeys}
-							onSelect={item => this.setState({
-								selectedKeys: [item.key]
-							})}
-							mode="inline">
-							<Menu.Item key="groups">
-								<Icon type="hdd" />
-								<div className="link-container">
-									<Link to="/">
-										Your groups
+			<Layout className="layout">
+				<Sider
+					className="sider"
+					collapsible
+					collapsed={this.state.collapsed}
+					onCollapse={this.onCollapse}
+				>
+					<div className="logo">ASIC</div>
+					<Menu theme="dark"
+						selectedKeys={this.state.selectedKeys}
+						onSelect={item => this.setState({
+							selectedKeys: [item.key]
+						})}
+						mode="inline">
+						<Menu.Item key="groups">
+							<Icon type="hdd" />
+							<span className="link-container">
+								<Link to="/">
+									Your groups
 								</Link>
-								</div>
-							</Menu.Item>
-							<Menu.Item key="change-requests">
-								<Icon type="file-exclamation" />
-								<div className="link-container">
-									<Link to="/change-requests">
-										Change requests
+							</span>
+						</Menu.Item>
+						<Menu.Item key="change-requests">
+							<Icon type="file-exclamation" />
+							<span className="link-container">
+								<Link to="/change-requests">
+									Change requests
 								</Link>
-									<Badge count={this.props.unresolvedCount} showZero={false}
-										className="borderless-badge" style={{
-											marginLeft: '5px'
-										}}>
-									</Badge>
-							</div>
+								<Badge count={this.props.unresolvedCount} showZero={false}
+									className="borderless-badge" style={{
+										marginLeft: '5px'
+									}}>
+								</Badge>
+							</span>
 						</Menu.Item>
 						<Menu.Item key="settings">
 							<Icon type="sync" />
-							<div className="link-container">
+							<span className="link-container">
 								<Link to="/settings">
 									Settings
 								</Link>
-							</div>
+							</span>
 						</Menu.Item>
 						<Menu.Item key="logout" onClick={() => this.logout()}>
 							<Icon type="logout" />
-							<span>Logout</span>
+							<span className="link-container">Logout</span>
 						</Menu.Item>
 					</Menu>
 				</Sider>
@@ -132,6 +135,7 @@ class PageLayout extends React.Component<
 					'inner-layout': true,
 					'with-sidebar-collapsed': this.state.collapsed
 				})}>
+					<MenuBar />
 					<Content className="content">
 						{this.props.children}
 					</Content>
@@ -141,13 +145,10 @@ class PageLayout extends React.Component<
 	}
 
 	private logout() {
-		this.setState({ isLoggingOut: true });
-		const authData = localStorage.getItem(constants.AUTH_IN_LOCAL_STORAGE);
-		if (authData != null) {
+		if (this.props.isLogin) {
 			firebase.auth.doSignOut().then(() => {
 				localStorage.removeItem(constants.AUTH_IN_LOCAL_STORAGE);
-				window.location.href = "/";
-				this.setState({ isLoggingOut: false });
+				this.props.logout();
 			});
 		}
 	}
@@ -158,10 +159,13 @@ class PageLayout extends React.Component<
 
 export default withRouter(connect(
 	(state: ApplicationState) => ({
-		...state.changeRequests
+		...state.changeRequests,
+		...state.user,
+		...state.notifications
 	}), // Selects which state properties are merged into the component's props
 	dispatch => bindActionCreators({
 		...changeRequestActionCreators,
-		...sessionActionCreators
+		...sessionActionCreators,
+		...userActionCreators
 	}, dispatch) // Selects which action creators are merged into the component's props
 )(PageLayout as any));

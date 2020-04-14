@@ -36,12 +36,12 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPost("manually")]
-        public Task<BaseResponse<RecordViewModel>> RecordAttendanceManually([FromBody] SetRecordViewModel viewModel)
+        public Task<BaseResponse<SetRecordViewModel>> RecordAttendanceManually([FromBody] SetRecordViewModel viewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
                 var record = await recordService.Set(viewModel);
-                return mapper.Map<RecordViewModel>(record);
+                return mapper.Map<SetRecordViewModel>(record);
             });
         }
         [HttpPost]
@@ -51,10 +51,10 @@ namespace AttendanceSystemIPCamera.Controllers
             {
                 if (viewModel.Code.Equals(Constants.Code.UNKNOWN))
                 {
-                    globalStateService.AddUnknownImage(viewModel.Avatar);
-                    await realTimeService.MarkAttendeeAsUnknown(viewModel.Avatar);
+                    globalStateService.AddUnknownImage(viewModel.Image);
+                    await realTimeService.MarkAttendeeAsUnknown(viewModel.Image);
                     return new SetRecordViewModel {
-                        AttendeeId = -1
+                        AttendeeCode = Constants.Code.UNKNOWN
                     };
                 }
                 else

@@ -99,7 +99,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                     })
                     this.setFileName();
                     var exportRequest = {
-                        groupId: this.props.group.id,
+                        groupCode: this.props.group.code,
                         isSingleDate: this.state.timePicker == TIME_OPTIONS.SINGLE_DATE,
                         withCondition: this.isWithCondition(),
                         singleDate: this.state.singleDate.format("YYYY-MM-DD"),

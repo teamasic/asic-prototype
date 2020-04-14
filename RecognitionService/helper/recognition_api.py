@@ -20,7 +20,7 @@ def _recognize_unknown(name, image, box, connectQueue):
     try:
         imageName = my_utils.saveImageFunction(image, box)
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        payload = {"code": name, "avatar": imageName}
+        payload = {"code": name, "image": imageName}
         r = requests.post("https://localhost:44359/api/record", json=payload, verify=False, headers=headers)
     except Exception as e:
         connectQueue.put(False)

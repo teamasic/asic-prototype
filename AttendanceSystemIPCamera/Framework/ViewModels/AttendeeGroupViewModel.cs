@@ -7,9 +7,9 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
     public class AttendeeGroupViewModel
     {
-        public int AttendeeId { get; set; }
-        public AttendeeViewModel Attendee{ get; set; }
-        public int GroupId { get; set; }
+        public string AttendeeCode { get; set; }
+        public AttendeeViewModel Attendee { get; set; }
+        public string GroupCode { get; set; }
         public GroupViewModel Group { get; set; }
     }
 }

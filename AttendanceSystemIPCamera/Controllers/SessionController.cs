@@ -59,13 +59,42 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpGet("past")]
-        public BaseResponse<IEnumerable<SessionViewModel>> GetPastSessionByGroupId([FromQuery] int groupId)
+        public BaseResponse<IEnumerable<SessionViewModel>> GetPastSessionByGroupId([FromQuery] string groupCode)
         {
             return ExecuteInMonitoring(() =>
            {
-               var sessions = sessionService.GetSessionByGroupId(groupId);
+               var sessions = sessionService.GetSessionByGroupCode(groupCode);
                return mapper.ProjectTo<Session, SessionViewModel>(sessions);
            });
+        }
+
+        [HttpGet("group")]
+        public Task<BaseResponse<List<SessionRefactorViewModel>>> GetByGroupId(
+            [FromQuery] string code, [FromQuery] string status)
+        {
+            return ExecuteInMonitoring( async () =>
+            {
+                return await sessionService.GetByGroupCodeAndStatus(code, status);
+            });
+        }
+
+        [HttpPost("scheduled")]
+        public Task<BaseResponse<List<SessionCreateViewModel>>> Create([FromBody] List<SessionCreateViewModel> sessions)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                return await sessionService.AddRangeAsync(sessions);
+            });
+        }
+
+        [HttpPost("activate")]
+        public async Task<dynamic> ActivateSchedule()
+        {
+            return await ExecuteInMonitoring(async () =>
+            {
+                await sessionService.ActivateSchedule();
+                return "";
+            });
         }
 
         [HttpPost]

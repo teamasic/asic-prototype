@@ -20,10 +20,10 @@ namespace AttendanceSystemIPCamera.Services.GroupService
     {
         public Task<PaginatedList<Group>> GetAll(GroupSearchViewModel groupSearchViewModel);
         public Task<Group> AddIfNotInDb(GroupViewModel groupViewModel);
-        public Group DeactiveGroup(int groupId);
-        public Group Update(int id, GroupViewModel updatedGroup);
-        public Task<Group> GetByGroupId(int id);
-        public Task<Attendee> AddAttendeeInGroup(int groupId, AttendeeViewModel attendee);
+        public Task<Group> DeactiveGroup(string code);
+        public Task<Group> Update(string code, GroupViewModel updatedGroup);
+        public Task<Group> GetByGroupCode(string code);
+        public Task<Attendee> AddAttendeeInGroup(string groupCode, AttendeeViewModel attendee);
     }
 
     public class GroupService : BaseService<Group>, IGroupService
@@ -43,35 +43,37 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             this.mapper = mapper;
         }
 
-        public async Task<Attendee> AddAttendeeInGroup(int groupId, AttendeeViewModel attendee)
+        public async Task<Attendee> AddAttendeeInGroup(string groupCode, AttendeeViewModel attendee)
         {
-            var groupInDb = await GetById(groupId);
+            var groupInDb = await groupRepository.GetByCode(groupCode);
             if(groupInDb != null)
             {
-                var attendeeInDb = attendeeService.GetByAttendeeCode(attendee.Code);
+                var attendeeInDb = await attendeeService.GetByAttendeeCode(attendee.Code);
                 if (attendeeInDb == null)
                 {
                     var newAttendee = mapper.Map<Attendee>(attendee);
-                    attendeeInDb = attendeeService.Add(newAttendee).Result;
+                    attendeeInDb = await attendeeService.Add(newAttendee);
                     var attendeeGroup = new AttendeeGroup()
                     {
-                        Attendee = attendeeInDb,
-                        AttendeeId = attendeeInDb.Id,
-                        GroupId = groupId
+                        AttendeeCode = attendeeInDb.Code,
+                        GroupCode = groupCode,
+                        IsActive = true
                     };
                     await attendeeGroupService.AddAsync(attendeeGroup);
                     return attendeeInDb;
                 }
                 else
                 {
-                    var attendeeGroup = attendeeGroupService.GetByAttendeeIdAndGroupId(attendeeInDb.Id, groupId);
+                    var attendeeGroup = await attendeeGroupService
+                        .GetByAttendeeCodeAndGroupCode(attendeeInDb.Code, groupCode);
                     if (attendeeGroup == null)
                     {
                         attendeeGroup = new AttendeeGroup()
                         {
                             Attendee = attendeeInDb,
-                            AttendeeId = attendeeInDb.Id,
-                            GroupId = groupId
+                            AttendeeCode = attendeeInDb.Code,
+                            GroupCode = groupCode,
+                            IsActive = true
                         };
                         await attendeeGroupService.AddAsync(attendeeGroup);
                         return attendeeInDb;
@@ -81,7 +83,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                         attendee.Code, groupInDb.Code);
                 }
             }
-            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, groupId);
+            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, groupCode);
         }
 
         public async Task<Group> AddIfNotInDb(GroupViewModel groupViewModel)
@@ -91,20 +93,20 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             if(result.IsValid)
             {
                 var group = mapper.Map<Group>(groupViewModel);
-                var groupInDb = groupRepository.GetByCode(group.Code);
+                var groupInDb = await groupRepository.GetByCode(group.Code);
                 if (groupInDb == null)
                 {
                     return await Add(group);
                 }
-                throw new AppException(HttpStatusCode.Conflict, ErrorMessage.GROUP_ALREADY_EXISTED, groupInDb.Code);
+                throw new AppException(HttpStatusCode.Conflict, ErrorMessage.GROUP_ALREADY_EXISTED, group.Code);
             }
             var invalidMsg = result.ToString("\n");
             throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.INVALID_GROUP, invalidMsg);
         }
 
-        public Group DeactiveGroup(int groupId)
+        public async Task<Group> DeactiveGroup(string code)
         {
-            Group groupInDb = groupRepository.GetById(groupId).Result;
+            Group groupInDb = await groupRepository.GetByCode(code);
             if (groupInDb != null)
             {
                 groupInDb.Deleted = true;
@@ -113,7 +115,7 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             }
             else
             {
-                throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, groupId);
+                throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, code);
             }
         }
 
@@ -122,33 +124,33 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             return await groupRepository.GetAll(groupSearchViewModel);
         }
 
-        public async Task<Group> GetByGroupId(int id)
+        public async Task<Group> GetByGroupCode(string code)
         {
-            var group = await GetById(id);
+            var group = await groupRepository.GetByCode(code);
             if (group != null)
             {
                 return group;
             }
-            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, id);
+            throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, code);
         }
 
-        public Group Update(int id, GroupViewModel updatedGroup)
+        public async Task<Group> Update(string code, GroupViewModel updatedGroup)
         {
             var validator = new UpdateGroupValidator();
             var result = validator.Validate(updatedGroup);
             if(result.IsValid)
             {
-                var groupInDb = groupRepository.GetById(id).Result;
+                var groupInDb = await groupRepository.GetByCode(code);
                 if (groupInDb != null)
                 {
                     groupInDb.Name = updatedGroup.Name;
-                    groupInDb.MaxSessionCount = updatedGroup.MaxSessionCount;
+                    groupInDb.TotalSession = updatedGroup.TotalSession;
                     Update(groupInDb);
                     return groupInDb;
                 }
                 else
                 {
-                    throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_ID, id);
+                    throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, code);
                 }
             }
             var invalidMsg = result.ToString("\n");

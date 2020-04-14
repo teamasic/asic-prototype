@@ -11,5 +11,5 @@ export default interface Session {
     attendees?: Attendee[];
     records?: Record[];
     active: boolean;
-    groupId?: number;
+    groupCode?: string;
 }

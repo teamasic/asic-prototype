@@ -34,7 +34,8 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             return await dbSet
                 .Include(cr => cr.Record)
-                    .ThenInclude(r => r.Attendee)
+                    .ThenInclude(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Include(cr => cr.Record)
                    .ThenInclude(r => r.Session)
                         .ThenInclude(s => s.Group)
@@ -44,21 +45,18 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             bool filterStatus(ChangeRequest cr)
             {
-                switch (viewModel.Status)
+                return viewModel.Status switch
                 {
-                    case ChangeRequestStatusFilter.UNRESOLVED:
-                        return !cr.IsResolved;
-                    case ChangeRequestStatusFilter.RESOLVED:
-                        return cr.IsResolved;
-                    case ChangeRequestStatusFilter.ALL:
-                        return true;
-                    default:
-                        return true;
-                }
+                    ChangeRequestStatusFilter.UNRESOLVED => !cr.IsResolved,
+                    ChangeRequestStatusFilter.RESOLVED => cr.IsResolved,
+                    ChangeRequestStatusFilter.ALL => true,
+                    _ => true,
+                };
             }
             return dbSet
                 .Include(cr => cr.Record)
-                    .ThenInclude(r => r.Attendee)
+                    .ThenInclude(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Include(cr => cr.Record)
                     .ThenInclude(r => r.Session)
                         .ThenInclude(s => s.Group)

@@ -9,7 +9,7 @@ const unloadedState: RoomsState = {
         {
             id: 0,
             name: 'None',
-            rtspString: 'None'
+            cameraConnectionString: 'None'
         }
     ],
 };

@@ -22,6 +22,7 @@ import { EditTwoTone } from '@ant-design/icons';
 import TopBar from './TopBar';
 import StartSessionModal from './StartSessionModal';
 import { FormComponentProps } from 'antd/lib/form';
+import Schedule from './Schedule';
 
 const { Title } = Typography;
 const { Paragraph } = Typography
@@ -46,7 +47,7 @@ type GroupDetailProps =
     & typeof unitActionCreators
     & typeof sessionActionCreators
     & RouteComponentProps<{
-        id?: string;
+        code?: string;
     }>; // ... plus incoming routing parameters
 
 
@@ -120,7 +121,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
             if(!err) {
                 var group = {
                     ...this.props.selectedGroup,
-                    maxSessionCount: JSON.parse(values.maxSession)
+                    totalSession: JSON.parse(values.maxSession)
                 };
                 this.props.startUpdateGroup(group, () => {this.setState({editMaxSession: false})});
             }
@@ -176,7 +177,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                                         <Form>
                                             <Form.Item>
                                                 {getFieldDecorator('maxSession', {
-                                                    initialValue: this.props.selectedGroup.maxSessionCount,
+                                                    initialValue: this.props.selectedGroup.totalSession,
                                                     rules: [
                                                         { required: true, message: 'Please input max session' }
                                                     ],
@@ -191,7 +192,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                                         </Form>
                                     ) :
                                     (
-                                        <span>Total sessions: {this.props.selectedGroup.maxSessionCount} < EditTwoTone onClick={this.onEditMaxSession} /></span>
+                                        <span>Total sessions: {this.props.selectedGroup.totalSession} < EditTwoTone onClick={this.onEditMaxSession} /></span>
                                     )
                                 }
                             </Title>
@@ -203,7 +204,10 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                     <TabPane tab="Group Information" key="1">
                         <GroupInfo attendees={this.props.selectedGroup.attendees} attendeeLoading={this.state.attendeeLoading} />
                     </TabPane>
-                    <TabPane tab="Past Session" key="2">
+                    <TabPane tab="Schedule" key="2">
+                        <Schedule/>
+                    </TabPane>
+                    <TabPane tab="Past Session" key="3">
                         <PastSession group={this.props.selectedGroup} redirect={url => this.redirect(url)} />
                     </TabPane>
                 </Tabs>
@@ -223,10 +227,9 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
     }
 
     private ensureDataFetched() {
-        var strId = this.props.match.params.id;
-        if (strId) {
-            var intId = parseInt(strId);
-            this.props.requestGroupDetail(intId, () => {
+        var code = this.props.match.params.code;
+        if (code) {
+            this.props.requestGroupDetail(code, () => {
                 this.setState({
                     attendeeLoading: false
                 });

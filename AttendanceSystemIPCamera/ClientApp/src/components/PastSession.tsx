@@ -111,7 +111,7 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
                 dataIndex: 'action',
                 width: '10%',
                 render: (text: any, record: any) =>
-                    <Button type="primary" onClick={() => this.props.redirect(`session/${record.id}`)} >
+                    <Button type="primary" onClick={() => this.props.redirect(`/session/${record.id}`)} >
                         Detail
                     </Button>
                 ,
@@ -134,7 +134,7 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
     }
 
     private loadSession = () => {
-        this.props.startGetPastSession(this.props.group.id, this.reloadSession);
+        this.props.startGetPastSession(this.props.group.code, this.reloadSession);
     }
 }
 

@@ -5,5 +5,5 @@ import Record from "./Record";
 export default interface Room {
     id: number;
     name: string;
-    rtspString: string;
+    cameraConnectionString: string;
 }

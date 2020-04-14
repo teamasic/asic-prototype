@@ -15,7 +15,7 @@ namespace AttendanceSystemIPCamera.Repositories
 {
     public interface IRecordRepository: IRepository<Record>
     {
-        public Record GetRecordBySessionAndAttendee(int sessionId, int attendeeId);
+        public Record GetRecordBySessionAndAttendee(int sessionId, string attendeeCode);
         Task<IEnumerable<Record>> GetRecordsBySessionId(int id);
         Task<Record> GetRecordBySessionAndAttendeeCode(int sessionId, string attendeeCode);
         List<Record> GetAttendanceDataForSync(DateTime fromTime, DateTime toTime);
@@ -27,27 +27,29 @@ namespace AttendanceSystemIPCamera.Repositories
         {
         }
 
-        public Record GetRecordBySessionAndAttendee(int sessionId, int attendeeId)
+        public Record GetRecordBySessionAndAttendee(int sessionId, string attendeeCode)
         {
-            return dbSet.Where(record => record.Session.Id == sessionId && record.Attendee.Id == attendeeId).FirstOrDefault();
+            return dbSet.Where(record => record.Session.Id == sessionId && record.AttendeeCode.Equals(attendeeCode)).FirstOrDefault();
         }
 
         public async Task<Record> GetRecordBySessionAndAttendeeCode(int sesionId, string attendeeCode)
         {
-            return await dbSet.FirstOrDefaultAsync(r => r.Session.Id == sesionId && r.Attendee.Code.Equals(attendeeCode));
+            return await dbSet.FirstOrDefaultAsync(r => r.Session.Id == sesionId && r.AttendeeCode.Equals(attendeeCode));
         }
 
         public async Task<IEnumerable<Record>> GetRecordsBySessionId(int sessionId)
         {
             return await dbSet
-                .Include(r => r.Attendee)
+                    .Include(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Where(r => r.Session.Id == sessionId).ToListAsync();
         }
 
         public new async Task<Record> GetById(object id)
         {
             return await dbSet
-                .Include(r => r.Attendee)
+                    .Include(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Include(r => r.Session)
                     .ThenInclude(s => s.Group)
                 .Where(r => r.Id == (int) id)
@@ -58,7 +60,7 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             var data = Get(r => (r.StartTime >= fromTime && r.StartTime <= toTime) // from <= start <= to
                                     || (r.UpdateTime >= fromTime && r.UpdateTime <= toTime), //from <= update <= to
-                includeProperties: "Attendee,Session,Session.Group").ToList();
+                includeProperties: "AttendeeGroups,AttendeeGroups.Attendee,Sessions,Sessions.Group").ToList();
             return data;
         }
 

@@ -8,11 +8,12 @@ const unloadedState: UserState = {
     isLoading: false,
     successfullyLoaded: false,
     currentUser: {
-        id: 0,
-        username: "",
-        rollNumber: "",
+        code: "",
         fullname: "",
-    }
+        name: "",
+        image: ""
+    },
+    isLogin: false,
 };
 
 const reducers: Reducer<UserState> = (state: UserState | undefined, incomingAction: AnyAction): UserState => {
@@ -31,7 +32,7 @@ const reducers: Reducer<UserState> = (state: UserState | undefined, incomingActi
             return {
                 ...state,
                 isLoading: false,
-                successfullyLoaded: false
+                successfullyLoaded: false,
             };
         case ACTIONS.RECEIVE_SUCCESS_LOGIN:
             return {
@@ -40,8 +41,19 @@ const reducers: Reducer<UserState> = (state: UserState | undefined, incomingActi
                 // roles: action.roles,
                 // accessToken: action.accessToken,
                 isLoading: false,
-                successfullyLoaded: true
+                successfullyLoaded: true,
+                isLogin: true
             };
+        case ACTIONS.USER_INFO_NOT_IN_LOCAL:
+            return {
+                ...state,
+                isLogin: false
+            }
+        case ACTIONS.LOG_OUT:
+            return {
+                ...state,
+                ...unloadedState,
+            }
     }
 
     return state;

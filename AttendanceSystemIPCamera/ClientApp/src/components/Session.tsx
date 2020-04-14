@@ -72,20 +72,20 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		}
 	}
 
-	public markAsPresent = (attendeeId: number, assumeSuccess: boolean = true) => {
+	public markAsPresent = (attendeeCode: string, assumeSuccess: boolean = true) => {
 		const sessionId = this.state.sessionId;
 		this.props.createOrUpdateRecord({
 			sessionId,
-			attendeeId,
+			attendeeCode,
 			present: true
 		}, assumeSuccess);
 	}
 
-	public markAsAbsent = (attendeeId: number, assumeSuccess: boolean = true) => {
+	public markAsAbsent = (attendeeCode: string, assumeSuccess: boolean = true) => {
 		const sessionId = this.state.sessionId;
 		this.props.createOrUpdateRecord({
 			sessionId,
-			attendeeId,
+			attendeeCode,
 			present: false
 		}, assumeSuccess);
 	}
@@ -97,7 +97,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					{
 						this.props.activeSession &&
 						<Breadcrumb.Item>
-							<Link to={`/group/${this.props.activeSession.groupId}`}>
+							<Link to={`/group/${this.props.activeSession.groupCode}`}>
 								<Icon type="hdd" />
 								<span>Group</span>
 							</Link>

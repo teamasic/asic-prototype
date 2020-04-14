@@ -25,12 +25,12 @@ interface ModalProps {
     visible: boolean;
     hideModal: () => void;
     attendeeRecords: AttendeeRecordPair[];
-    markAsPresent: (attendeeId: number) => void;
+    markAsPresent: (attendeeCode: string) => void;
     removeUnknownImage: (image: string) => void;
 }
 
 interface State {
-    attendeeId: number;
+    attendeeCode: string;
     isError: boolean;
 }
 
@@ -38,14 +38,14 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
     constructor(props: ModalProps) {
         super(props);
         this.state = {
-            attendeeId: -1,
+            attendeeCode: '',
             isError: false
         };
     }
 
     private handleModalOk = async () => {
-        const { attendeeId } = { ...this.state };
-        if (attendeeId == -1) {
+        const { attendeeCode } = { ...this.state };
+        if (attendeeCode.length === 0) {
             error("Please select an attendee.");
             return;
         }
@@ -54,10 +54,10 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
             okType: "primary",
             onOk: () => {
                 const pair = this.props.attendeeRecords
-                    .find(ar => ar.attendee.id === attendeeId);
+                    .find(ar => ar.attendee.code === attendeeCode);
                 const present = pair && pair.record != null && pair.record.present;
                 if (!present) {
-                    this.props.markAsPresent(attendeeId);
+                    this.props.markAsPresent(attendeeCode);
                 }
                 this.props.removeUnknownImage(this.props.unknownImage);
                 this.props.hideModal();
@@ -69,19 +69,19 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
         this.props.hideModal();
     }
 
-    private onChangeAttendee = (id: number) => {
+    private onChangeAttendee = (attendeeCode: string) => {
         this.setState({
-            attendeeId: id
-        })
+            attendeeCode
+        });
     }
     private renderAttendeeOptions = () => {
         return this.props.attendeeRecords.map(ar => {
             const present = ar.record != null && ar.record.present;
-            return <Option key={ar.attendee.id}
+            return <Option key={ar.attendee.code}
                 className={classNames({
                     'option-present': present
                 })}
-                value={ar.attendee.id}>
+                value={ar.attendee.code}>
                 {ar.attendee.code} - {ar.attendee.name}
             </Option>
         })
@@ -102,15 +102,16 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
                             style={{ width: '100%' }}
                             placeholder="Select attendee"
                             optionFilterProp="children"
-                            onChange={(id: any) => this.onChangeAttendee(id)}
-                            filterOption={(input: any, option: any) =>
-                                option.props.children.toLowerCase()
-                                    .indexOf(input.toLowerCase()) >= 0
-                            }
+                            onChange={(code: any) => this.onChangeAttendee(code)}
+                            filterOption={(input: string, option: any) => {
+                                const children: string[] = option.props.children;
+                                const label = children.join(' ');
+                                return label.toLowerCase().includes(input.toLowerCase());
+                            }}
                         >
                             {this.renderAttendeeOptions()}
                         </Select>
-                        <Text type="secondary">Grayed out attendees are already present.</Text>
+                        <Text type="secondary">Attendees with blue names are already present.</Text>
                     </Col>
                 </Row>
                 {this.state.isError ? <Row type="flex" justify="start" align="top" gutter={[16, 16]}>

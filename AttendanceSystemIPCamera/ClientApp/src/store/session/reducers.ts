@@ -3,6 +3,7 @@ import { SessionState } from './state';
 import { ACTIONS } from './actionCreators';
 import Record from '../../models/Record';
 import AttendeeRecordPair from '../../models/AttendeeRecordPair';
+import UpdateRecord from '../../models/UpdateRecord';
 
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
@@ -79,10 +80,11 @@ const reducers: Reducer<SessionState> = (
 				attendeeRecords: action.attendeeRecords
 			};
 		case ACTIONS.UPDATE_ATTENDEE_RECORD:
+			const updateInfo: UpdateRecord = action.updateInfo;
 			return {
 				...state,
 				attendeeRecords: state.attendeeRecords.map(ar =>
-					ar.attendee.id === action.updateInfo.attendeeId ? ({
+					ar.attendee.code === updateInfo.attendeeCode ? ({
 						attendee: ar.attendee,
 						record: action.updatedRecord
 					}) : ar)

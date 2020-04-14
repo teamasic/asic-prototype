@@ -16,7 +16,6 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface IAttendeeRepository : IRepository<Attendee>
     {
         Task<Attendee> GetByAttendeeCode(string attendeeCode);
-        Attendee GetByCode(string code);
         Attendee GetByCodeForNetwork(string code);
         List<Attendee> GetAttendanceDataForSync(DateTime latestSyncTime);
     }
@@ -31,11 +30,6 @@ namespace AttendanceSystemIPCamera.Repositories
             return await dbSet.FirstOrDefaultAsync(a => a.Code.Equals(attendeeCode));
         }
 
-        public Attendee GetByCode(string code)
-        {
-            return dbSet.Where(a => code.Equals(a.Code)).FirstOrDefault();
-        }
-
         public Attendee GetByCodeForNetwork(string code)
         {
             //var attendee = dbSet.FirstOrDefault(a => a.Code.Equals(code));
@@ -45,12 +39,12 @@ namespace AttendanceSystemIPCamera.Repositories
             //            gr => gr.Id,
             //            (attGr, group) => new { group })
             //    .Where(a => a.group.Sessions.Count != 0)
-            //    .Join(context.Set<Session>(),
+            //    .Join(context.Set<Sessions>(),
             //        att => att.group.Id,
             //        sess => sess.GroupId,
             //        (att, session) => new { att.group, session })
             //    .Where(a => a.session.Records.Count != 0)
-            //    .Join(context.Set<Record>(),
+            //    .Join(context.Set<Records>(),
             //    a => a.session.Id,
             //    re => re.SessionId,
             //    (att, record) => new { att.group, att.session, record }).ToList();

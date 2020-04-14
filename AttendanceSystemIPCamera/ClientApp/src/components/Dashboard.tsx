@@ -119,7 +119,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                 newGroup.name = this.state.groupName;
                 newGroup.code = this.state.groupCode;
                 newGroup.attendees = this.state.importAttendees;
-                newGroup.maxSessionCount = this.state.maxSession;
+                newGroup.totalSession = this.state.maxSession;
                 this.props.postGroup(newGroup, this.createGroupSuccess, error);
             }
         });
@@ -160,9 +160,9 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                         }, () => { reject(); });
                     }
                 }, error: function (errors: any, file: File) {
-                    message.error("Upload error: " + errors, 3);
                     thisState.setState({
-                        importAttendees: []
+                        importAttendees: [], 
+                        msgImportCSV: "Upload error: " + errors
                     }, () => { reject(); });
                 }
             });
@@ -170,10 +170,9 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     }
 
     public checkValidFileFormat = (attendees: []) => {
-        let temp: { No: number, Code: string, Name: string }[] = attendees;
+        let temp: { Code: string, Name: string }[] = attendees;
         if (temp.length > 0) {
-            if (!isNullOrUndefined(temp[0].No)
-                && !isNullOrUndefined(temp[0].Code)
+            if (!isNullOrUndefined(temp[0].Code)
                 && !isNullOrUndefined(temp[0].Name)) {
                 return true;
             }
@@ -402,7 +401,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                 <span>This is where your groups will show up.</span>
             }
         >
-            <Button type="primary">Create a group</Button>
+            <Button type="primary" onClick={this.showModal}>Create a group</Button>
         </Empty>;
     }
 
@@ -411,8 +410,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
             <div className="group-grid">
                 <div className="fixed-grid--around">
                     {
-                        this.props.paginatedGroupList!.list.map(group => 
-                            <div className="grid-element">
+                        this.props.paginatedGroupList!.list.map(group =>
+                            <div key={group.code} className="grid-element">
                                 <GroupCard redirect={url => this.redirect(url)}
                                 group={group}
                                 roomList={this.props.roomList}

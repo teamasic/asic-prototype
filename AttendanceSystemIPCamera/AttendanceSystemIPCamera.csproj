@@ -38,11 +38,15 @@
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
     <Compile Remove="GPUCache\**" />
+    <Compile Remove="Logs\**" />
     <Content Remove="$(SpaRoot)**" />
     <Content Remove="GPUCache\**" />
+    <Content Remove="Logs\**" />
     <EmbeddedResource Remove="GPUCache\**" />
+    <EmbeddedResource Remove="Logs\**" />
     <None Remove="$(SpaRoot)**" />
     <None Remove="GPUCache\**" />
+    <None Remove="Logs\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
 
@@ -69,6 +73,7 @@
     <None Remove="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
     <None Remove="ClientApp\src\models\Attendee.ts" />
+    <None Remove="ClientApp\src\models\AttendeeGroup.ts" />
     <None Remove="ClientApp\src\models\ExportFormat1.ts" />
     <None Remove="ClientApp\src\models\ExportFormat2.ts" />
     <None Remove="ClientApp\src\models\ChangeRequest.ts" />
@@ -122,6 +127,9 @@
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRConnection.ts" />
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\AttendeeGroup.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\ExportFormat1.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ExportFormat2.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\CreateChangeRequest.ts">

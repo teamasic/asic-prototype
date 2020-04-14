@@ -1,17 +1,20 @@
-﻿using System;
+﻿using AttendanceSystemIPCamera.Models;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Models
 {
-    public class Room: BaseEntity
+    public partial class Room: BaseEntity
     {
-        [Key]
+        public Room()
+        {
+            Session = new HashSet<Session>();
+        }
+
         public int Id { get; set; }
         public string Name { get; set; }
-        public string RtspString { get; set; }
+        public string CameraConnectionString { get; set; }
+
+        public virtual ICollection<Session> Session { get; set; }
     }
 }
