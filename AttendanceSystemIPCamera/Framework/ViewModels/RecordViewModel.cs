@@ -28,9 +28,12 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
 
     public class RecordNetworkViewModel : BaseViewModel<Record>
     {
-        [JsonIgnore]
+        public int Id { get; set; }
         public string AttendeeCode { get; set; }
+        public int AttendeeGroupId { get; set; }
         public bool Present { get; set; }
+        public int SessionId { get; set; }
+        public DateTime? UpdateTime { get; set; }
         public ChangeRequestSimpleViewModel ChangeRequest { get; set; }
     }
     public class RecordInSyncData : BaseViewModel<Record>
