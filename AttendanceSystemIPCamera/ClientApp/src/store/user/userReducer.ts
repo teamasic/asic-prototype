@@ -33,7 +33,7 @@ const reducers: Reducer<UserState> = (state: UserState | undefined, incomingActi
             return {
                 ...state,
                 isLoading: false,
-                successfullyLoaded: false,
+                successfullyLoaded: true,
                 errors: action.errors
             };
         case ACTIONS.RECEIVE_SUCCESS_LOGIN:
