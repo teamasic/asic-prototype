@@ -36,12 +36,12 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPost("manually")]
-        public Task<BaseResponse<RecordViewModel>> RecordAttendanceManually([FromBody] SetRecordViewModel viewModel)
+        public Task<BaseResponse<SetRecordViewModel>> RecordAttendanceManually([FromBody] SetRecordViewModel viewModel)
         {
             return ExecuteInMonitoring(async () =>
             {
                 var record = await recordService.Set(viewModel);
-                return mapper.Map<RecordViewModel>(record);
+                return mapper.Map<SetRecordViewModel>(record);
             });
         }
         [HttpPost]

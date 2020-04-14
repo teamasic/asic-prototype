@@ -382,7 +382,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             {
                 throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.SESSION_ALREADY_RUNNING);
             }
-            var session = await GetById(viewModel.SessionId);
+            var session = await sessionRepository.GetById(viewModel.SessionId);
             if (session == null)
             {
                 throw new AppException(HttpStatusCode.BadRequest, null, ErrorMessage.SESSION_ID_NOT_EXISTED, viewModel.SessionId); ;
