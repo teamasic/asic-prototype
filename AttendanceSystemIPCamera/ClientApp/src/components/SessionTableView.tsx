@@ -108,8 +108,10 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 		attendeeRecords: AttendeeRecordPair[],
 		query: string
 	) {
+		const lowercaseQuery = query.toLowerCase();
 		return attendeeRecords.filter(
-			ar => ar.attendee.name.includes(query) || ar.attendee.code.includes(query)
+			ar => ar.attendee.name.toLowerCase().includes(lowercaseQuery) ||
+				ar.attendee.code.toLowerCase().includes(lowercaseQuery)
 		);
 	}
 
