@@ -133,9 +133,10 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
     public onMaxSessionChane = (value: number | undefined) => {
         if (value != undefined) {
-            this.setState({
-                maxSession: JSON.parse(value.toString())
-            });
+            var numberValue = parseInt(value.toString());
+            if(numberValue !== NaN) {
+                this.setState({ maxSession: numberValue });
+            }
         }
     }
 
