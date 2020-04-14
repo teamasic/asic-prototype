@@ -21,6 +21,8 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     {
         public string Code { get; set; }
         public string Name { get; set; }
+        public DateTime DateTimeCreated { get; set; }
+        public int TotalSession { get; set; }
         public List<SessionNetworkViewModel> Sessions { get; set; }
 
     }
