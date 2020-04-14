@@ -93,7 +93,8 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public List<Session> GetSessionExport(string groupCode, DateTime startDate, DateTime endDate)
         {
-            return Get(s => s.GroupCode == groupCode && s.StartTime.CompareTo(startDate) > 0 && s.StartTime.CompareTo(endDate) < 0,
+            var dateWithEndTime = new DateTime(endDate.Year, endDate.Month, endDate.Day, 23, 59, 59);
+            return Get(s => s.GroupCode == groupCode && s.StartTime.CompareTo(startDate) > 0 && s.StartTime.CompareTo(dateWithEndTime) < 0,
                 null, includeProperties: "Records,Group").ToList();
         }
 
