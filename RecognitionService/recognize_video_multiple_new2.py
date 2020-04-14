@@ -20,9 +20,9 @@ from helper.my_utils import remove_all_files
 def recognition_faces():
     isShowingVideo.change(False)
     startime = datetime.now()
-
-    # image = cv2.imread("images/class3.jpg")
-    # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # global currentImage
+    # currentImage = cv2.imread("images/class3.jpg")
+    # currentImage = cv2.cvtColor(currentImage, cv2.COLOR_BGR2RGB)
 
     boxes = my_face_detection.face_locations(currentImage)
     resultFull = pool.starmap(my_service.get_label_after_detect_multiple,
@@ -31,6 +31,7 @@ def recognition_faces():
 
     print(len(results))
     if isForCheckingAttendance:
+        lbTotalTime['text'] = "Checking attendance ..."
         codes = []
         unknowns = []
         for result in results:
@@ -45,7 +46,7 @@ def recognition_faces():
         except:
             cannotCallApi.change(True)
     print(f"Total Time: {datetime.now() - startime}")
-    lbTotalTime['text'] = "Total time: {} - {} faces".format(datetime.now() - startTimeRecognition, len(boxes))
+    lbTotalTime['text'] = "Done! Total time: {} - {} faces".format(datetime.now() - startTimeRecognition, len(boxes))
     isShowingVideo.change(True)
     if videoStreamLock.locked():
         videoStreamLock.release()
@@ -55,6 +56,7 @@ def takeSnapshot():
     global startTimeRecognition
     startTimeRecognition = datetime.now()
     print("Image saved!")
+    lbTotalTime["text"] = "Recognizing faces ..."
     threading.Thread(target=recognition_faces , daemon=True).start()
 
 
@@ -112,16 +114,18 @@ if __name__ == "__main__":
     window.wm_title("ASIC checking attendance")
     window.resizable(False, False)
 
-    btnCapture = tk.Button(window, text="Check attendance",
+    btnCapture = tk.Button(window, text="Capture", bg="#000099", fg="#ffffff",
                            command=lambda: takeSnapshot())
-    btnCapture.pack(side="bottom", fill="both", expand="yes", padx=10,
-                    pady=10)
+    btnCapture.grid(row=2, column=0, padx=10, pady=5, sticky='EWNS')
 
-    lbTotalTime = tk.Label(window, text="Total time")
-    lbTotalTime.pack(side="bottom", expand="yes")
+    btnExit = tk.Button(window, text="Exit", command=window.quit)
+    btnExit.grid(row=2, column=1, padx=10, pady=5, sticky='EWNS')
+
+    lbTotalTime = tk.Label(window, text="Ready for checking attendance ...")
+    lbTotalTime.grid(row=1, column=0, columnspan=2, padx=10, pady=5)
 
     lbImage = tk.Label(window)
-    lbImage.pack(side="left", padx=10, pady=10)
+    lbImage.grid(row=0, column=0, columnspan=2, padx=10, pady=5)
 
     # Warm up camera
     isOpenStreamOk = False
