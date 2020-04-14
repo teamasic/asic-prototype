@@ -36,7 +36,7 @@ def recognition_faces():
         for result in results:
             (box, name, proba) = result
             if name == "unknown":
-                imageName = my_utils.saveImageFunction(image, box)
+                imageName = my_utils.saveImageFunction(currentImage, box)
                 unknowns.append(imageName)
             else:
                 codes.append(name)
@@ -47,7 +47,8 @@ def recognition_faces():
     print(f"Total Time: {datetime.now() - startime}")
     lbTotalTime['text'] = "Total time: {} - {} faces".format(datetime.now() - startTimeRecognition, len(boxes))
     isShowingVideo.change(True)
-    show_frame()
+    if videoStreamLock.locked():
+        videoStreamLock.release()
 
 
 def takeSnapshot():
@@ -58,24 +59,25 @@ def takeSnapshot():
 
 
 def show_frame():
-    if cannotCallApi.isTrue():
-        window.quit()
-    else:
-        if isShowingVideo.isTrue():
-            btnCapture["state"] = "normal"
-            frame = vs.read()
-            cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-            cv2image = imutils.resize(cv2image, width=my_constant.resizeWidthShow)
-            global currentImage
-            currentImage = copy.deepcopy(cv2image)
-            img = Image.fromarray(cv2image)
-            imgtk = ImageTk.PhotoImage(image=img)
-            lbImage.imgtk = imgtk
-            fps.update()
-            lbImage.configure(image=imgtk)
-            lbImage.after(1, show_frame)
+    while True:
+        if cannotCallApi.isTrue():
+            window.quit()
         else:
-            btnCapture["state"] = "disabled"
+            if isShowingVideo.isTrue():
+                btnCapture["state"] = "normal"
+                frame = vs.read()
+                cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+                cv2image = imutils.resize(cv2image, width=my_constant.resizeWidthShow)
+                global currentImage
+                currentImage = copy.deepcopy(cv2image)
+                img = Image.fromarray(cv2image)
+                imgtk = ImageTk.PhotoImage(image=img)
+                fps.update()
+                lbImage.configure(image=imgtk)
+                lbImage.imgtk = imgtk
+            else:
+                btnCapture["state"] = "disabled"
+                videoStreamLock.acquire()
 
 
 if __name__ == "__main__":
@@ -103,10 +105,12 @@ if __name__ == "__main__":
     isShowingVideo = boolean_wrapper.BooleanWrapper(True)
     cannotCallApi = boolean_wrapper.BooleanWrapper(False)
     startTimeRecognition = None
+    videoStreamLock = threading.Lock()
 
     # Setup gui
     window = tk.Tk()
     window.wm_title("ASIC checking attendance")
+    window.resizable(False, False)
 
     btnCapture = tk.Button(window, text="Check attendance",
                            command=lambda: takeSnapshot())
@@ -143,7 +147,7 @@ if __name__ == "__main__":
 
         # If connect OK -> continue work
         vs.start()
-        show_frame()
+        threading.Thread(target=show_frame, daemon=True).start()
         window.mainloop()
 
         # Check if be able to call api

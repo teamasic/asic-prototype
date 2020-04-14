@@ -23,4 +23,13 @@ def test_detect_time(dir):
         sum += w*h/calculation_time.total_seconds()
         print(f"{calculation_time} - {w} x {h} - {w*h} - {w*h/calculation_time.total_seconds()}- {statinfo.st_size/1024} - {image_path}")
     print(f"Avarage each second, can detect {sum/count}")
-test_detect_time("images_detect")
+# test_detect_time("images_detect")
+
+def test_detect_image(imagePath):
+    startTime = datetime.now()
+    image = cv2.imread(imagePath)
+    boxes = my_face_detection.face_locations(image)
+    print(len(boxes))
+    print(datetime.now() - startTime)
+
+test_detect_image("images/class3.jpg")
