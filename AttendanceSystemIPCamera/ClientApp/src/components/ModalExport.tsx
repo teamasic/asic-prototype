@@ -191,9 +191,10 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
 
     private onPercentChange = (value: number | undefined) => {
         if (value != undefined) {
-            this.setState({
-                attendancePercent: JSON.parse(value.toString())
-            });
+            var percent = parseInt(value.toString());
+            if(percent !== NaN) {
+                this.setState({ attendancePercent: percent });
+            }
         }
     }
 
@@ -259,8 +260,13 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 
     private parseInputNumber = (value: string | undefined) => {
-        if (value != undefined)
-            return JSON.parse(value.replace('%', ''));
+        if (value != undefined) {
+            var numberValue = parseInt(value.replace('%', ''));
+            if(numberValue !== NaN) {
+                return numberValue;
+            }
+        }
+        return this.state.attendancePercent;
     }
 
     private generateColumns = (exportRequest: ExportRequest) => {

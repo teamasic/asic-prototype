@@ -97,7 +97,7 @@ class PageLayout extends React.Component<
 						})}
 						mode="inline">
 						<Menu.Item key="groups">
-							<Icon type="hdd" />
+							<Icon type="team" />
 							<span className="link-container">
 								<Link to="/">
 									Your groups
@@ -105,7 +105,7 @@ class PageLayout extends React.Component<
 							</span>
 						</Menu.Item>
 						<Menu.Item key="change-requests">
-							<Icon type="file-exclamation" />
+							<Icon type="carry-out" />
 							<span className="link-container">
 								<Link to="/change-requests">
 									Change requests
@@ -118,7 +118,7 @@ class PageLayout extends React.Component<
 							</span>
 						</Menu.Item>
 						<Menu.Item key="settings">
-							<Icon type="sync" />
+							<Icon type="cloud-sync" />
 							<span className="link-container">
 								<Link to="/settings">
 									Settings

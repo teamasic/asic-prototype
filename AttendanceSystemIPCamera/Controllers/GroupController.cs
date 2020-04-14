@@ -125,13 +125,13 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpDelete("{groupCode}")]
-        public BaseResponse<AttendeeGroupViewModel> DeleteAttendeeGroup(
+        public Task<BaseResponse<AttendeeGroupViewModel>> DeleteAttendeeGroup(
             string groupCode, [FromQuery] string attendeeCode)
         {
-            return ExecuteInMonitoring(() =>
+            return ExecuteInMonitoring(async () =>
            {
-               var deletedAttendee = attendeeGroupService.Delete(attendeeCode, groupCode);
-               return mapper.Map<AttendeeGroupViewModel>(deletedAttendee.Result);
+               var deletedAttendee = await attendeeGroupService.Delete(attendeeCode, groupCode);
+               return mapper.Map<AttendeeGroupViewModel>(deletedAttendee);
            });
         }
     }

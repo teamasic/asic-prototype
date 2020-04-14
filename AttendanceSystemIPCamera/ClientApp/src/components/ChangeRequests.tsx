@@ -46,7 +46,7 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
         super(props);
         this.state = {
             modalVisible: false,
-            filter: ChangeRequestStatusFilter.UNRESOLVED
+            filter: ChangeRequestStatusFilter.ALL
         };
     }
 
@@ -56,7 +56,7 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
     }
 
     private ensureDataFetched() {
-        this.props.requestChangeRequests(ChangeRequestStatusFilter.UNRESOLVED);
+        this.props.requestChangeRequests(ChangeRequestStatusFilter.ALL);
     }
 
     public filterBy = (value: ChangeRequestStatusFilter) => {
@@ -85,10 +85,10 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
                     <Col span={8} offset={16}>
                         <div>
                             <span className="order-by-sub">Filter by:</span>
-                            <Select className="order-by-select" defaultValue={ChangeRequestStatusFilter.UNRESOLVED} onChange={(value: ChangeRequestStatusFilter) => this.filterBy(value)}>
+                            <Select className="order-by-select" defaultValue={ChangeRequestStatusFilter.ALL} onChange={(value: ChangeRequestStatusFilter) => this.filterBy(value)}>
+                                <Select.Option value={ChangeRequestStatusFilter.ALL}>All</Select.Option>
                                 <Select.Option value={ChangeRequestStatusFilter.UNRESOLVED}>Unresolved</Select.Option>
                                 <Select.Option value={ChangeRequestStatusFilter.RESOLVED}>Resolved</Select.Option>
-                                <Select.Option value={ChangeRequestStatusFilter.ALL}>All</Select.Option>
                             </Select>
                         </div>
                     </Col>
@@ -146,10 +146,26 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
                 render: (text: string, cr: ChangeRequest) => cr.attendeeName
             },
             {
+                title: 'Status',
+                key: 'status',
+                render: (text: string, cr: ChangeRequest) => {
+                    switch (cr.status) {
+                        case ChangeRequestStatus.APPROVED:
+                            return <span className="badge approved">Approved</span>;
+                        case ChangeRequestStatus.REJECTED:
+                            return <span className="badge rejected">Rejected</span>;
+                        case ChangeRequestStatus.UNRESOLVED:
+                            return <span className="badge unresolved">Unresolved</span>;
+                        default:
+                            return <div></div>;
+                    }
+                }
+            },
+            {
                 title: 'Review',
                 key: 'review',
                 render: (text: string, cr: ChangeRequest) =>
-                    <Button type="link" onClick={() => this.showModal(cr)}>Review</Button>
+                    <Button className="review-btn" type="link" onClick={() => this.showModal(cr)}>Review</Button>
             }
         ];
         return <Table

@@ -45,3 +45,30 @@
 .to-session-button {
     padding: 0 !important;
 }
+
+.review-btn {
+    padding-left: 0 !important;
+}
+
+.badge {
+    color: white;
+    font-size: 12px;
+    width: 90px;
+    font-weight: 700;
+    text-align: center;
+    display: inline-block;
+    padding: 4px 4px;
+    border-radius: 6px;
+}
+
+.badge.approved {
+    background: #95de64;
+}
+
+.badge.rejected {
+    background: #ff7875;
+}
+
+.badge.unresolved {
+    background: #8c8c8c;
+}
