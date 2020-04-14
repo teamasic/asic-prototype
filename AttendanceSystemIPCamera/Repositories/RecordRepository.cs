@@ -60,7 +60,7 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             var data = Get(r => (r.StartTime >= fromTime && r.StartTime <= toTime) // from <= start <= to
                                     || (r.UpdateTime >= fromTime && r.UpdateTime <= toTime), //from <= update <= to
-                includeProperties: "AttendeeGroup,AttendeeGroup.Attendee,Session,Session.Group").ToList();
+                includeProperties: "AttendeeGroup,AttendeeGroup.Group,Session").ToList();
             return data;
         }
 
