@@ -76,7 +76,7 @@ function updateGroupNameSuccess(updatedGroup: Group) {
     }
 }
 
-function refreshListAttendeeAfterDeleteSuccess(deletedAttendeeCode: number) {
+function refreshListAttendeeAfterDeleteSuccess(deletedAttendeeCode: string) {
     return {
         type: ACTIONS.DELETE_ATTENDEE_GROUP_SUCCESS,
         attendeeCode: deletedAttendeeCode
@@ -153,18 +153,18 @@ const startUpdateGroup = (group: Group, success: Function): AppThunkAction => as
         dispatch(updateGroupNameSuccess(apiResponse.data));
         success();
     } else {
-        console.log("Update group error: " + apiResponse.errors.toString());
+        console.log(apiResponse.errors.toString());
     }
 }
 
 const startDeleteAttendeeGroup = (attendeeCode: string, groupCode: string, success: Function): AppThunkAction => async (dispatch, getState) => {
     const apiResponse: ApiResponse = await deleteAttendeeGroup(attendeeCode, groupCode);
     if (apiResponse.success) {
-        console.log(apiResponse.data.attendeeId);
-        dispatch(refreshListAttendeeAfterDeleteSuccess(apiResponse.data.attendeeId));
+        console.log(apiResponse.data.attendeeCode);
+        dispatch(refreshListAttendeeAfterDeleteSuccess(apiResponse.data.attendeeCode));
         success();
     } else {
-        console.log("Delete attendee error: " + apiResponse.errors.toString());
+        console.log(apiResponse.errors.toString());
     }
 }
 

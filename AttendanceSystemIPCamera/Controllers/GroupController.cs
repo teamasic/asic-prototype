@@ -131,7 +131,7 @@ namespace AttendanceSystemIPCamera.Controllers
             return ExecuteInMonitoring(() =>
            {
                var deletedAttendee = attendeeGroupService.Delete(attendeeCode, groupCode);
-               return mapper.Map<AttendeeGroupViewModel>(deletedAttendee);
+               return mapper.Map<AttendeeGroupViewModel>(deletedAttendee.Result);
            });
         }
     }

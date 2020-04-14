@@ -209,7 +209,7 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                 </Modal>
                 <Table dataSource={this.props.attendees}
                     columns={columns}
-                    rowKey="$id"
+                    rowKey="code"
                     bordered
                     loading={this.props.attendeeLoading}
                     pagination={{

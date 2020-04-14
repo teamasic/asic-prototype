@@ -401,7 +401,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                 <span>This is where your groups will show up.</span>
             }
         >
-            <Button type="primary">Create a group</Button>
+            <Button type="primary" onClick={this.showModal}>Create a group</Button>
         </Empty>;
     }
 
