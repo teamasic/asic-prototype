@@ -65,7 +65,7 @@ class PageLayout extends React.Component<
 
 	render() {
 		console.log(this.props.history.location.pathname)
-		return (<>{ this.props.isLogin ? this.renderLayout() : this.renderEmty()}</>);
+		return (<>{this.props.isLogin ? this.renderLayout() : this.renderEmty()}</>);
 	}
 
 	private renderEmty() {
@@ -82,52 +82,52 @@ class PageLayout extends React.Component<
 
 	renderLayout() {
 		return (
-				<Layout className="layout">
-					<Sider
-						className="sider"
-						collapsible
-						collapsed={this.state.collapsed}
-						onCollapse={this.onCollapse}
-					>
-						<div className="logo">ASIC</div>
-						<Menu theme="dark"
-							selectedKeys={this.state.selectedKeys}
-							onSelect={item => this.setState({
-								selectedKeys: [item.key]
-							})}
-							mode="inline">
-							<Menu.Item key="groups">
-								<Icon type="hdd" />
-								<div className="link-container">
-									<Link to="/">
-										Your groups
+			<Layout className="layout">
+				<Sider
+					className="sider"
+					collapsible
+					collapsed={this.state.collapsed}
+					onCollapse={this.onCollapse}
+				>
+					<div className="logo">ASIC</div>
+					<Menu theme="dark"
+						selectedKeys={this.state.selectedKeys}
+						onSelect={item => this.setState({
+							selectedKeys: [item.key]
+						})}
+						mode="inline">
+						<Menu.Item key="groups">
+							<Icon type="hdd" />
+							<span className="link-container">
+								<Link to="/">
+									Your groups
 								</Link>
-								</div>
-							</Menu.Item>
-							<Menu.Item key="change-requests">
-								<Icon type="file-exclamation" />
-								<div className="link-container">
-									<Link to="/change-requests">
-										Change requests
+							</span>
+						</Menu.Item>
+						<Menu.Item key="change-requests">
+							<Icon type="file-exclamation" />
+							<span className="link-container">
+								<Link to="/change-requests">
+									Change requests
 								</Link>
-									<Badge count={this.props.unresolvedCount} showZero={false}
-										className="borderless-badge" style={{
-											marginLeft: '5px'
-										}}>
-									</Badge>
-							</div>
+								<Badge count={this.props.unresolvedCount} showZero={false}
+									className="borderless-badge" style={{
+										marginLeft: '5px'
+									}}>
+								</Badge>
+							</span>
 						</Menu.Item>
 						<Menu.Item key="settings">
 							<Icon type="sync" />
-							<div className="link-container">
+							<span className="link-container">
 								<Link to="/settings">
 									Settings
 								</Link>
-							</div>
+							</span>
 						</Menu.Item>
 						<Menu.Item key="logout" onClick={() => this.logout()}>
 							<Icon type="logout" />
-							<span>Logout</span>
+							<span className="link-container">Logout</span>
 						</Menu.Item>
 					</Menu>
 				</Sider>

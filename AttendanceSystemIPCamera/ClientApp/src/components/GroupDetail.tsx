@@ -121,7 +121,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
             if(!err) {
                 var group = {
                     ...this.props.selectedGroup,
-                    maxSessionCount: JSON.parse(values.maxSession)
+                    totalSession: JSON.parse(values.maxSession)
                 };
                 this.props.startUpdateGroup(group, () => {this.setState({editMaxSession: false})});
             }
