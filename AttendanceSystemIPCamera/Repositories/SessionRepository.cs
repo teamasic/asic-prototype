@@ -114,7 +114,8 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public List<Session> GetSessionByGroupCode(string groupCode)
         {
-            return Get(s => s.GroupCode.Equals(groupCode)).ToList();
+            return Get(s => s.GroupCode.Equals(groupCode), 
+                orderBy: s => s.OrderByDescending(s => s.StartTime)).ToList();
         }
 
         public ICollection<string> GetSessionUnknownImages(int sessionId)
