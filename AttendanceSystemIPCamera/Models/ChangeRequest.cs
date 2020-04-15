@@ -12,15 +12,14 @@ namespace AttendanceSystemIPCamera.Models
         APPROVED = 1,
         REJECTED = 2
     }
-    public partial class ChangeRequest : BaseEntity
+    public partial class ChangeRequest
     {
         [Key]
-        public int Id { get; set; }
         public int RecordId { get; set; }
         public string Comment { get; set; }
+        public DateTime DateSubmitted { get; set; }
         [NotMapped]
         public bool IsResolved => Status != ChangeRequestStatus.UNRESOLVED;
-
         public virtual Record Record { get; set; }
         public ChangeRequestStatus Status { get; set; } = ChangeRequestStatus.UNRESOLVED;
     }

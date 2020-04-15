@@ -12,6 +12,7 @@ import UserLogin from '../models/UserLogin';
 import { UserState } from '../store/user/userState';
 import { RouteComponentProps } from 'react-router';
 import * as firebase from '../firebase';
+import { error, getErrors } from '../utils';
 
 const redirectLocation = '/dashboard';
 // At runtime, Redux will merge together...
@@ -95,13 +96,22 @@ class NormalLoginForm extends React.Component<LoginProps, UserState> {
           )}
         </Form.Item>
         <Form.Item>
-            <Button type="primary" htmlType="submit" className="login-form-button">Log in</Button>
+          <Button type="primary" htmlType="submit" className="login-form-button">Log in</Button>
         </Form.Item>
 
         <Form.Item>
-            <Button type='primary' onClick={firebase.auth.doSignInWithGooogle}>Sign in with Google</Button>
+          <Button type='primary' onClick={firebase.auth.doSignInWithGooogle}>Sign in with Google</Button>
         </Form.Item>
+        {
+          this.props.errors.length === 0 ? "" :
+            this.renderErrors()
+        }
       </Form>);
+  }
+  private renderErrors() {
+    firebase.auth.doSignOut().then(() => {
+      error(getErrors(this.props.errors))
+    });
   }
 }
 

@@ -11,5 +11,6 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public AttendeeViewModel Attendee { get; set; }
         public string GroupCode { get; set; }
         public GroupViewModel Group { get; set; }
+        public bool IsActive { get; set; }
     }
 }

@@ -44,9 +44,9 @@ const reducers: Reducer<ChangeRequestState> = (
         case ACTIONS.PROCESS_CHANGE_REQUEST:
             let crs = [];
             if (state.filterStatus === ChangeRequestStatusFilter.UNRESOLVED) {
-                crs = state.changeRequests.filter(cr => cr.id !== action.id);
+                crs = state.changeRequests.filter(cr => cr.recordId !== action.recordId);
             } else {
-                crs = state.changeRequests.map(cr => cr.id === action.id ? {
+                crs = state.changeRequests.map(cr => cr.recordId === action.recordId ? {
                     ...cr,
                     status: action.approved ? ChangeRequestStatus.APPROVED : ChangeRequestStatus.REJECTED
                 } : cr)

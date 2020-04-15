@@ -14,6 +14,7 @@ const unloadedState: UserState = {
         image: ""
     },
     isLogin: false,
+    errors:[]
 };
 
 const reducers: Reducer<UserState> = (state: UserState | undefined, incomingAction: AnyAction): UserState => {
@@ -32,7 +33,8 @@ const reducers: Reducer<UserState> = (state: UserState | undefined, incomingActi
             return {
                 ...state,
                 isLoading: false,
-                successfullyLoaded: false,
+                successfullyLoaded: true,
+                errors: action.errors
             };
         case ACTIONS.RECEIVE_SUCCESS_LOGIN:
             return {
@@ -42,12 +44,15 @@ const reducers: Reducer<UserState> = (state: UserState | undefined, incomingActi
                 // accessToken: action.accessToken,
                 isLoading: false,
                 successfullyLoaded: true,
-                isLogin: true
+                isLogin: true,
+                errors: []
             };
         case ACTIONS.USER_INFO_NOT_IN_LOCAL:
             return {
                 ...state,
-                isLogin: false
+                isLogin: false,
+                isLoading: false,
+                successfullyLoaded: true
             }
         case ACTIONS.LOG_OUT:
             return {

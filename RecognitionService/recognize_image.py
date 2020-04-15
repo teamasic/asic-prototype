@@ -29,7 +29,7 @@ if __name__ == "__main__":
     (h, w) = image.shape[:2]
     startTime = datetime.now()
     boxes = my_face_detection.face_locations(image)
-    print(datetime.now() - startTime)
+    print(f"time detect: {datetime.now() - startTime}")
     startTime = datetime.now()
     print("start time" + startTime.strftime("%H:%M:%S"))
     resultFull = pool.starmap(my_service.get_label_after_detect_multiple, [(copy.deepcopy(image), [copy.deepcopy(box)]) for box in boxes])

@@ -13,4 +13,11 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public bool Present { get; set; }
         public string Comment { get; set; }
     }
+    public class CreateChangeRequestNetworkViewModel : BaseViewModel<ChangeRequest>
+    {
+        public string AttendeeCode { get; set; }
+        public string GroupCode { get; set; }
+        public DateTime StartTime { get; set; }
+        public string Comment { get; set; }
+    }
 }
