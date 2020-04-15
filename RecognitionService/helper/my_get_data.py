@@ -47,11 +47,11 @@ def copy_images_enough(originalDir, resultDir, numOfImages):
     total = 0
     for dicName in os.listdir(originalDir):
         dic = os.path.join(originalDir, dicName)
-        if (len(os.listdir(dic)) >= 10):
+        if (len(os.listdir(dic)) >= numOfImages):
             print(dic)
             total += 1
             os.chmod(dic, os.st.S_IWRITE)
-            newDic = os.path.join(resultDirs, dicName)
+            newDic = os.path.join(resultDir, dicName)
             os.mkdir(newDic)
             shutil.copytree(dic, newDic, dirs_exist_ok=True)
     print(total)

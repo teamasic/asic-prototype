@@ -15,7 +15,7 @@ if __name__ == "__main__":
     time.sleep(7)
     # construct the argument parser and parse the arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--image", default="images/class3.jpg",
+    ap.add_argument("-i", "--image", default="images_detect/class3.jpg",
                     help="path to input image")
     ap.add_argument("-u", "--upSample", default=1,
                     help="path to input image")
@@ -25,6 +25,7 @@ if __name__ == "__main__":
     numberOfTimesToUpSample = args["upSample"]
 
     image = cv2.imread(imagePath)
+    # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     # image = imutils.resize(image, width=1920, height=1080)
     (h, w) = image.shape[:2]
     startTime = datetime.now()
@@ -37,6 +38,8 @@ if __name__ == "__main__":
 
     # results = my_service.get_label_after_detect_multiple(image, boxes)
     print(datetime.now() - startTime)
+    unknowns = [x for x in results if x[1] == "unknown"]
+    print(len(unknowns))
     print(results)
     print(len(results))
     for result in results:

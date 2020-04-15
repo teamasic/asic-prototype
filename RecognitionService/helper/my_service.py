@@ -7,7 +7,7 @@ import cv2
 import imutils
 import numpy as np
 from imutils import paths
-from sklearn import svm
+from sklearn import svm, linear_model
 from sklearn.preprocessing import LabelEncoder
 
 from config import my_constant
@@ -123,6 +123,7 @@ def generate_embeddings(datasetPath, alignFace=False):
 
         # load the image
         image = cv2.imread(imagePath)
+        # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         boxes = my_face_detection.face_locations(image)
         if len(boxes) > 1:
             print(imagePath, "> 1")
@@ -171,6 +172,24 @@ def generate_train_model():
     recognizer_model = {"recognizer": recognizer, "le": le}
     f = open(my_constant.recognizerModelPath, "wb+")
     f.write(pickle.dumps(recognizer_model))
+    f.close()
+
+
+def generate_train_model_softmax():
+    print("[INFO] loading face embeddings...")
+    data = pickle.loads(open(my_constant.embeddingsPath, "rb").read())
+
+    le = LabelEncoder()
+    labels = le.fit_transform(data["names"])
+
+    print("[INFO] training model...")
+    logreg = linear_model.LogisticRegression(C=1e5,
+                                             solver='lbfgs', multi_class='multinomial')
+    logreg.fit(data["embeddings"], labels)
+
+    recognizer_model_softmax = {"recognizer": logreg, "le": le}
+    f = open("output_dlib/recognizer_model.pickle", "wb+")
+    f.write(pickle.dumps(recognizer_model_softmax))
     f.close()
 
 

@@ -1,8 +1,11 @@
 import copy
 import os
+import shutil
 from datetime import datetime
+from pathlib import Path
 
 import cv2
+import imutils
 from imutils import paths
 
 from helper import my_face_detection
@@ -32,4 +35,39 @@ def test_detect_image(imagePath):
     print(len(boxes))
     print(datetime.now() - startTime)
 
-test_detect_image("images/class3.jpg")
+def test_detect_full(dir, removed=False):
+    imagePaths = list(paths.list_images(dir))
+    listFailed = []
+    failedDetectDir = "temp/failed_detect"
+    for (i, imagePath) in enumerate(imagePaths):
+        print("Try detect image {}/{}".format(i, len(imagePaths)))
+        image = cv2.imread(imagePath)
+        image = imutils.resize(image, width=400)
+        boxes = my_face_detection.face_locations(image)
+        if len(boxes) != 1:
+            print("FALSE - {} - Length: {}".format(imagePath, len(boxes)))
+            listFailed.append(imagePath)
+
+            Path(failedDetectDir).mkdir(parents=True, exist_ok=True)
+            shutil.copy(imagePath, failedDetectDir)
+
+            if (removed is True):
+                os.remove(imagePath)
+    print("Failed {}/{}".format(len(listFailed), len(imagePaths)))
+
+
+def test_detect_image2(path, removed=False):
+    failedDetectDir = "temp/failed_detect"
+    image = cv2.imread(path)
+    boxes = my_face_detection.face_locations(image)
+    if len(boxes) != 1:
+        print("FALSE - {} - Length: {}".format(path, len(boxes)))
+
+        Path(failedDetectDir).mkdir(parents=True, exist_ok=True)
+        shutil.copy(path, failedDetectDir)
+
+        if (removed is True):
+            os.remove(path)
+
+        return False
+    return True

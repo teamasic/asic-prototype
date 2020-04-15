@@ -28,7 +28,8 @@ def recognition_faces():
     resultFull = pool.starmap(my_service.get_label_after_detect_multiple,
                               [(currentImage, [box]) for box in boxes])
     results = [result[0] for result in resultFull]
-
+    unknowns = [x for x in results if x[1] == "unknown"]
+    print(len(unknowns))
     print(len(results))
     if isForCheckingAttendance:
         lbTotalTime['text'] = "Checking attendance ..."
@@ -140,8 +141,8 @@ if __name__ == "__main__":
                 httpString = "http://localhost:{}".format(my_constant.portHttpStream)
             else:
                 httpString = my_service.transfer_rtsp_to_http(rtspString)
-            vs = stream_video.CustomVideoStream(src=httpString)
             time.sleep(2.0)
+            vs = stream_video.CustomVideoStream(src=httpString)
             if vs.stream.isOpened():
                 isOpenStreamOk = True
 
