@@ -58,6 +58,8 @@ namespace AttendanceSystemIPCamera.Framework
 
             public static string SyncApi = "api/record/sync";
 
+            public static string SyncAttendeeImageApi = "api/user/image?codes=";
+
             public static class SettingsDownloadAPI
             {
                 private const string BASE = "/api/settings/";

@@ -15,6 +15,11 @@ using AttendanceSystemIPCamera.Services.RecognitionService;
 using AttendanceSystemIPCamera.Utils;
 using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using System.IO;
+using AttendanceSystemIPCamera.Framework;
+using Microsoft.Extensions.Logging;
+using System.Drawing;
+using System.Net;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceSystemIPCamera.Services.AttendeeService
 {
@@ -25,27 +30,31 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
         Task<Attendee> GetByAttendeeCode(string code);
         Attendee GetByAttendeeFaceForNetwork(string faceData);
         public string GetAttendeeAvatarByCode(string code);
+        Task AutoDownloadImage();
+        Task AutoDownloadImage(List<string> attendeeCodes);
     }
 
-        public class AttendeeService : BaseService<Attendee>, IAttendeeService
+    public class AttendeeService : BaseService<Attendee>, IAttendeeService
     {
         private readonly IAttendeeRepository attendeeRepository;
         private readonly MyConfiguration myConfiguration;
         private readonly IRecognitionService recognitionService;
+        private ILogger _logger;
 
-        public AttendeeService(MyUnitOfWork unitOfWork, 
+        public AttendeeService(MyUnitOfWork unitOfWork,
             MyConfiguration myConfiguration,
-            IRecognitionService recognitionService) : base(unitOfWork)
+            IRecognitionService recognitionService, ILogger<IAttendeeService> _logger) : base(unitOfWork)
         {
             attendeeRepository = unitOfWork.AttendeeRepository;
             this.myConfiguration = myConfiguration;
             this.recognitionService = recognitionService;
+            this._logger = _logger;
         }
 
         public async Task<Attendee> AddIfNotInDb(Attendee attendee)
         {
             Attendee attendeeInDb = await attendeeRepository.GetByAttendeeCode(attendee.Code);
-            if(attendeeInDb == null)
+            if (attendeeInDb == null)
             {
                 return await Add(attendee);
             }
@@ -83,6 +92,44 @@ namespace AttendanceSystemIPCamera.Services.AttendeeService
             else
             {
                 return "";
+            }
+        }
+
+        public async Task AutoDownloadImage()
+        {
+            var codes = attendeeRepository.GetAttendeeCodeWithOutImage();
+            await AutoDownloadImage(codes);
+        }
+
+        public async Task AutoDownloadImage(List<string> attendeeCodes)
+        {
+            if (attendeeCodes != null && attendeeCodes.Count > 0)
+            {
+                using (var trans = unitOfWork.CreateTransaction())
+                {
+                    try
+                    {
+                        string syncImageApi = $"{myConfiguration.ServerUrl}{Constants.ServerConstants.SyncAttendeeImageApi}{string.Join(',', attendeeCodes)}";
+                        var serverResponse = await RestApi.GetAsync<List<AttendeeViewModel>>(syncImageApi);
+                        _logger.LogInformation($"ASICServer Response: {serverResponse}");
+                        if (serverResponse != null && serverResponse.Count > 0)
+                        {
+                            foreach (var attendee in serverResponse)
+                            {
+                                var fileName = DownloadUtils.DownloadImageFromUrl(attendee.Image, attendee.Code, myConfiguration);
+                                await attendeeRepository.UpdateImage(attendee.Code, fileName);
+                                unitOfWork.Commit();
+                            }
+                            trans.Commit();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogInformation(e.Message);
+                        trans.Rollback();
+                        throw e;
+                    }
+                }
             }
         }
     }

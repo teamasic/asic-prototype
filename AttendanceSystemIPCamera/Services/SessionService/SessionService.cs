@@ -15,7 +15,6 @@ using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using AttendanceSystemIPCamera.Services.RecognitionService;
 using Microsoft.Extensions.Logging;
 using AttendanceSystemIPCamera.Framework;
-using AttendanceSystemIPCamera.Framework;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {

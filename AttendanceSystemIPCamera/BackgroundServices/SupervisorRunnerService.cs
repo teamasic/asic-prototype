@@ -1,4 +1,5 @@
-﻿using AttendanceSystemIPCamera.Services.NetworkService;
+﻿using AttendanceSystemIPCamera.Services.AttendeeService;
+using AttendanceSystemIPCamera.Services.NetworkService;
 using AttendanceSystemIPCamera.Services.RecordService;
 using AttendanceSystemIPCamera.Services.SessionService;
 using AttendanceSystemIPCamera.Utils;
@@ -73,7 +74,7 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                         await Task.Delay(waitingTime, stoppingToken);
                     }
                     logger.LogInformation("Sync attendance data executing - {0}", DateTime.Now);
-                    HandleSyncOperation();
+                    await HandleSyncOperation();
 
                     waitingTime = TimeSpan.FromMilliseconds(Constant.DEFAULT_SYNC_MILISECONDS);
                 }
@@ -112,7 +113,7 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                 logger.LogError($"Exception {e}");
             }
         }
-        private void HandleSyncOperation()
+        private async Task HandleSyncOperation()
         {
             try
             {
@@ -120,6 +121,9 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                 {
                     var recordService = scope.ServiceProvider.GetRequiredService<IRecordService>();
                     recordService.SyncAttendanceData();
+
+                    var attendeeService = scope.ServiceProvider.GetRequiredService<IAttendeeService>();
+                    await attendeeService.AutoDownloadImage();
                 }
             }
             catch (Exception ex)
