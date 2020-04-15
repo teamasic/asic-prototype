@@ -65,8 +65,6 @@ namespace AttendanceSystemIPCamera.Framework.Database
                 entity.HasIndex(e => e.RecordId)
                     .IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedOnAdd();
-
                 entity.Property(e => e.Comment).HasColumnType("varchar ( 255 )");
 
                 entity.Property(e => e.RecordId).HasColumnType("int");

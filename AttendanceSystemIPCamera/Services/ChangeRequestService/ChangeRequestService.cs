@@ -47,21 +47,16 @@ namespace AttendanceSystemIPCamera.Services.ChangeRequestService
             {
                 throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.NOT_FOUND_RECORD_WITH_ID, viewModel.RecordId);
             }
-            /*
-            if (record.Present == viewModel.Present)
-            {
-                throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.CHANGE_REQUEST_INVALID);
-            }
-            */
             var newRequest = new ChangeRequest
             {
                 Record = record,
                 Comment = viewModel.Comment,
-                Status = ChangeRequestStatus.UNRESOLVED
+                Status = ChangeRequestStatus.UNRESOLVED,
+                DateSubmitted = DateTime.Now
             };
             await changeRequestRepository.Add(newRequest);
             unitOfWork.Commit();
-            realTimeService.NewChangeRequestAdded();
+            await realTimeService.NewChangeRequestAdded();
             return newRequest;
         }
 
@@ -72,21 +67,27 @@ namespace AttendanceSystemIPCamera.Services.ChangeRequestService
 
         public async Task<ChangeRequest> Process(ProcessChangeRequestViewModel viewModel)
         {
-            var changeRequest = await changeRequestRepository.GetByIdSimple(viewModel.ChangeRequestId);
-            if (viewModel.Approved)
+            var changeRequest = await changeRequestRepository.GetByRecordIdSimple(viewModel.RecordId);
+            if (changeRequest != null)
             {
-                changeRequest.Record.Present = true;
-                changeRequest.Status = ChangeRequestStatus.APPROVED;
-            }
-            else
+                if (viewModel.Approved)
+                {
+                    changeRequest.Record.Present = true;
+                    changeRequest.Status = ChangeRequestStatus.APPROVED;
+                }
+                else
+                {
+                    changeRequest.Record.Present = false;
+                    changeRequest.Status = ChangeRequestStatus.REJECTED;
+                }
+                recordRepository.Update(changeRequest.Record);
+                changeRequestRepository.Update(changeRequest);
+                unitOfWork.Commit();
+                return changeRequest;
+            } else
             {
-                changeRequest.Record.Present = false;
-                changeRequest.Status = ChangeRequestStatus.REJECTED;
+                throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.NOT_FOUND_RECORD_WITH_ID, viewModel.RecordId);
             }
-            recordRepository.Update(changeRequest.Record);
-            changeRequestRepository.Update(changeRequest);
-            unitOfWork.Commit();
-            return changeRequest;
         }
     }
 }

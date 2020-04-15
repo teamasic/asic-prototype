@@ -51,31 +51,31 @@ class ChangeRequestModal extends React.PureComponent<ModalProps> {
         });
     }
 
-    private approveChangeRequest(id: number) {
-        this.props.processChangeRequest(id, true, this.showSuccess.bind(this), this.showError);
+    private approveChangeRequest(recordId: number) {
+        this.props.processChangeRequest(recordId, true, this.showSuccess.bind(this), this.showError);
     }
 
-    private rejectChangeRequest(id: number) {
-        this.props.processChangeRequest(id, false, this.showSuccess.bind(this), this.showError);
+    private rejectChangeRequest(recordId: number) {
+        this.props.processChangeRequest(recordId, false, this.showSuccess.bind(this), this.showError);
     }
 
     private confirmApprove = () => {
-        const { attendeeName, id } =  this.props.changeRequest;
+        const { attendeeName, recordId } =  this.props.changeRequest;
         confirm({
             title: "Do you want to approve this change request?",
             content: `${attendeeName} will be marked present for this session. You can always change your mind later.`,
             icon: <Icon type="exclamation-circle" />,
-            onOk: () => this.approveChangeRequest(id)
+            onOk: () => this.approveChangeRequest(recordId)
         });
     }
 
     private confirmReject = () => {
-        const { attendeeName, id } = this.props.changeRequest;
+        const { attendeeName, recordId } = this.props.changeRequest;
         confirm({
             title: "Do you want to reject this change request?",
             content: `${attendeeName} will be marked absent for this session. You can always change your mind later.`,
             icon: <Icon type="exclamation-circle" />,
-            onOk: () => this.rejectChangeRequest(id)
+            onOk: () => this.rejectChangeRequest(recordId)
         });
     }
 

@@ -19,6 +19,7 @@ import { ChangeRequestState } from '../store/changeRequest/state';
 import { changeRequestActionCreators } from '../store/changeRequest/actionCreators';
 import { log, isNullOrUndefined } from 'util';
 import { parse } from 'papaparse';
+import compareAsc from 'date-fns/compareAsc'
 import ChangeRequest, { ChangeRequestStatusFilter, ChangeRequestStatus } from '../models/ChangeRequest';
 import ChangeRequestModal from './ChangeRequestModal';
 import '../styles/Table.css';
@@ -170,8 +171,9 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
         ];
         return <Table
             columns={columns}
-            dataSource={this.props.changeRequests.sort((a, b) => b.id - a.id)}
-            rowKey={cr => cr.id.toString()}
+            dataSource={this.props.changeRequests
+                .sort((a, b) => compareAsc(new Date(b.dateSubmitted), new Date(a.dateSubmitted)))}
+            rowKey={cr => cr.recordId.toString()}
             rowClassName={renderStripedTable}
         />;
     }
