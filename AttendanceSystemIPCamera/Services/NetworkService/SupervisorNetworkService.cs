@@ -127,7 +127,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
 
         private async void ChangeRequest(string msg)
         {
-            var networkData = JsonConvert.DeserializeObject<NetworkRequest<CreateChangeRequestViewModel>>(msg);
+            var networkData = JsonConvert.DeserializeObject<NetworkRequest<CreateChangeRequestNetworkViewModel>>(msg);
             var createChangeRequest = networkData.Request;
             try
             {

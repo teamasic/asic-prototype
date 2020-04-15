@@ -191,8 +191,8 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
 			},
 			{
-				title: 'Id',
-				key: 'id',
+				title: 'Code',
+				key: 'code',
 				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.code
 			},
 			{

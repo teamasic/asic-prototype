@@ -20,7 +20,7 @@ namespace AttendanceSystemIPCamera.Services.ChangeRequestService
 {
     public interface IChangeRequestService : IBaseService<ChangeRequest>
     {
-        public Task<ChangeRequest> Add(CreateChangeRequestViewModel viewModel);
+        public Task<ChangeRequest> Add(CreateChangeRequestNetworkViewModel viewModel);
         public Task<ChangeRequest> Process(ProcessChangeRequestViewModel viewModel);
         public Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel);
     }
@@ -40,12 +40,14 @@ namespace AttendanceSystemIPCamera.Services.ChangeRequestService
             this.realTimeService = realTimeService;
         }
 
-        public async Task<ChangeRequest> Add(CreateChangeRequestViewModel viewModel)
+        public async Task<ChangeRequest> Add(CreateChangeRequestNetworkViewModel viewModel)
         {
-            var record = await recordRepository.GetById(viewModel.RecordId);
+            // var record = await recordRepository.GetById(viewModel.RecordId);
+            var record = await recordRepository.GetRecordByAttendeeGroupStartTime(viewModel.AttendeeCode,
+                viewModel.GroupCode, viewModel.StartTime);
             if (record == null)
             {
-                throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.NOT_FOUND_RECORD_WITH_ID, viewModel.RecordId);
+                throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.NOT_FOUND_RECORD_WITH_ID, viewModel.AttendeeCode);
             }
             var newRequest = new ChangeRequest
             {

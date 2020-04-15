@@ -44,7 +44,7 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPost]
-        public Task<BaseResponse<ChangeRequestSimpleViewModel>> Create([FromBody] CreateChangeRequestViewModel viewModel)
+        public Task<BaseResponse<ChangeRequestSimpleViewModel>> Create([FromBody] CreateChangeRequestNetworkViewModel viewModel)
         {
             return ExecuteInMonitoring(async () =>
             {

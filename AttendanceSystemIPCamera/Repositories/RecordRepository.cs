@@ -20,11 +20,20 @@ namespace AttendanceSystemIPCamera.Repositories
         Task<Record> GetRecordBySessionAndAttendeeCode(int sessionId, string attendeeCode);
         List<Record> GetAttendanceDataForSync(DateTime fromTime, DateTime toTime);
         IEnumerable<Record> GetRecords();
+        public Task<Record> GetRecordByAttendeeGroupStartTime(string attendeeCode, string groupCode, DateTime startTime);
     }
     public class RecordRepository : Repository<Record>, IRecordRepository
     {
         public RecordRepository(DbContext context) : base(context)
         {
+        }
+
+        public async Task<Record> GetRecordByAttendeeGroupStartTime(
+            string attendeeCode, string groupCode, DateTime startTime)
+        {
+            return await dbSet.Where(record => record.AttendeeCode.Equals(attendeeCode) && 
+            record.Session.GroupCode.Equals(groupCode) && record.StartTime.Equals(startTime))
+                .FirstOrDefaultAsync();
         }
 
         public Record GetRecordBySessionAndAttendee(int sessionId, string attendeeCode)
