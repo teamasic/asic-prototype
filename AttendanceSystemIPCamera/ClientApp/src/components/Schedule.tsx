@@ -10,12 +10,14 @@ import { GroupsState } from '../store/group/state';
 import moment from 'moment';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import { SessionState } from '../store/session/state';
+import TableConstants from '../constants/TableConstants';
 
 interface Props {
 }
 
 interface ScheduleComponentState {
-    page: number,
+    currentPage: number,
+    pageSize: number,
     modalVisible: boolean,
     schedules: any,
     scheduleLoading: boolean
@@ -32,7 +34,8 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
     constructor(props: ScheduleProps) {
         super(props);
         this.state = {
-            page: 1,
+            currentPage: 1,
+            pageSize: TableConstants.defaultPageSize,
             modalVisible: false,
             schedules: [],
             scheduleLoading: true
@@ -49,7 +52,11 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
     }
 
     private onPageChange = (page: number) => {
-        this.setState({ page: page });
+        this.setState({ currentPage: page });
+    }
+
+    private onShowSizeChange = (current: number, pageSize: number) => {
+        this.setState({pageSize: pageSize});
     }
 
     private handleDelete = (scheduleId: number) => {
@@ -66,17 +73,19 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
                 title: "#",
                 key: "index",
                 width: '5%',
-                render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
+                render: (text: any, record: any, index: number) => {
+                    return (this.state.currentPage - 1) * this.state.pageSize + index + 1
+                }
             },
             {
                 title: 'Slot',
-                key: 'slot',
-                dataIndex: 'slot'
+                key: 'name',
+                dataIndex: 'name'
             },
             {
                 title: 'Room',
-                key: 'room',
-                dataIndex: 'room'
+                key: 'room.name',
+                dataIndex: 'room.name'
             },
             {
                 title: 'Date',
@@ -121,7 +130,9 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
                         pageSize: 5,
                         total: this.state.schedules != undefined ? this.state.schedules.length : 0,
                         showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} rows`,
-                        onChange: this.onPageChange
+                        onChange: this.onPageChange,
+                        showSizeChanger: true,
+                        onShowSizeChange: this.onShowSizeChange
                     }}
                     rowClassName={renderStripedTable}
                 />
@@ -131,6 +142,8 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
 
     private loadSchedules = () => {
         this.props.requestGetScheduledSessionByGroupCode(this.props.selectedGroup.code, (data: any) => {
+            console.log(data);
+            
             this.setState({
                 schedules: data,
                 scheduleLoading: false

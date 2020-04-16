@@ -10,6 +10,7 @@ import Attendee from '../models/Attendee';
 import '../styles/Table.css';
 import { renderStripedTable, success, error } from '../utils'
 import { FormComponentProps } from 'antd/lib/form';
+import TableConstants from '../constants/TableConstants';
 
 interface Props extends FormComponentProps {
     attendees?: Attendee[],
@@ -40,7 +41,7 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
             image: ''
         },
         currentPage: 1,
-        pageSize: 10
+        pageSize: TableConstants.defaultPageSize
     }
 
     public handleDelete = (attendeeCode: string) => {
@@ -128,8 +129,6 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
     }
 
     public onShowSizeChange = (current: number, pageSize: number) => {
-        console.log("current: " + current);
-        
         this.setState({pageSize: pageSize});
     }
 
