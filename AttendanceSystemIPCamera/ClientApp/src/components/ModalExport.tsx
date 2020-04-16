@@ -15,6 +15,7 @@ import ExportFormat2 from '../models/ExportFormat2';
 import { renderStripedTable } from '../utils'
 import { ExportMultipleCondition } from '../models/ExportMultipleCondition';
 import { FormComponentProps } from 'antd/lib/form';
+import TableConstants from '../constants/TableConstants';
 
 const { Text } = Typography
 const { Option } = Select
@@ -276,8 +277,8 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                 {
                     title: "#",
                     key: "index",
-                    width: '5%',
-                    render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
+                    width: '7%',
+                    render: (text: any, record: any, index: number) => (this.state.page - 1) * TableConstants.defaultPageSize + index + 1
                 },
                 {
                     title: 'Code',
@@ -305,8 +306,8 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                 {
                     title: "#",
                     key: "index",
-                    width: '5%',
-                    render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
+                    width: '7%',
+                    render: (text: any, record: any, index: number) => (this.state.page - 1) * TableConstants.defaultPageSize + index + 1
                 },
                 {
                     title: 'Code',
@@ -483,7 +484,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                     title="Review"
                     visible={this.state.isGenerated}
                     centered
-                    width='80%'
+                    width='70%'
                     okText={
                         <CSVLink data={this.state.csvData}
                             filename={this.state.fileName}
@@ -499,7 +500,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                         rowKey={(record: any) => record.attendeeCode + Math.random()}
                         bordered
                         pagination={{
-                            pageSize: 5,
+                            pageSize: TableConstants.defaultPageSize,
                             total: this.state.csvData != undefined ? this.state.csvData.length : 0,
                             showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} rows`,
                             onChange: this.onPageChange

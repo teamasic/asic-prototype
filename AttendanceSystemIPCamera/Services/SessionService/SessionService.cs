@@ -321,7 +321,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 
         private int GetIndexOf(string groupCode, Session session)
         {
-            var sessions = sessionRepository.GetByGroupCode(groupCode).OrderBy(s => s.Id).ToList();
+            var sessions = sessionRepository.GetSessionByGroupCode(groupCode).OrderBy(s => s.Id).ToList();
             if (sessions.Count > 0)
             {
                 return sessions.IndexOf(session) + 1;
