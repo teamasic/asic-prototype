@@ -14,6 +14,7 @@ import GroupSearch from "../../models/GroupSearch";
 import Attendee from "../../models/Attendee";
 import { STATUS_CODES } from "http";
 import HttpStatusCode from "../../models/HttpStatusCode";
+import { success, error } from "../../utils";
 
 export const ACTIONS = {
     START_REQUEST_GROUPS: 'START_REQUEST_GROUPS',
@@ -111,11 +112,12 @@ const requestGroupDetail = (code: string, stopLoadingTable: Function): AppThunkA
     }
 }
 
-const postGroup = (newGroup: Group, reloadGroups: Function, error: Function): AppThunkAction => async (dispatch, getState) => {
+const postGroup = (newGroup: Group, reloadGroups: Function, resetModal: Function): AppThunkAction => async (dispatch, getState) => {
     dispatch(startCreateNewGroup(newGroup));
     const apiResponse: ApiResponse = await createGroup(newGroup);
     if (apiResponse.success) {
         dispatch(createGroupSuccess(apiResponse.data));
+        success("Create group success!");
         reloadGroups();
     } else {
         switch (apiResponse.statusCode) {
@@ -129,6 +131,7 @@ const postGroup = (newGroup: Group, reloadGroups: Function, error: Function): Ap
                 error("Oops.. Something went wrong!");
         }
     }
+    resetModal();
 }
 
 const startDeactiveGroup = (code: string, groupSearch: GroupSearch, success: Function, error: Function): AppThunkAction => async (dispatch, getState) => {
