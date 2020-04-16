@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Framework.GlobalStates;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
@@ -23,6 +24,7 @@ namespace AttendanceSystemIPCamera.Repositories
         List<Session> GetSessionsWithRecords(List<string> groups);
         List<Session> GetSessionExport(string groupCode, DateTime startDate, DateTime endDate);
         List<Session> GetSessionExport(string groupCode, DateTime date);
+        List<Session> GetPastSessionByGroupCode(string groupCode);
         List<Session> GetSessionByGroupCode(string groupCode);
         Task<Session> GetSessionWithGroupAndTime(string groupCode, DateTime startTime, DateTime endTime);
         public ICollection<string> GetSessionUnknownImages(int sessionId);
@@ -112,9 +114,15 @@ namespace AttendanceSystemIPCamera.Repositories
                 null, includeProperties: "Group").ToList();
         }
 
+        public List<Session> GetPastSessionByGroupCode(string groupCode)
+        {
+            return Get(s => s.GroupCode.Equals(groupCode) && s.Status != SessionStatus.SCHEDULED, 
+                orderBy: s => s.OrderByDescending(s => s.StartTime)).ToList();
+        }
+
         public List<Session> GetSessionByGroupCode(string groupCode)
         {
-            return Get(s => s.GroupCode.Equals(groupCode), 
+            return Get(s => s.GroupCode.Equals(groupCode),
                 orderBy: s => s.OrderByDescending(s => s.StartTime)).ToList();
         }
 
@@ -129,7 +137,7 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public List<Session> GetByGroupCodeAndStatus(string groupCode, string status)
         {
-            return Get(s => s.GroupCode == groupCode && s.Status == status).ToList();
+            return Get(s => s.GroupCode == groupCode && s.Status == status, includeProperties: "Room").ToList();
         }
 
         public Session GetByNameAndDate(string name, DateTime date)

@@ -28,7 +28,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         List<Object> Export(ExportRequestViewModel exportRequest);
         Task<SessionViewModel> CreateSession(CreateSessionViewModel createSessionViewModel);
         Task<SessionViewModel> StartTakingAttendance(TakingAttendanceViewModel viewModel);
-        List<Session> GetSessionByGroupCode(string groupCode);
+        List<Session> GetPastSessionByGroupCode(string groupCode);
         public ICollection<string> GetSessionUnknownImages(int sessionId);
         Task<List<SessionRefactorViewModel>> GetByGroupCodeAndStatus(string groupCode, string status);
         Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions);
@@ -321,7 +321,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 
         private int GetIndexOf(string groupCode, Session session)
         {
-            var sessions = sessionRepository.GetSessionByGroupCode(groupCode).OrderBy(s => s.Id).ToList();
+            var sessions = sessionRepository.GetByGroupCode(groupCode).OrderBy(s => s.Id).ToList();
             if (sessions.Count > 0)
             {
                 return sessions.IndexOf(session) + 1;
@@ -430,9 +430,9 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
         }
 
-        public List<Session> GetSessionByGroupCode(string groupCode)
+        public List<Session> GetPastSessionByGroupCode(string groupCode)
         {
-            return sessionRepository.GetSessionByGroupCode(groupCode);
+            return sessionRepository.GetPastSessionByGroupCode(groupCode);
         }
 
         private int GetDurationWhileRunningInMinutes(DateTime startTime, DateTime endTime)
@@ -498,7 +498,8 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                             EndTime = endTime,
                             Name = session.Slot,
                             GroupCode = session.GroupCode,
-                            Status = Constants.SessionStatus.SCHEDULED
+                            Status = Constants.SessionStatus.SCHEDULED,
+                            RoomId = roomInDB.Id
                         };
                         results.Add(newSession);
                         createdSessions.Add(session);
