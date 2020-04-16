@@ -29,12 +29,13 @@ import classNames from 'classnames';
 import '../styles/Session.css';
 import { SessionState } from '../store/session/state';
 import AttendeeRecordPair from '../models/AttendeeRecordPair';
-import { formatFullDateTimeString, minutesOfDay, error } from '../utils';
+import { formatFullDateTimeString, minutesOfDay, error, renderStripedTable } from '../utils';
 import { takeAttendance } from '../services/session';
 import moment from 'moment';
 import '../styles/Table.css';
 import TopBar from './TopBar';
 import TakeAttendanceModal from './TakeAttendanceModal';
+import TableConstants from '../constants/TableConstants';
 const { Search } = Input;
 const { Title } = Typography;
 
@@ -67,7 +68,8 @@ interface State {
 	startTime: moment.Moment,
 	endTime: moment.Moment,
 	isError: boolean,
-	page: number
+	currentPage: number,
+	pageSize: number
 }
 
 class SessionTableView extends React.PureComponent<SessionProps, State> {
@@ -82,7 +84,8 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 			startTime: moment(),
 			endTime: moment().add(1, "m"),
 			isError: false,
-			page: 1
+			currentPage: 1,
+			pageSize: TableConstants.defaultPageSize
 		};
 	}
 
@@ -159,6 +162,14 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 		})
 	}
 
+	private onPageChange = (page: number) => {
+        this.setState({ currentPage: page });
+    }
+
+    private onShowSizeChange = (current: number, pageSize: number) => {
+        this.setState({pageSize: pageSize});
+    }
+
 	private takeAttendanceMultiple = async () => {
 		if (this.props.activeSession != null) {
 			this.props.startTakingAttendance(this.props.activeSession);
@@ -173,14 +184,6 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 		this.props.startTakingAttendance(null);
 		this.props.endTakingAttendance();
 	}
-	
-	private renderOnRow = (record: any, index: number) => {
-		if (index % 2 == 0) {
-			return 'default';
-		} else {
-			return 'striped';
-		}
-	}
 
 	public render() {
 		const columns = [
@@ -188,7 +191,9 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				title: "#",
 				key: "index",
 				width: '5%',
-				render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
+				render: (text: any, record: any, index: number) => {
+                    return (this.state.currentPage - 1) * this.state.pageSize + index + 1
+                }
 			},
 			{
 				title: 'Code',
@@ -303,9 +308,16 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 								columns={columns}
 								dataSource={processedList}
 								bordered
-								pagination={false}
 								rowKey={record => record.attendee.code}
-								rowClassName={this.renderOnRow}
+								pagination={{
+									pageSize: this.state.pageSize,
+									total: processedList != undefined ? processedList.length : 0,
+									showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} attendees`,
+									onChange: this.onPageChange,
+									showSizeChanger: true,
+									onShowSizeChange: this.onShowSizeChange
+								}}
+								rowClassName={renderStripedTable}
 							/>
 						)}
 				</div>
