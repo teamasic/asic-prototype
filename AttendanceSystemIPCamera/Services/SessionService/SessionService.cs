@@ -32,7 +32,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         public ICollection<string> GetSessionUnknownImages(int sessionId);
         Task<List<SessionRefactorViewModel>> GetByGroupCodeAndStatus(string groupCode, string status);
         Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions);
-        Task ActivateSchedule();
+        Task ActivateScheduledSession();
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -321,7 +321,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
 
         private int GetIndexOf(string groupCode, Session session)
         {
-            var sessions = sessionRepository.GetByGroupCode(groupCode).OrderBy(s => s.Id).ToList();
+            var sessions = sessionRepository.GetSessionByGroupCode(groupCode).OrderBy(s => s.Id).ToList();
             if (sessions.Count > 0)
             {
                 return sessions.IndexOf(session) + 1;
@@ -510,55 +510,32 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             return createdSessions;
         }
 
-        public async Task ActivateSchedule()
+        public async Task ActivateScheduledSession()
         {
             logger.LogInformation(activatedTimeBeforeStartTime.ToString());
-            using (var trans = unitOfWork.CreateTransaction())
+            try
             {
-                try
+                var scheduledSessionNeedToActivate = sessionRepository
+                            .GetSessionNeedsToActivate(activatedTimeBeforeStartTime);
+                if (scheduledSessionNeedToActivate != null)
                 {
-                    var scheduleNeedToActivate = sessionRepository
-                                .GetSessionNeedsToActivate(activatedTimeBeforeStartTime);
-                    if (scheduleNeedToActivate != null)
-                    {
-                        var session = await sessionRepository.GetSessionWithGroupAndTime(scheduleNeedToActivate.GroupCode,
-                                                scheduleNeedToActivate.StartTime, scheduleNeedToActivate.EndTime);
-                        if (session == null)
-                        {
-                            var room = await roomRepository.GetRoomByName(scheduleNeedToActivate.Room.Name);
-                            session = new Session()
-                            {
-                                GroupCode = scheduleNeedToActivate.GroupCode,
-                                StartTime = scheduleNeedToActivate.StartTime,
-                                EndTime = scheduleNeedToActivate.EndTime,
-                                Name = scheduleNeedToActivate.Room.Name,
-                                Room = scheduleNeedToActivate.Room
-                            };
-                            await sessionRepository.Add(session);
-                            unitOfWork.Commit();
-                            trans.Commit();
-                            await SendSessionNotification(session);
-                        }
-                        else
-                        {
-                            scheduleNeedToActivate.Status = Constants.SessionStatus.IN_PROGRESS;
-                            unitOfWork.Commit();
-                            trans.Commit();
-                        }
-                    }
+                    scheduledSessionNeedToActivate.Status = Constants.SessionStatus.IN_PROGRESS;
+                    unitOfWork.Commit();
+                    await SendSessionNotification(scheduledSessionNeedToActivate);
                 }
-                catch (Exception ex)
-                {
-                    trans.Rollback();
-                    throw ex;
-                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.ToString());
+                throw ex;
             }
         }
 
         private async Task SendSessionNotification(Session session)
         {
             var sessionViewModel = mapper.Map<SessionNotificationViewModel>(session);
-            sessionViewModel.GroupName = session.Group.Name;
+            sessionViewModel.GroupName = session.Group?.Name;
+            sessionViewModel.RoomName = session.Room?.Name;
             await realTimeService.SendNotification(NotificationType.SESSION, sessionViewModel);
         }
     }

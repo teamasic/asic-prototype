@@ -232,7 +232,7 @@ _Pvt_Extensions
 .fake/
 
 #DB
-app.db
+*.db
 
 #Log file
 Logs
