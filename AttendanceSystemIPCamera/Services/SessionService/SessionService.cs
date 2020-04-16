@@ -475,34 +475,42 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             foreach (var session in newSessions)
             {
                 var date = session.Date;
-                var unit = units.Select(u => new Unit
+                var currentDate = DateTime.Now;
+                //Check for creating scheduled session from now to the future
+                if(date.CompareTo(currentDate.Date) >= 0)
                 {
-                    Id = u.Id,
-                    Name = u.Name,
-                    StartTime = u.StartTime,
-                    EndTime = u.EndTime
-                }).Where(u => u.Name.Equals(session.Slot)).FirstOrDefault();
-                var roomInDB = roomRepository.GetRoomByName(session.Room).Result;
-                if (unit != null && roomInDB != null)
-                {
-                    var existed = sessionRepository.GetByNameAndDate(unit.Name, session.Date);
-                    if (existed == null)
+                    var unit = units.Select(u => new Unit
                     {
-                        var startTime = new DateTime(date.Year, date.Month, date.Day,
-                        unit.StartTime.Hour, unit.StartTime.Minute, unit.StartTime.Second);
-                        var endTime = new DateTime(date.Year, date.Month, date.Day,
-                            unit.EndTime.Hour, unit.EndTime.Minute, unit.EndTime.Second);
-                        var newSession = new Session()
+                        Id = u.Id,
+                        Name = u.Name,
+                        StartTime = u.StartTime,
+                        EndTime = u.EndTime
+                    }).Where(u => u.Name.Equals(session.Slot)).FirstOrDefault();
+                    var roomInDB = roomRepository.GetRoomByName(session.Room).Result;
+                    if (unit != null && roomInDB != null)
+                    {
+                        var existed = sessionRepository.GetByNameAndDate(unit.Name, session.Date);
+                        if (existed == null)
                         {
-                            StartTime = startTime,
-                            EndTime = endTime,
-                            Name = session.Slot,
-                            GroupCode = session.GroupCode,
-                            Status = Constants.SessionStatus.SCHEDULED,
-                            RoomId = roomInDB.Id
-                        };
-                        results.Add(newSession);
-                        createdSessions.Add(session);
+                            var startTime = new DateTime(date.Year, date.Month, date.Day,
+                            unit.StartTime.Hour, unit.StartTime.Minute, unit.StartTime.Second);
+                            if(startTime.CompareTo(currentDate) > 0)
+                            {
+                                var endTime = new DateTime(date.Year, date.Month, date.Day,
+                                unit.EndTime.Hour, unit.EndTime.Minute, unit.EndTime.Second);
+                                var newSession = new Session()
+                                {
+                                    StartTime = startTime,
+                                    EndTime = endTime,
+                                    Name = session.Slot,
+                                    GroupCode = session.GroupCode,
+                                    Status = Constants.SessionStatus.SCHEDULED,
+                                    RoomId = roomInDB.Id
+                                };
+                                results.Add(newSession);
+                                createdSessions.Add(session);
+                            }
+                        }
                     }
                 }
             }
