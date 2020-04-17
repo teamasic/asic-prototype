@@ -43,21 +43,21 @@ export const requestChangeRequests = (status: ChangeRequestStatusFilter): AppThu
     }
 };
 
-function receiveProcessChangeRequest(id: number, approved: boolean) {
+function receiveProcessChangeRequest(recordId: number, approved: boolean) {
     return {
         type: ACTIONS.PROCESS_CHANGE_REQUEST,
-        id,
+        recordId,
         approved
     };
 }
 
-const processChangeRequest = (id: number, approved: boolean,
+const processChangeRequest = (recordId: number, approved: boolean,
     successCallback?: () => void,
     errorCallback?: () => void): AppThunkAction => async (dispatch, getState) => {
-    dispatch(receiveProcessChangeRequest(id, approved));
-    const apiResponse: ApiResponse = await services.processChangeRequest(id, approved);
+        dispatch(receiveProcessChangeRequest(recordId, approved));
+        const apiResponse: ApiResponse = await services.processChangeRequest(recordId, approved);
         if (apiResponse.success) {
-            dispatch(receiveProcessChangeRequest(id, approved));
+            dispatch(receiveProcessChangeRequest(recordId, approved));
             if (successCallback) {
                 successCallback();
             }

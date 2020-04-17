@@ -107,7 +107,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             {
                 attendanceData.AttendeeCode = attendee.Code;
                 attendanceData.AttendeeName = attendee.Name;
-                var groupIds = attendee.AttendeeGroups.Select(ag => ag.GroupId).ToList();
+                var groupCodes = attendee.AttendeeGroups.Select(ag => ag.GroupCode).ToList();
                 attendanceData.Groups = GetGroupNetworkViewModels(attendee);
             }
             //send
@@ -127,7 +127,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
 
         private async void ChangeRequest(string msg)
         {
-            var networkData = JsonConvert.DeserializeObject<NetworkRequest<CreateChangeRequestViewModel>>(msg);
+            var networkData = JsonConvert.DeserializeObject<NetworkRequest<CreateChangeRequestNetworkViewModel>>(msg);
             var createChangeRequest = networkData.Request;
             try
             {
@@ -135,7 +135,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 newChangeRequest.Record = null;
                 Send(newChangeRequest);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Send(ErrorMessage.CREATE_REQUEST_ERROR);
             }
@@ -160,7 +160,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 if (attendee != null)
                     return (true, attendee);
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
             return (false, null);
@@ -175,7 +175,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                 groupSession.Sessions.RemoveAll(s => s.Records.Count == 0);
                 groupSession.Sessions.ForEach(session =>
                 {
-                    session.Records.RemoveAll(r => r.AttendeeId != attendee.Id);
+                    session.Records.RemoveAll(r => r.AttendeeCode != attendee.Code);
                 });
                 groupSession.Sessions.RemoveAll(s => s.Records.Count == 0);
             });

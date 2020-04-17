@@ -73,13 +73,13 @@ namespace AttendanceSystemIPCamera.Controllers
             var records = recordService.GetRecords();
             records.ToList().ForEach(r =>
             {
-                if (r.Session == null || r.Attendee == null)
+                if (r.Session == null || r.AttendeeGroup.Attendee == null)
                 {
                     recordService.Delete(r);
                 }
                 else
                 {
-                    r.AttendeeCode = r.Attendee.Code;
+                    r.AttendeeCode = r.AttendeeCode;
                     r.SessionName = r.Session.Name;
                     r.StartTime = r.Session.StartTime;
                     r.EndTime = r.Session.EndTime;

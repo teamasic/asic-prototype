@@ -11,13 +11,13 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
 {
-    public interface IAttendeeGroupService 
+    public interface IAttendeeGroupService
     {
         Task AddAsync(AttendeeGroup attendeeGroup);
         Task AddAsync(IEnumerable<AttendeeGroup> attendeeGroups);
-        IEnumerable<AttendeeGroup> GetByGroupId(int groupId);
-        AttendeeGroup Detete(int attendeeId, int groupId);
-        AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId);
+        Task<IEnumerable<AttendeeGroup>> GetByGroupCode(string groupCode);
+        Task<AttendeeGroup> Delete(string attendeeCode, string groupCode);
+        Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode);
     }
     public class AttendeeGroupService : IAttendeeGroupService
     {
@@ -38,6 +38,15 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
         {
             await attendeeGroupRepository.Add(attendeeGroups);
             unitOfWork.Commit();
+            var attendeeCodes = new List<string>();
+            attendeeGroups.ToList().ForEach(ag =>
+            {
+                if(ag.Attendee.Image == null)
+                {
+                    attendeeCodes.Add(ag.AttendeeCode);
+                }
+            });
+            await attendeeService.AutoDownloadImage(attendeeCodes);
         }
 
         public async Task AddAsync(AttendeeGroup attendeeGroup)
@@ -46,28 +55,34 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
             unitOfWork.Commit();
         }
 
-        public IEnumerable<AttendeeGroup> GetByGroupId(int groupId)
+        public async Task<IEnumerable<AttendeeGroup>> GetByGroupCode(string groupCode)
         {
-            var attendeeGroups = attendeeGroupRepository.GetByGroupId(groupId).ToList();
-            attendeeGroups.ForEach(ag => { ag.Attendee = attendeeService.GetById(ag.AttendeeId).Result;});
+            var attendeeGroups = attendeeGroupRepository
+                .GetByGroupCode(groupCode)
+                .Where(ag => ag.IsActive)
+                .ToList();
+            foreach (var ag in attendeeGroups)
+            {
+                ag.Attendee = await attendeeService.GetByAttendeeCode(ag.AttendeeCode);
+            }
             return attendeeGroups;
         }
 
-        public AttendeeGroup Detete(int attendeeId, int groupId)
+        public async Task<AttendeeGroup> Delete(string attendeeCode, string groupCode)
         {
-            var attendeeGroupInDb = attendeeGroupRepository.GetByAttendeeIdAndGroupId(attendeeId, groupId);
-            if(attendeeGroupInDb != null)
+            var attendeeGroupInDb = await attendeeGroupRepository
+                .GetByAttendeeCodeAndGroupCode(attendeeCode, groupCode);
+            if (attendeeGroupInDb != null)
             {
-                var deletedAttendee = attendeeGroupRepository.Delete(attendeeGroupInDb);
+                attendeeGroupInDb.IsActive = false;
                 unitOfWork.Commit();
-                return deletedAttendee;
             }
             return attendeeGroupInDb;
         }
 
-        public AttendeeGroup GetByAttendeeIdAndGroupId(int attendeeId, int groupId)
+        public async Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode)
         {
-            return attendeeGroupRepository.GetByAttendeeIdAndGroupId(attendeeId, groupId);
+            return await attendeeGroupRepository.GetByAttendeeCodeAndGroupCode(attendeeCode, groupCode);
         }
     }
 }

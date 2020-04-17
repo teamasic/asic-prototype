@@ -14,10 +14,9 @@ const unloadedState: GroupsState = {
         pageSize: 15
     },
     selectedGroup: { // temporary, might be restructured
-        id: 0,
         code: 'Loading',
         name: 'Loading',
-        maxSessionCount: 0,
+        totalSession: 0,
         attendees: [],
         sessions: [{
             id: 0,
@@ -26,7 +25,7 @@ const unloadedState: GroupsState = {
             startTime: new Date(),
             endTime: new Date(),
             attendees: [],
-            groupId: 0
+            groupCode: ''
         }]
     }
 };
@@ -83,7 +82,7 @@ const reducers: Reducer<GroupsState> = (
         case ACTIONS.DELETE_ATTENDEE_GROUP_SUCCESS:
             var selectedGroup = {
                 ...state.selectedGroup,
-                attendees: state.selectedGroup.attendees.filter(a => a.id !== action.attendeeId)
+                attendees: state.selectedGroup.attendees.filter(a => a.code !== action.attendeeCode)
             };;
             return {
                 ...state,

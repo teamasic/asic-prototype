@@ -1,6 +1,6 @@
 ﻿export default interface User {
-    id: number;
-    username: string;
-    rollNumber: string
-    fullname: string,
+    code: string;
+    email: string;
+    name: string;
+    image: string
 }

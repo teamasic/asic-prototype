@@ -10,6 +10,7 @@ import Attendee from '../models/Attendee';
 import '../styles/Table.css';
 import { renderStripedTable, success, error } from '../utils'
 import { FormComponentProps } from 'antd/lib/form';
+import TableConstants from '../constants/TableConstants';
 
 interface Props extends FormComponentProps {
     attendees?: Attendee[],
@@ -19,7 +20,8 @@ interface Props extends FormComponentProps {
 interface GroupInfoComponentstate {
     modalVisible: boolean,
     newAttendee: Attendee,
-    page: number
+    currentPage: number,
+    pageSize: number
 }
 
 // At runtime, Redux will merge together...
@@ -36,19 +38,20 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
             id: 0,
             code: '',
             name: '',
-            avatar: ''
+            image: ''
         },
-        page: 1
+        currentPage: 1,
+        pageSize: TableConstants.defaultPageSize
     }
 
-    public handleDelete = (attendeeId: number) => {
-        this.props.startDeleteAttendeeGroup(attendeeId,
-            this.props.selectedGroup.id,
+    public handleDelete = (attendeeCode: string) => {
+        this.props.startDeleteAttendeeGroup(attendeeCode,
+            this.props.selectedGroup.code,
             message.success("Delete attendee success!"));
     }
 
     public addAttendee = () => {
-        this.props.startCreateAttendeeInGroup(this.props.selectedGroup.id,
+        this.props.startCreateAttendeeInGroup(this.props.selectedGroup.code,
             this.state.newAttendee,
             this.addAttendeeSuccess,
             this.duplicateAttendee);
@@ -122,9 +125,11 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
     }
 
     public onPageChange = (page: number) => {
-        this.setState({
-            page: page
-        })
+        this.setState({ currentPage: page });
+    }
+
+    public onShowSizeChange = (current: number, pageSize: number) => {
+        this.setState({pageSize: pageSize});
     }
 
     public duplicateAttendee = () => {
@@ -147,7 +152,9 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                 title: "#",
                 key: "index",
                 width: '5%',
-                render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
+                render: (text: any, record: any, index: number) => {
+                    return (this.state.currentPage - 1) * this.state.pageSize + index + 1
+                }
             },
             {
                 title: 'Code',
@@ -166,7 +173,7 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                 render: (text: any, record: any) =>
                     this.props.attendees != undefined && this.props.attendees.length >= 1 ? (
                         <Popconfirm title="Are you sure to delete this attendee?"
-                            onConfirm={() => this.handleDelete(record.id)}>
+                            onConfirm={() => this.handleDelete(record.code)}>
                             <Button size="small" type="danger" icon="delete"></Button>
                         </Popconfirm>
                     ) : null
@@ -209,14 +216,16 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
                 </Modal>
                 <Table dataSource={this.props.attendees}
                     columns={columns}
-                    rowKey="$id"
+                    rowKey="code"
                     bordered
                     loading={this.props.attendeeLoading}
                     pagination={{
-                        pageSize: 5,
+                        pageSize: this.state.pageSize,
                         total: this.props.attendees != undefined ? this.props.attendees.length : 0,
                         showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} attendees`,
-                        onChange: this.onPageChange
+                        onChange: this.onPageChange,
+                        showSizeChanger: true,
+                        onShowSizeChange: this.onShowSizeChange
                     }}
                     rowClassName={renderStripedTable}
                 />

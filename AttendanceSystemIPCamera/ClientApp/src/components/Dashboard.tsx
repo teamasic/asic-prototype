@@ -45,11 +45,8 @@ type GroupProps =
 
 interface DashboardComponentState {
     modalVisible: boolean,
-    modalLoading: boolean,
+    isSaving: boolean,
     importAttendees: any,
-    groupCode: string,
-    groupName: string,
-    maxSession: number,
     page: number,
     msgImportCSV: string,
     csvFile: File
@@ -59,11 +56,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
 
     state = {
         modalVisible: false,
-        modalLoading: false,
+        isSaving: false,
         importAttendees: [],
-        groupCode: "",
-        groupName: "",
-        maxSession: 0,
         page: 1,
         msgImportCSV: ' ',
         csvFile: new File([], 'Null')
@@ -115,28 +109,35 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
         }
         this.props.form.validateFields((err: any, values: any) => {
             if (!err && isImportedFile) {
+                this.setState({ isSaving: true });
                 var newGroup = new Group();
-                newGroup.name = this.state.groupName;
-                newGroup.code = this.state.groupCode;
+                newGroup.name = values.name;
+                newGroup.code = values.code;
                 newGroup.attendees = this.state.importAttendees;
-                newGroup.maxSessionCount = this.state.maxSession;
-                this.props.postGroup(newGroup, this.createGroupSuccess, error);
+                newGroup.totalSession = values.totalSession;
+                this.props.postGroup(newGroup, this.reloadGroupList, this.resetModal);
             }
         });
     }
 
-    public createGroupSuccess = () => {
+    public reloadGroupList = () => {
         this.props.requestGroups(this.props.groupSearch);
-        this.handleCancel();
-        success("Create group success!");
     }
 
-    public onMaxSessionChane = (value: number | undefined) => {
-        if (value != undefined) {
-            this.setState({
-                maxSession: JSON.parse(value.toString())
-            });
-        }
+    public resetModal = () => {
+        this.setState({
+            importAttendees: [],
+            page: 1,
+            msgImportCSV: ' ',
+            csvFile: new File([], 'Null'),
+            isSaving: false,
+            modalVisible: false
+        });
+        this.props.form.setFieldsValue({
+            code: '',
+            name: '',
+            totalSession: 30
+        });
     }
 
     public parseFileToTable = (file: File): Promise<void> => {
@@ -160,9 +161,9 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                         }, () => { reject(); });
                     }
                 }, error: function (errors: any, file: File) {
-                    message.error("Upload error: " + errors, 3);
                     thisState.setState({
-                        importAttendees: []
+                        importAttendees: [], 
+                        msgImportCSV: "Upload error: " + errors
                     }, () => { reject(); });
                 }
             });
@@ -170,11 +171,10 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     }
 
     public checkValidFileFormat = (attendees: []) => {
-        let temp: { No: number, Code: string, Name: string }[] = attendees;
+        let temp: { code: string, name: string }[] = attendees;
         if (temp.length > 0) {
-            if (!isNullOrUndefined(temp[0].No)
-                && !isNullOrUndefined(temp[0].Code)
-                && !isNullOrUndefined(temp[0].Name)) {
+            if (!isNullOrUndefined(temp[0].code)
+                && !isNullOrUndefined(temp[0].name)) {
                 return true;
             }
         }
@@ -182,28 +182,11 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
     }
 
     public handleCancel = () => {
-        this.setState({
-            modalVisible: false,
-            importAttendees: [],
-            csvFile: new File([], 'Null')
-        });
-    }
-
-    public onGroupCodeChange = (e: any) => {
-        this.setState({
-            groupCode: e.target.value
-        });
-    }
-
-    public onGroupNameChange = (e: any) => {
-        this.setState({
-            groupName: e.target.value
-        });
+        this.setState({ modalVisible: false });
     }
 
     public validateBeforeUpload = (file: File): boolean | Promise<void> => {
         if (file.type !== "application/vnd.ms-excel") {
-            //Show error in 3 second
             this.setState({ msgImportCSV: 'Only accept CSV file!' });
             return false;
         }
@@ -236,13 +219,13 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
             },
             {
                 title: 'Code',
-                key: 'Code',
-                dataIndex: 'Code'
+                key: 'code',
+                dataIndex: 'code'
             },
             {
                 title: 'Name',
-                key: 'Name',
-                dataIndex: 'Name'
+                key: 'name',
+                dataIndex: 'name'
             }
         ];
         const { getFieldDecorator } = this.props.form;
@@ -270,7 +253,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                             <Button key="back" onClick={this.handleCancel}>
                                 Cancel
                             </Button>,
-                            <Button key="submit" type="primary" loading={this.state.modalLoading} onClick={this.handleOk}>
+                            <Button key="submit" type="primary" loading={this.state.isSaving} onClick={this.handleOk}>
                                 Save
                             </Button>,
                         ]}
@@ -285,7 +268,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                                 { min: 3, max: 10, message: 'Group code requires 3-10 characters' }
                                             ],
                                         })(
-                                            <Input placeholder="Enter group code" onChange={this.onGroupCodeChange} />
+                                            <Input placeholder="Enter group code" />
                                         )}
                                     </Form.Item>
                                 </Col>
@@ -297,18 +280,19 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                                 { min: 3, max: 50, message: 'Group name requires 3-50 characters' }
                                             ],
                                         })(
-                                            <Input placeholder="Enter group name" onChange={this.onGroupNameChange} />
+                                            <Input placeholder="Enter group name" />
                                         )}
                                     </Form.Item>
                                 </Col>
                                 <Col span={7}>
                                     <Form.Item label="Total sessions" required>
                                         {getFieldDecorator('totalSession', {
+                                            initialValue: 30,
                                             rules: [{ required: true, message: 'Please input total session' }],
                                         })(<InputNumber
                                             min={0}
                                             max={100}
-                                            onChange={this.onMaxSessionChane} />
+                                            />
                                         )}
                                     </Form.Item>
                                 </Col>
@@ -344,7 +328,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                         </Row>
                         <Row>
                             <Table dataSource={this.state.importAttendees}
-                                columns={columns} rowKey="code"
+                                columns={columns} 
+                                rowKey="code"
                                 bordered
                                 rowClassName={renderStripedTable}
                                 pagination={{
@@ -402,7 +387,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                 <span>This is where your groups will show up.</span>
             }
         >
-            <Button type="primary">Create a group</Button>
+            <Button type="primary" onClick={this.showModal}>Create a group</Button>
         </Empty>;
     }
 
@@ -411,8 +396,8 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
             <div className="group-grid">
                 <div className="fixed-grid--around">
                     {
-                        this.props.paginatedGroupList!.list.map(group => 
-                            <div className="grid-element">
+                        this.props.paginatedGroupList!.list.map(group =>
+                            <div key={group.code} className="grid-element">
                                 <GroupCard redirect={url => this.redirect(url)}
                                 group={group}
                                 roomList={this.props.roomList}

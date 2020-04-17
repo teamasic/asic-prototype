@@ -99,7 +99,7 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
                     })
                     this.setFileName();
                     var exportRequest = {
-                        groupId: this.props.group.id,
+                        groupCode: this.props.group.code,
                         isSingleDate: this.state.timePicker == TIME_OPTIONS.SINGLE_DATE,
                         withCondition: this.isWithCondition(),
                         singleDate: this.state.singleDate.format("YYYY-MM-DD"),
@@ -191,9 +191,10 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
 
     private onPercentChange = (value: number | undefined) => {
         if (value != undefined) {
-            this.setState({
-                attendancePercent: JSON.parse(value.toString())
-            });
+            var percent = parseInt(value.toString());
+            if(percent !== NaN) {
+                this.setState({ attendancePercent: percent });
+            }
         }
     }
 
@@ -259,8 +260,13 @@ class ModalExport extends React.PureComponent<ModalExportProps, ModalExportCompo
     }
 
     private parseInputNumber = (value: string | undefined) => {
-        if (value != undefined)
-            return JSON.parse(value.replace('%', ''));
+        if (value != undefined) {
+            var numberValue = parseInt(value.replace('%', ''));
+            if(numberValue !== NaN) {
+                return numberValue;
+            }
+        }
+        return this.state.attendancePercent;
     }
 
     private generateColumns = (exportRequest: ExportRequest) => {

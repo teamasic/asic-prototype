@@ -232,7 +232,11 @@ _Pvt_Extensions
 .fake/
 
 #DB
-app.db
+*.db
 
 #Log file
 Logs
+
+#Sync file
+LatestSync.txt
+ShutDownTime.txt

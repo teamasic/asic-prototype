@@ -28,9 +28,9 @@ export const createChangeRequest =
 	};
 
 export const processChangeRequest =
-	async (changeRequestId: number, approved: boolean): Promise<ApiResponse> => {
+	async (recordId: number, approved: boolean): Promise<ApiResponse> => {
 		const response = await axios.put(baseRoute, {
-			changeRequestId,
+			recordId,
 			approved
 		});
 		return await response.data;

@@ -9,7 +9,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
     public class ProcessChangeRequestViewModel: BaseViewModel<ChangeRequest>
     {
-        public int ChangeRequestId { get; set; }
+        public int RecordId { get; set; }
         public bool Approved { get; set; }
     }
 }

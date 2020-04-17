@@ -11,6 +11,7 @@ import Session from '../models/Session';
 import SessionViewModel from '../models/SessionViewModel';
 import '../styles/Table.css';
 import { renderStripedTable } from '../utils'
+import TableConstants from '../constants/TableConstants';
 
 interface Props {
     group: Group
@@ -19,7 +20,9 @@ interface Props {
 
 interface PastSessionComponentState {
     sessions: SessionViewModel[],
-    page: number
+    currentPage: number,
+    pageSize: number,
+    sessionLoading: boolean
 }
 
 type SessionProps = SessionState &
@@ -30,7 +33,9 @@ type SessionProps = SessionState &
 class PastSession extends React.PureComponent<SessionProps, PastSessionComponentState> {
     state = {
         sessions: new Array(0),
-        page: 1
+        currentPage: 1,
+        pageSize: TableConstants.defaultPageSize,
+        sessionLoading: false
     }
 
     public componentDidMount() {
@@ -51,8 +56,9 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
         });
 
         this.setState({
-            sessions: sessions
-        })
+            sessions: sessions,
+            sessionLoading: false
+        });
     }
 
     private appendLeadingZeroes = (n: number) => {
@@ -63,9 +69,11 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
     }
 
     private onPageChange = (page: number) => {
-        this.setState({
-            page: page
-        })
+        this.setState({ currentPage: page });
+    }
+
+    private onShowSizeChange = (current: number, pageSize: number) => {
+        this.setState({pageSize: pageSize});
     }
 
     private formatDate = (date: Date) => {
@@ -89,7 +97,9 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
                 title: "#",
                 key: "index",
                 width: '5%',
-                render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
+                render: (text: any, record: any, index: number) => {
+                    return (this.state.currentPage - 1) * this.state.pageSize + index + 1
+                }
             },
             {
                 title: 'Start Time',
@@ -111,7 +121,7 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
                 dataIndex: 'action',
                 width: '10%',
                 render: (text: any, record: any) =>
-                    <Button type="primary" onClick={() => this.props.redirect(`session/${record.id}`)} >
+                    <Button type="primary" onClick={() => this.props.redirect(`/session/${record.id}`)} >
                         Detail
                     </Button>
                 ,
@@ -120,13 +130,16 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
         return (
             <Table dataSource={this.state.sessions}
                 columns={columns}
+                loading = {this.state.sessionLoading}
                 rowKey="id"
                 bordered
                 pagination={{
-                    pageSize: 5,
+                    pageSize: this.state.pageSize,
                     total: this.state.sessions != undefined ? this.state.sessions.length : 0,
                     showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} sessions`,
-                    onChange: this.onPageChange
+                    onChange: this.onPageChange,
+                    showSizeChanger: true,
+                    onShowSizeChange: this.onShowSizeChange
                 }}
                 rowClassName={renderStripedTable}
             />
@@ -134,7 +147,8 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
     }
 
     private loadSession = () => {
-        this.props.startGetPastSession(this.props.group.id, this.reloadSession);
+        this.setState({ sessionLoading: true });
+        this.props.startGetPastSession(this.props.group.code, this.reloadSession);
     }
 }
 

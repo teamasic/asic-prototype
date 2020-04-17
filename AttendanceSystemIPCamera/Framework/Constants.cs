@@ -14,6 +14,7 @@ namespace AttendanceSystemIPCamera.Framework
             public const string LOGIN_BY_FACE = "2";
             public const string GET_DATA_BY_ATTENDEE_CODE = "3";
             public const long DEFAULT_SYNC_MILISECONDS = 24 * 60 * 60 * 1000;
+            public const int DEFAULT_CHECK_SCHEDULED_SESSION = 5; //minute
 
 
             public const string AES_KEY_PATH = "aes";
@@ -58,6 +59,8 @@ namespace AttendanceSystemIPCamera.Framework
 
             public static string SyncApi = "api/record/sync";
 
+            public static string SyncAttendeeImageApi = "api/user/image?codes=";
+
             public static class SettingsDownloadAPI
             {
                 private const string BASE = "/api/settings/";
@@ -67,6 +70,13 @@ namespace AttendanceSystemIPCamera.Framework
                 public const string OTHERS = BASE + "others";
                 public const string LAST_UPDATED = BASE + "last-updated";
             }
+        }
+
+        public class SessionStatus
+        {
+            public const string SCHEDULED = "SCHEDULED";
+            public const string IN_PROGRESS = "IN_PROGRESS";
+            public const string FINISHED = "FINISHED";
         }
     }
 }

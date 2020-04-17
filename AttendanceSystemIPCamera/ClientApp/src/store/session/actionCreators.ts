@@ -6,7 +6,9 @@ import {
 	getActiveSession,
 	exportSession,
 	getPastSession,
-	getSessionUnknownImagesList
+	getSessionUnknownImagesList,
+	createScheduledSessions,
+	getScheduledSesionByGroupCode
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -15,6 +17,8 @@ import AttendeeRecordPair from '../../models/AttendeeRecordPair';
 import ExportRequest from '../../models/ExportRequest'
 import UpdateRecord from '../../models/UpdateRecord';
 import { updateRecord } from '../../services/record';
+import ScheduleCreate from '../../models/ScheduleCreate';
+import { success, warning, error } from '../../utils';
 
 export const ACTIONS = {
     RECEIVE_ACTIVE_SESSION: 'RECEIVE_ACTIVE_SESSION',
@@ -145,10 +149,9 @@ const createOrUpdateRecord = (
 		const temporaryUpdatedRecord: Record = {
 			id: -1,
 			attendee: {
-				id: updateInfo.attendeeId,
-				code: '',
+				code: updateInfo.attendeeCode,
 				name: '',
-				avatar: ''
+				image: ''
 			},
 			present: updateInfo.present
 		};
@@ -192,13 +195,39 @@ export const startGenerateExport = (exportRequest: ExportRequest, success: Funct
 	}
 }
 
-export const startGetPastSession = (groupId: number, loadSession: Function): AppThunkAction => async (dispatch, getState) => {
-	const apiResponse: ApiResponse = await getPastSession(groupId);
+export const startGetPastSession = (groupCode: string, loadSession: Function): AppThunkAction => async (dispatch, getState) => {
+	const apiResponse: ApiResponse = await getPastSession(groupCode);
 	if (apiResponse.success) {
 		loadSession(apiResponse.data);
 	} else {
 		console.log(apiResponse.errors);
 	}
+}
+
+export const requestCreateScheduledSession = (schedules: ScheduleCreate[], reloadData: Function): AppThunkAction => async (dispatch, getState) => {
+	const apiResponse: ApiResponse = await createScheduledSessions(schedules);
+	if(apiResponse.success) {
+        var countCreatedItem = apiResponse.data.length;
+        if(countCreatedItem > 0) {
+            success("Create " + countCreatedItem + " schedules successfully!");
+        } else {
+            warning("Data is not valid. Created failed!");
+        }
+        reloadData();
+    } else {
+        error("Oops.. something went wrong!");
+        console.log(apiResponse.errors);
+    }
+}
+
+export const requestGetScheduledSessionByGroupCode = (groupCode: string, loadData: Function): AppThunkAction => async (dispatchEvent, getState) => {
+    const apiResponse: ApiResponse = await getScheduledSesionByGroupCode(groupCode);
+    if(apiResponse.success) {
+        loadData(apiResponse.data);
+    } else {
+        error("Oops.. something went wrong!");
+        console.log(apiResponse.errors);
+    }
 }
 
 function startRealTimeConnection() {
@@ -261,5 +290,7 @@ export const sessionActionCreators = {
 	updateUnknownRealTime,
 	removeUnknownImage,
 	updateAttendeeRecordRealTimeBatch,
-	updateUnknownRealTimeBatch
+	updateUnknownRealTimeBatch,
+	requestCreateScheduledSession,
+	requestGetScheduledSessionByGroupCode
 };

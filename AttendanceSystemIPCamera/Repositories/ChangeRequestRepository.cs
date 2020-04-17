@@ -15,7 +15,7 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface IChangeRequestRepository : IRepository<ChangeRequest>
     {
         public Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel);
-        public Task<ChangeRequest> GetByIdSimple(object id);
+        public Task<ChangeRequest> GetByRecordIdSimple(object id);
     }
     public class ChangeRequestRepository : Repository<ChangeRequest>, IChangeRequestRepository
     {
@@ -23,42 +23,40 @@ namespace AttendanceSystemIPCamera.Repositories
         {
         }
 
-        public async Task<ChangeRequest> GetByIdSimple(object id)
+        public async Task<ChangeRequest> GetByRecordIdSimple(object id)
         {
             return await dbSet
                 .Include(cr => cr.Record)
-                .FirstOrDefaultAsync(cr => cr.Id == (int)id);
+                .FirstOrDefaultAsync(cr => cr.RecordId == (int)id);
         }
 
         public new async Task<ChangeRequest> GetById(object id)
         {
             return await dbSet
                 .Include(cr => cr.Record)
-                    .ThenInclude(r => r.Attendee)
+                    .ThenInclude(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Include(cr => cr.Record)
                    .ThenInclude(r => r.Session)
                         .ThenInclude(s => s.Group)
-                .FirstOrDefaultAsync(cr => cr.Id == (int)id);
+                .FirstOrDefaultAsync(cr => cr.RecordId == (int)id);
         }
         public async Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel)
         {
             bool filterStatus(ChangeRequest cr)
             {
-                switch (viewModel.Status)
+                return viewModel.Status switch
                 {
-                    case ChangeRequestStatusFilter.UNRESOLVED:
-                        return !cr.IsResolved;
-                    case ChangeRequestStatusFilter.RESOLVED:
-                        return cr.IsResolved;
-                    case ChangeRequestStatusFilter.ALL:
-                        return true;
-                    default:
-                        return true;
-                }
+                    ChangeRequestStatusFilter.UNRESOLVED => !cr.IsResolved,
+                    ChangeRequestStatusFilter.RESOLVED => cr.IsResolved,
+                    ChangeRequestStatusFilter.ALL => true,
+                    _ => true,
+                };
             }
             return dbSet
                 .Include(cr => cr.Record)
-                    .ThenInclude(r => r.Attendee)
+                    .ThenInclude(r => r.AttendeeGroup)
+                        .ThenInclude(ag => ag.Attendee)
                 .Include(cr => cr.Record)
                     .ThenInclude(r => r.Session)
                         .ThenInclude(s => s.Group)

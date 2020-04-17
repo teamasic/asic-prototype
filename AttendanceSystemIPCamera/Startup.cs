@@ -33,11 +33,10 @@ using AttendanceSystemIPCamera.Services.UserService;
 using AttendanceSystemIPCamera.Services.SettingsService;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
-using AttendanceSystemIPCamera.Services.ScheduleService;
-using AttendanceSystemIPCamera.Framework;
 using static AttendanceSystemIPCamera.Framework.Constants;
 using AttendanceSystemIPCamera.Services.LogService;
 using AttendanceSystemIPCamera.Services.OtherSettingsService;
+using Microsoft.AspNetCore.Http.Connections;
 
 namespace AttendanceSystemIPCamera
 {
@@ -113,7 +112,12 @@ namespace AttendanceSystemIPCamera
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
-                endpoints.MapHub<RealTimeService>("/hub");
+                endpoints.MapHub<RealTimeService>("/hub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets |
+                        HttpTransportType.LongPolling;
+                });
             });
             loggerFactory.AddFile(string.Format($"{Constant.LOG_TEMPLATE}", "{Date}"));
 
@@ -167,7 +171,10 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<DbContext, MainDbContext>();
             services.AddScoped<MyUnitOfWork>();
             services.AddScoped<GroupValidation>();
-            services.AddSignalR();
+            services.AddSignalR(hubOptions =>
+            {
+                hubOptions.HandshakeTimeout = TimeSpan.FromSeconds(15);
+            });
 
             SetupServices(services);
             SetupRepositories(services);
@@ -192,7 +199,6 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<SettingsUtils>();
             services.AddHttpClient();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<IGlobalStateService, GlobalStateService>();
             services.AddScoped<ILogService, LogService>();
         }

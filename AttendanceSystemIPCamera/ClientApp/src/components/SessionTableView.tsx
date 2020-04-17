@@ -40,8 +40,8 @@ const { Title } = Typography;
 
 interface Props {
 	sessionId: number;
-	markAsPresent: (attendeeId: number) => void;
-	markAsAbsent: (attendeeId: number) => void;
+	markAsPresent: (attendeeCode: string) => void;
+	markAsAbsent: (attendeeCode: string) => void;
 }
 
 // At runtime, Redux will merge together...
@@ -108,8 +108,10 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 		attendeeRecords: AttendeeRecordPair[],
 		query: string
 	) {
+		const lowercaseQuery = query.toLowerCase();
 		return attendeeRecords.filter(
-			ar => ar.attendee.name.includes(query) || ar.attendee.code.includes(query)
+			ar => ar.attendee.name.toLowerCase().includes(lowercaseQuery) ||
+				ar.attendee.code.toLowerCase().includes(lowercaseQuery)
 		);
 	}
 
@@ -189,8 +191,8 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				render: (text: any, record: any, index: number) => (this.state.page - 1) * 5 + index + 1
 			},
 			{
-				title: 'Id',
-				key: 'id',
+				title: 'Code',
+				key: 'code',
 				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.code
 			},
 			{
@@ -205,7 +207,7 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				render: (text: string, pair: AttendeeRecordPair) =>
 					<Radio
 					checked={pair.record != null && pair.record.present}
-						onChange={() => this.props.markAsPresent(pair.attendee.id)}>
+						onChange={() => this.props.markAsPresent(pair.attendee.code)}>
 					</Radio>
 			},
 			{
@@ -215,7 +217,7 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				render: (text: string, pair: AttendeeRecordPair) =>
 					<Radio
 						checked={pair.record != null && !pair.record.present}
-						onChange={() => this.props.markAsAbsent(pair.attendee.id)}></Radio>
+						onChange={() => this.props.markAsAbsent(pair.attendee.code)}></Radio>
 			}
 		];
 		const processedList = this.searchAttendeeList(
@@ -302,7 +304,7 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 								dataSource={processedList}
 								bordered
 								pagination={false}
-								rowKey={record => record.attendee.id.toString()}
+								rowKey={record => record.attendee.code}
 								rowClassName={this.renderOnRow}
 							/>
 						)}

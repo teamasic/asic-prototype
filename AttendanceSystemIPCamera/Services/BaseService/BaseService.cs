@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace AttendanceSystemIPCamera.Services.BaseService
 {
     public class BaseService<T>: IBaseService<T>
-        where T : class, BaseEntity
+        where T : class
     {
         protected readonly MyUnitOfWork unitOfWork;
         protected readonly DbContext dbContext;

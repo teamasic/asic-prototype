@@ -1,9 +1,8 @@
-﻿using System;
+﻿using AttendanceSystemIPCamera.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Models
 {
@@ -13,15 +12,15 @@ namespace AttendanceSystemIPCamera.Models
         APPROVED = 1,
         REJECTED = 2
     }
-    public class ChangeRequest: BaseEntity
+    public partial class ChangeRequest
     {
         [Key]
-        public int Id { get; set; }
-        public Record Record { get; set; }
+        public int RecordId { get; set; }
         public string Comment { get; set; }
-        public ChangeRequestStatus Status { get; set; } = ChangeRequestStatus.UNRESOLVED;
+        public DateTime DateSubmitted { get; set; }
         [NotMapped]
         public bool IsResolved => Status != ChangeRequestStatus.UNRESOLVED;
-        public int RecordId { get; set; }
+        public virtual Record Record { get; set; }
+        public ChangeRequestStatus Status { get; set; } = ChangeRequestStatus.UNRESOLVED;
     }
 }
