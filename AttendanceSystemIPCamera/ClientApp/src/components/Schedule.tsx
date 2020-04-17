@@ -127,7 +127,7 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
                     bordered
                     loading={this.state.scheduleLoading}
                     pagination={{
-                        pageSize: 5,
+                        pageSize: this.state.pageSize,
                         total: this.state.schedules != undefined ? this.state.schedules.length : 0,
                         showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} of ${total} rows`,
                         onChange: this.onPageChange,
