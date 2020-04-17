@@ -214,9 +214,9 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 				<Row style={{ marginTop: 5 }} type="flex" gutter={[4, 4]} align="bottom">
 					<Col>
 						<div className="row centered">
-							<Button type="primary"
+							<Button type="primary" disabled={true}
 								className="take-attendance-button">
-								Stop taking attendance
+								Taking attendance
 							</Button>
 						</div>
 					</Col>
