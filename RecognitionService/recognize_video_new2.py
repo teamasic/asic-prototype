@@ -53,7 +53,7 @@ def show_frame():
             (h, w) = cv2image.shape[:2]
             cv2image = cv2image[0:h, 100:w - 100]
             global currentImage
-            currentImage = cv2image
+            currentImage = copy.deepcopy(cv2image)
 
             # Convert to rgb image
             cv2image = cv2.cvtColor(copy.deepcopy(cv2image), cv2.COLOR_BGR2RGB)

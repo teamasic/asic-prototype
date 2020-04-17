@@ -71,3 +71,4 @@ def test_detect_image2(path, removed=False):
 
         return False
     return True
+test_detect_full("E:\\capstone\\total_dataset\\dbforreview\\123 (4-17-2020 10-23-43 AM)")

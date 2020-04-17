@@ -20,17 +20,17 @@ from helper.my_utils import remove_all_files
 def recognition_faces():
     isShowingVideo.change(False)
     startime = datetime.now()
-    # global currentImage
+    global currentImage
     # currentImage = cv2.imread("images/class3.jpg")
-    # currentImage = cv2.cvtColor(currentImage, cv2.COLOR_BGR2RGB)
-
-    boxes = my_face_detection.face_locations(currentImage)
+    currentImageRGB = cv2.cvtColor(currentImage, cv2.COLOR_BGR2RGB)
+    boxes = my_face_detection.face_locations(currentImageRGB)
     resultFull = pool.starmap(my_service.get_label_after_detect_multiple,
-                              [(currentImage, [box]) for box in boxes])
+                              [(currentImageRGB, [box]) for box in boxes])
     results = [result[0] for result in resultFull]
     unknowns = [x for x in results if x[1] == "unknown"]
     print(len(unknowns))
     print(len(results))
+    print(results)
     if isForCheckingAttendance:
         lbTotalTime['text'] = "Checking attendance ..."
         codes = []
@@ -69,10 +69,11 @@ def show_frame():
             if isShowingVideo.isTrue():
                 btnCapture["state"] = "normal"
                 frame = vs.read()
-                cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-                cv2image = imutils.resize(cv2image, width=my_constant.resizeWidthShow)
+                cv2image = imutils.resize(frame, width=my_constant.resizeWidthShow)
                 global currentImage
                 currentImage = copy.deepcopy(cv2image)
+
+                cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(cv2image)
                 imgtk = ImageTk.PhotoImage(image=img)
                 fps.update()

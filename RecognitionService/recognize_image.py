@@ -15,7 +15,7 @@ if __name__ == "__main__":
     time.sleep(7)
     # construct the argument parser and parse the arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--image", default="images_detect/class3.jpg",
+    ap.add_argument("-i", "--image", default="images/multiple_face-1000.jpg",
                     help="path to input image")
     ap.add_argument("-u", "--upSample", default=1,
                     help="path to input image")
