@@ -69,7 +69,10 @@ namespace AttendanceSystemIPCamera.Repositories
                         .ThenInclude(ag => ag.Attendee)
                 .Include(s => s.Room)
                 .FirstOrDefaultAsync(x => x.Id == globalState.CurrentActiveSession);
-            session.Group.AttendeeGroups = session.Group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
+            if (session != null)
+            {
+                session.Group.AttendeeGroups = session.Group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
+            }
             return session;
         }
 
