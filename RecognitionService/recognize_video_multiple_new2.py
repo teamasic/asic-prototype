@@ -69,10 +69,11 @@ def show_frame():
             if isShowingVideo.isTrue():
                 btnCapture["state"] = "normal"
                 frame = vs.read()
-                cv2image = imutils.resize(frame, width=my_constant.resizeWidthShow)
+                cv2image = imutils.resize(frame, width=my_constant.resizeWidthRecognize)
                 global currentImage
                 currentImage = copy.deepcopy(cv2image)
 
+                cv2image = imutils.resize(frame, width=my_constant.resizeWidthShow)
                 cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(cv2image)
                 imgtk = ImageTk.PhotoImage(image=img)

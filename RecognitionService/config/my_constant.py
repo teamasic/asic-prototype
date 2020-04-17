@@ -13,4 +13,4 @@ cropRight: Final = 0
 cropTop: Final = 0
 cropBottom: Final = 0
 resizeWidthShow: Final = 600
-resizeWidthRecognize: Final = 1000
+resizeWidthRecognize: Final = 1920

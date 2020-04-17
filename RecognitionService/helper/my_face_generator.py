@@ -18,7 +18,7 @@ def face_generate(images, multiplier=1):
         # Scale/zoom them, translate/move them, rotate them and shear them.
         iaa.Affine(
             scale={"x": (0.95, 1.05), "y": (0.95, 1.05)},
-            rotate=(-15,15),
+            rotate=(-10,10),
             shear=(-5, 5),
             mode="edge"
         ),
