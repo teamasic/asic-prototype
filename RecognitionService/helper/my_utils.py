@@ -4,37 +4,39 @@ from multiprocessing.context import Process
 from threading import Thread
 
 import cv2
+import imutils
 
 from config import my_constant
 
 
-def saveImageFunction(image, box):
+def saveImageFunction(image, box, dir=my_constant.unknownDir, num=50):
     (top, right, bottom, left) = box
     (h, w) = image.shape[:2]
-    if top - 50 < 0:
+    if top - num < 0:
         top = 0
     else:
-        top = top - 50
+        top = top - num
 
-    if bottom + 50 > h:
+    if bottom + num > h:
         bottom = h
     else:
-        bottom = bottom + 50
+        bottom = bottom + num
 
-    if left - 50 < 0:
+    if left - num < 0:
         left = 0
     else:
-        left -= 50
+        left -= num
 
-    if right + 50 > w:
+    if right + num > w:
         right = w
     else:
-        right = right + 50
+        right = right + num
 
     crop_image = image[top:bottom, left:right]
+    crop_image = imutils.resize(crop_image, width=250)
 
     unique_filename = "Unknown_{}.jpg".format(str(uuid.uuid4()))
-    fullPath = os.path.join(my_constant.unknownDir, unique_filename)
+    fullPath = os.path.join(dir, unique_filename)
 
     cv2.imwrite(fullPath, crop_image)
     return unique_filename

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
 {
-    public interface IAttendeeGroupService 
+    public interface IAttendeeGroupService
     {
         Task AddAsync(AttendeeGroup attendeeGroup);
         Task AddAsync(IEnumerable<AttendeeGroup> attendeeGroups);
@@ -38,6 +38,15 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
         {
             await attendeeGroupRepository.Add(attendeeGroups);
             unitOfWork.Commit();
+            var attendeeCodes = new List<string>();
+            attendeeGroups.ToList().ForEach(ag =>
+            {
+                if(ag.Attendee.Image == null)
+                {
+                    attendeeCodes.Add(ag.AttendeeCode);
+                }
+            });
+            await attendeeService.AutoDownloadImage(attendeeCodes);
         }
 
         public async Task AddAsync(AttendeeGroup attendeeGroup)
@@ -63,7 +72,7 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
         {
             var attendeeGroupInDb = await attendeeGroupRepository
                 .GetByAttendeeCodeAndGroupCode(attendeeCode, groupCode);
-            if(attendeeGroupInDb != null)
+            if (attendeeGroupInDb != null)
             {
                 attendeeGroupInDb.IsActive = false;
                 unitOfWork.Commit();

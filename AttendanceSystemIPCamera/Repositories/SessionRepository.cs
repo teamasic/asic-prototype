@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Framework.GlobalStates;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
@@ -23,6 +24,7 @@ namespace AttendanceSystemIPCamera.Repositories
         List<Session> GetSessionsWithRecords(List<string> groups);
         List<Session> GetSessionExport(string groupCode, DateTime startDate, DateTime endDate);
         List<Session> GetSessionExport(string groupCode, DateTime date);
+        List<Session> GetPastSessionByGroupCode(string groupCode);
         List<Session> GetSessionByGroupCode(string groupCode);
         Task<Session> GetSessionWithGroupAndTime(string groupCode, DateTime startTime, DateTime endTime);
         public ICollection<string> GetSessionUnknownImages(int sessionId);
@@ -67,7 +69,10 @@ namespace AttendanceSystemIPCamera.Repositories
                         .ThenInclude(ag => ag.Attendee)
                 .Include(s => s.Room)
                 .FirstOrDefaultAsync(x => x.Id == globalState.CurrentActiveSession);
-            session.Group.AttendeeGroups = session.Group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
+            if (session != null)
+            {
+                session.Group.AttendeeGroups = session.Group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
+            }
             return session;
         }
 
@@ -112,9 +117,15 @@ namespace AttendanceSystemIPCamera.Repositories
                 null, includeProperties: "Group").ToList();
         }
 
+        public List<Session> GetPastSessionByGroupCode(string groupCode)
+        {
+            return Get(s => s.GroupCode.Equals(groupCode) && s.Status != SessionStatus.SCHEDULED, 
+                orderBy: s => s.OrderByDescending(s => s.StartTime)).ToList();
+        }
+
         public List<Session> GetSessionByGroupCode(string groupCode)
         {
-            return Get(s => s.GroupCode.Equals(groupCode), 
+            return Get(s => s.GroupCode.Equals(groupCode),
                 orderBy: s => s.OrderByDescending(s => s.StartTime)).ToList();
         }
 
@@ -129,7 +140,7 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public List<Session> GetByGroupCodeAndStatus(string groupCode, string status)
         {
-            return Get(s => s.GroupCode == groupCode && s.Status == status).ToList();
+            return Get(s => s.GroupCode == groupCode && s.Status == status, includeProperties: "Room").ToList();
         }
 
         public Session GetByNameAndDate(string name, DateTime date)
@@ -147,8 +158,9 @@ namespace AttendanceSystemIPCamera.Repositories
         public Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime)
         {
             var compareTime = DateTime.Now.Add(activatedTimeBeforeStartTime);
-            return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime)
-                .FirstOrDefault();
+            return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime, 
+                    includeProperties: "Group,Room")
+                .LastOrDefault();
         }
     }
 }

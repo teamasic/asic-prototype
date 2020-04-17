@@ -1,4 +1,5 @@
-﻿using AttendanceSystemIPCamera.Services.NetworkService;
+﻿using AttendanceSystemIPCamera.Services.AttendeeService;
+using AttendanceSystemIPCamera.Services.NetworkService;
 using AttendanceSystemIPCamera.Services.RecordService;
 using AttendanceSystemIPCamera.Services.SessionService;
 using AttendanceSystemIPCamera.Utils;
@@ -27,7 +28,7 @@ namespace AttendanceSystemIPCamera.BackgroundServices
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             RegisterNetworkTask(stoppingToken);
-            
+
             RegisterSyncTask(stoppingToken);
 
             RegisterScheduleTask(stoppingToken);
@@ -73,7 +74,7 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                         await Task.Delay(waitingTime, stoppingToken);
                     }
                     logger.LogInformation("Sync attendance data executing - {0}", DateTime.Now);
-                    HandleSyncOperation();
+                    await HandleSyncOperation();
 
                     waitingTime = TimeSpan.FromMilliseconds(Constant.DEFAULT_SYNC_MILISECONDS);
                 }
@@ -84,14 +85,17 @@ namespace AttendanceSystemIPCamera.BackgroundServices
         {
             var activateScheduleTask = Task.Factory.StartNew(async () =>
             {
-                HandleActivateScheduleOperation();
-                var waitingTime = new TimeSpan(0, 5, 0);
+                await Task.Delay(new TimeSpan(0, 0, 30), stoppingToken);
                 logger.LogInformation("Activate schedule task executing - {0}", DateTime.Now);
+                await HandleActivateScheduleOperation();
+
+                var waitingTime = new TimeSpan(0, Constant.DEFAULT_CHECK_SCHEDULED_SESSION, 0);
+
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     await Task.Delay(waitingTime, stoppingToken);
                     logger.LogInformation("Activate schedule task executing - {0}", DateTime.Now);
-                    HandleActivateScheduleOperation();
+                    await HandleActivateScheduleOperation();
                 }
             }, stoppingToken);
 
@@ -112,7 +116,7 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                 logger.LogError($"Exception {e}");
             }
         }
-        private void HandleSyncOperation()
+        private async Task HandleSyncOperation()
         {
             try
             {
@@ -120,6 +124,9 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                 {
                     var recordService = scope.ServiceProvider.GetRequiredService<IRecordService>();
                     recordService.SyncAttendanceData();
+
+                    var attendeeService = scope.ServiceProvider.GetRequiredService<IAttendeeService>();
+                    await attendeeService.AutoDownloadImage();
                 }
             }
             catch (Exception ex)
@@ -127,14 +134,14 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                 logger.LogError("Sync Error: " + ex);
             }
         }
-        private void HandleActivateScheduleOperation()
+        private async Task HandleActivateScheduleOperation()
         {
             try
             {
                 using (var scope = serviceScopeFactory.CreateScope())
                 {
                     var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
-                    sessionService.ActivateSchedule();
+                    await sessionService.ActivateScheduledSession();
                 }
             }
             catch (Exception ex)

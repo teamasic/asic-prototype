@@ -17,6 +17,8 @@ namespace AttendanceSystemIPCamera.Repositories
     {
         Task<Attendee> GetByAttendeeCode(string attendeeCode);
         Attendee GetByCodeForNetwork(string code);
+        List<string> GetAttendeeCodeWithOutImage();
+        Task<Attendee> UpdateImage(string code, string fileName);
         //List<Attendee> GetAttendanceDataForSync(DateTime latestSyncTime);
     }
     public class AttendeeRepository : Repository<Attendee>, IAttendeeRepository
@@ -63,6 +65,24 @@ namespace AttendanceSystemIPCamera.Repositories
                 .FirstOrDefault();
         }
 
+        public List<string> GetAttendeeCodeWithOutImage()
+        {
+            var results = new List<string>();
+            var attendees = Get(a => a.Image == null).ToList();
+            attendees.ForEach(a => results.Add(a.Code));
+            return results;
+        }
+
+        public async Task<Attendee> UpdateImage(string code, string fileName)
+        {
+            var attendee = await dbSet.FirstOrDefaultAsync(a => a.Code == code);
+            if(attendee != null)
+            {
+                attendee.Image = fileName;
+                Update(attendee);
+            }
+            return attendee;
+        }
         //public List<Attendee> GetAttendanceDataForSync(DateTime latestSyncTime)
         //{
         //    var data = Get(a => a.Groups.Any(g => g.Sessions.Any(s => s.StartTime >= latestSyncTime)),
