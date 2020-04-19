@@ -73,7 +73,10 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
     }
 
     private onShowSizeChange = (current: number, pageSize: number) => {
-        this.setState({pageSize: pageSize});
+        this.setState({
+            pageSize: pageSize,
+            currentPage: current
+        });
     }
 
     private formatDate = (date: Date) => {

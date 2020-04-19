@@ -56,7 +56,10 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
     }
 
     private onShowSizeChange = (current: number, pageSize: number) => {
-        this.setState({pageSize: pageSize});
+        this.setState({
+            pageSize: pageSize,
+            currentPage: current
+        });
     }
 
     private handleDelete = (scheduleId: number) => {

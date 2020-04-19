@@ -167,7 +167,10 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
     }
 
     private onShowSizeChange = (current: number, pageSize: number) => {
-        this.setState({pageSize: pageSize});
+        this.setState({
+			pageSize: pageSize,
+			currentPage: current
+		});
     }
 
 	private takeAttendanceMultiple = async () => {
