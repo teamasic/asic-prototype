@@ -98,14 +98,14 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 						this.props.activeSession &&
 						<Breadcrumb.Item>
 							<Link to={`/group/${this.props.activeSession.groupCode}`}>
-								<Icon type="hdd" />
-								<span>Group</span>
+								<Icon type="team" />
+								<span> Group</span>
 							</Link>
 						</Breadcrumb.Item>
 					}
 					<Breadcrumb.Item>
 						<Icon type="calendar" />
-						<span>Session</span>
+						<span> Session</span>
 					</Breadcrumb.Item>
 				</TopBar>
 				<div className={classNames('session-container', {
