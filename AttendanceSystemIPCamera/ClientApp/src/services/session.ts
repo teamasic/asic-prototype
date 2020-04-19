@@ -69,3 +69,10 @@ export const getScheduledSesionByGroupCode = async (groupCode: string): Promise<
 	});
 	return await response.data;
 }
+
+export const deleteScheduledSession = async (id: number): Promise<ApiResponse> => {
+	const response = await axios.delete(apify("scheduled"), {
+		params: { id: id }
+	});
+	return await response.data;
+}

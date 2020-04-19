@@ -129,7 +129,10 @@ class GroupInfo extends React.PureComponent<GroupInfoProps, GroupInfoComponentst
     }
 
     public onShowSizeChange = (current: number, pageSize: number) => {
-        this.setState({pageSize: pageSize});
+        this.setState({
+            pageSize: pageSize,
+            currentPage: current
+        });
     }
 
     public duplicateAttendee = () => {

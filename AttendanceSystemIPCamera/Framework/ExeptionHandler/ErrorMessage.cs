@@ -13,6 +13,8 @@ namespace AttendanceSystemIPCamera.Framework.ExeptionHandler
 
         public static string SESSION_AlREADY_EXISTED = "Session already existed";
 
+        public static string DELETE_INVALID_SESSION = "You can only delete session with status SCHEDULED";
+
         public static string NOT_FOUND_ATTENDEE_WITH_CODE = "Not found attendee with code {0}";
 
         public static string WRONG_SESSION_START_TIME = "Session start time is not suitable";

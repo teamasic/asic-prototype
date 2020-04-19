@@ -33,6 +33,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         Task<List<SessionRefactorViewModel>> GetByGroupCodeAndStatus(string groupCode, string status);
         Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions);
         Task ActivateScheduledSession();
+        Task<SessionRefactorViewModel> DeleteScheduledSession(int id);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -472,43 +473,53 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             var units = unitService.Units;
             var results = new List<Session>();
             var createdSessions = new List<SessionCreateViewModel>();
+            var numberOfSessionWillBeCreated = 0;
+            if(newSessions != null && newSessions.Count > 0)
+            {
+                var group = await groupRepository.GetByCode(newSessions[0].GroupCode);
+                numberOfSessionWillBeCreated = group.TotalSession - group.Sessions.Count + 1;
+            }
             foreach (var session in newSessions)
             {
-                var date = session.Date;
-                var currentDate = DateTime.Now;
-                //Check for creating scheduled session from now to the future
-                if(date.CompareTo(currentDate.Date) >= 0)
+                if(numberOfSessionWillBeCreated > 0)
                 {
-                    var unit = units.Select(u => new Unit
+                    var date = session.Date;
+                    var currentDate = DateTime.Now;
+                    //Check for creating scheduled session from now to the future
+                    if (date.CompareTo(currentDate.Date) >= 0)
                     {
-                        Id = u.Id,
-                        Name = u.Name,
-                        StartTime = u.StartTime,
-                        EndTime = u.EndTime
-                    }).Where(u => u.Name.Equals(session.Slot)).FirstOrDefault();
-                    var roomInDB = roomRepository.GetRoomByName(session.Room).Result;
-                    if (unit != null && roomInDB != null)
-                    {
-                        var existed = sessionRepository.GetByNameAndDate(unit.Name, session.Date);
-                        if (existed == null)
+                        var unit = units.Select(u => new Unit
                         {
-                            var startTime = new DateTime(date.Year, date.Month, date.Day,
-                            unit.StartTime.Hour, unit.StartTime.Minute, unit.StartTime.Second);
-                            if(startTime.CompareTo(currentDate) > 0)
+                            Id = u.Id,
+                            Name = u.Name,
+                            StartTime = u.StartTime,
+                            EndTime = u.EndTime
+                        }).Where(u => u.Name.Equals(session.Slot)).FirstOrDefault();
+                        var roomInDB = roomRepository.GetRoomByName(session.Room).Result;
+                        if (unit != null && roomInDB != null)
+                        {
+                            var existed = sessionRepository.GetByNameAndDate(unit.Name, session.Date);
+                            if (existed == null)
                             {
-                                var endTime = new DateTime(date.Year, date.Month, date.Day,
-                                unit.EndTime.Hour, unit.EndTime.Minute, unit.EndTime.Second);
-                                var newSession = new Session()
+                                var startTime = new DateTime(date.Year, date.Month, date.Day,
+                                unit.StartTime.Hour, unit.StartTime.Minute, unit.StartTime.Second);
+                                if (startTime.CompareTo(currentDate) > 0)
                                 {
-                                    StartTime = startTime,
-                                    EndTime = endTime,
-                                    Name = session.Slot,
-                                    GroupCode = session.GroupCode,
-                                    Status = Constants.SessionStatus.SCHEDULED,
-                                    RoomId = roomInDB.Id
-                                };
-                                results.Add(newSession);
-                                createdSessions.Add(session);
+                                    var endTime = new DateTime(date.Year, date.Month, date.Day,
+                                    unit.EndTime.Hour, unit.EndTime.Minute, unit.EndTime.Second);
+                                    var newSession = new Session()
+                                    {
+                                        StartTime = startTime,
+                                        EndTime = endTime,
+                                        Name = session.Slot,
+                                        GroupCode = session.GroupCode,
+                                        Status = Constants.SessionStatus.SCHEDULED,
+                                        RoomId = roomInDB.Id
+                                    };
+                                    results.Add(newSession);
+                                    createdSessions.Add(session);
+                                    numberOfSessionWillBeCreated--;
+                                }
                             }
                         }
                     }
@@ -545,6 +556,23 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             sessionViewModel.GroupName = session.Group?.Name;
             sessionViewModel.RoomName = session.Room?.Name;
             await realTimeService.SendNotification(NotificationType.SESSION, sessionViewModel);
+        }
+
+        public async Task<SessionRefactorViewModel> DeleteScheduledSession(int id)
+        {
+            var scheduledSession = await sessionRepository.GetById(id);
+            if (scheduledSession != null)
+            {
+                if (scheduledSession.Status == Constants.SessionStatus.SCHEDULED)
+                {
+                    sessionRepository.Delete(scheduledSession);
+                    dbContext.SaveChanges();
+                    return mapper.Map<SessionRefactorViewModel>(scheduledSession);
+                }
+                else
+                    throw new AppException(HttpStatusCode.BadRequest, null, ErrorMessage.DELETE_INVALID_SESSION);
+            }
+            throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.SESSION_ID_NOT_EXISTED, id);
         }
     }
 }

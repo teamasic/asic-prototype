@@ -8,7 +8,8 @@ import {
 	getPastSession,
 	getSessionUnknownImagesList,
 	createScheduledSessions,
-	getScheduledSesionByGroupCode
+	getScheduledSesionByGroupCode,
+	deleteScheduledSession
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -230,6 +231,17 @@ export const requestGetScheduledSessionByGroupCode = (groupCode: string, loadDat
     }
 }
 
+export const requestDeleteScheduledSession = (scheduledId: number, reloadSchedule: Function): AppThunkAction => async (dispatchEvent, getState) => {
+	const apiResponse: ApiResponse = await deleteScheduledSession(scheduledId);
+	if(apiResponse.success) {
+		success("Delete schedule success!");
+		reloadSchedule();
+	} else {
+		error("Delete schedule falied!");
+		console.log(apiResponse.errors);
+	}
+}
+
 function startRealTimeConnection() {
 	return {
 		type: ACTIONS.START_REAL_TIME_CONNECTION,
@@ -292,5 +304,6 @@ export const sessionActionCreators = {
 	updateAttendeeRecordRealTimeBatch,
 	updateUnknownRealTimeBatch,
 	requestCreateScheduledSession,
-	requestGetScheduledSessionByGroupCode
+	requestGetScheduledSessionByGroupCode,
+	requestDeleteScheduledSession
 };

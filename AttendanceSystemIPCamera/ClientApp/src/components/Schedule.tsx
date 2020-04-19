@@ -56,11 +56,17 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
     }
 
     private onShowSizeChange = (current: number, pageSize: number) => {
-        this.setState({pageSize: pageSize});
+        this.setState({
+            pageSize: pageSize,
+            currentPage: current
+        });
     }
 
     private handleDelete = (scheduleId: number) => {
-        
+        this.props.requestDeleteScheduledSession(scheduleId, () => {
+            this.setState({ scheduleLoading: true});
+            this.loadSchedules();
+        });
     }
 
     private closeModel = () => {
@@ -143,7 +149,6 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
     private loadSchedules = () => {
         this.props.requestGetScheduledSessionByGroupCode(this.props.selectedGroup.code, (data: any) => {
             console.log(data);
-            
             this.setState({
                 schedules: data,
                 scheduleLoading: false

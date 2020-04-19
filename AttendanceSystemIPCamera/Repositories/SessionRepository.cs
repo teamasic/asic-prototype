@@ -86,7 +86,7 @@ namespace AttendanceSystemIPCamera.Repositories
                     .ThenInclude(g => g.AttendeeGroups)
                         .ThenInclude(ag => ag.Attendee)
                 .Include(s => s.Room)
-                .FirstOrDefaultAsync(x => (int) id == x.Id);
+                .FirstOrDefaultAsync(x => (int)id == x.Id);
             session.Group.AttendeeGroups = session.Group.AttendeeGroups.Where(ag => ag.IsActive).ToList();
             return session;
         }
@@ -107,7 +107,7 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             return dbSet
                 .Include(s => s.Group)
-                .FirstOrDefaultAsync(s => s.GroupCode.Equals(groupCode) && 
+                .FirstOrDefaultAsync(s => s.GroupCode.Equals(groupCode) &&
                 s.StartTime.CompareTo(startTime) == 0 && s.EndTime.CompareTo(endTime) == 0);
         }
 
@@ -119,7 +119,7 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public List<Session> GetPastSessionByGroupCode(string groupCode)
         {
-            return Get(s => s.GroupCode.Equals(groupCode) && s.Status != SessionStatus.SCHEDULED, 
+            return Get(s => s.GroupCode.Equals(groupCode) && s.Status != SessionStatus.SCHEDULED,
                 orderBy: s => s.OrderByDescending(s => s.StartTime)).ToList();
         }
 
@@ -140,7 +140,9 @@ namespace AttendanceSystemIPCamera.Repositories
 
         public List<Session> GetByGroupCodeAndStatus(string groupCode, string status)
         {
-            return Get(s => s.GroupCode == groupCode && s.Status == status, includeProperties: "Room").ToList();
+            return Get(s => s.GroupCode == groupCode && s.Status == status,
+                includeProperties: "Room", orderBy: s => s.OrderBy(s => s.StartTime))
+                .ToList();
         }
 
         public Session GetByNameAndDate(string name, DateTime date)
@@ -158,7 +160,7 @@ namespace AttendanceSystemIPCamera.Repositories
         public Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime)
         {
             var compareTime = DateTime.Now.Add(activatedTimeBeforeStartTime);
-            return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime, 
+            return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime,
                     includeProperties: "Group,Room")
                 .LastOrDefault();
         }
