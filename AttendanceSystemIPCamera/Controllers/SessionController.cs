@@ -128,6 +128,15 @@ namespace AttendanceSystemIPCamera.Controllers
                 return await sessionService.GetActiveSession();
             });
         }
+
+        [HttpDelete("scheduled")]
+        public Task<BaseResponse<SessionRefactorViewModel>> DeleteScheduledSession([FromQuery] int id)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                return await sessionService.DeleteScheduledSession(id);
+            });
+        }
     }
 }
 

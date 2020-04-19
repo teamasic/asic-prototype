@@ -33,6 +33,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         Task<List<SessionRefactorViewModel>> GetByGroupCodeAndStatus(string groupCode, string status);
         Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions);
         Task ActivateScheduledSession();
+        Task<SessionRefactorViewModel> DeleteScheduledSession(int id);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -477,7 +478,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 var date = session.Date;
                 var currentDate = DateTime.Now;
                 //Check for creating scheduled session from now to the future
-                if(date.CompareTo(currentDate.Date) >= 0)
+                if (date.CompareTo(currentDate.Date) >= 0)
                 {
                     var unit = units.Select(u => new Unit
                     {
@@ -494,7 +495,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                         {
                             var startTime = new DateTime(date.Year, date.Month, date.Day,
                             unit.StartTime.Hour, unit.StartTime.Minute, unit.StartTime.Second);
-                            if(startTime.CompareTo(currentDate) > 0)
+                            if (startTime.CompareTo(currentDate) > 0)
                             {
                                 var endTime = new DateTime(date.Year, date.Month, date.Day,
                                 unit.EndTime.Hour, unit.EndTime.Minute, unit.EndTime.Second);
@@ -545,6 +546,23 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             sessionViewModel.GroupName = session.Group?.Name;
             sessionViewModel.RoomName = session.Room?.Name;
             await realTimeService.SendNotification(NotificationType.SESSION, sessionViewModel);
+        }
+
+        public async Task<SessionRefactorViewModel> DeleteScheduledSession(int id)
+        {
+            var scheduledSession = await sessionRepository.GetById(id);
+            if (scheduledSession != null)
+            {
+                if (scheduledSession.Status == Constants.SessionStatus.SCHEDULED)
+                {
+                    sessionRepository.Delete(scheduledSession);
+                    dbContext.SaveChanges();
+                    return mapper.Map<SessionRefactorViewModel>(scheduledSession);
+                }
+                else
+                    throw new AppException(HttpStatusCode.BadRequest, null, ErrorMessage.DELETE_INVALID_SESSION);
+            }
+            throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.SESSION_ID_NOT_EXISTED, id);
         }
     }
 }
