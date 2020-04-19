@@ -25,7 +25,8 @@ interface ScheduleImportModalComponentState {
     importSchedules: any,
     msgImportCSV: string,
     csvFile: File,
-    buttonSaveLoading: boolean 
+    buttonSaveLoading: boolean,
+    buttonSaveDisable: boolean
 }
 
 type ScheduleImportModalProps =
@@ -43,17 +44,18 @@ class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, 
             importSchedules: [],
             msgImportCSV: ' ',
             csvFile: new File([], 'Null'),
-            buttonSaveLoading: false
+            buttonSaveLoading: false,
+            buttonSaveDisable: false
         }
     }
 
     private handleSubmit = (e: any) => {
         e.preventDefault();
         var isImportedFile = this.state.csvFile.name !== 'Null';
-        if(!isImportedFile) {
-            this.setState({msgImportCSV: 'Please import csv file'});
+        if (!isImportedFile) {
+            this.setState({ msgImportCSV: 'Please import csv file' });
         } else {
-            this.setState({buttonSaveLoading: true});
+            this.setState({ buttonSaveLoading: true });
             var schedules = new Array<ScheduleCreate>(0);
             var importSchedules = this.state.importSchedules;
             importSchedules.forEach((item: any) => {
@@ -67,7 +69,7 @@ class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, 
             });
             console.log(schedules);
             this.props.requestCreateScheduledSession(schedules, () => {
-                this.setState({buttonSaveLoading: false});
+                this.setState({ buttonSaveLoading: false });
                 this.props.reloadSchedules();
                 this.handleCancel();
             });
@@ -110,10 +112,21 @@ class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, 
                         thisState.setState({
                             importSchedules: results.data,
                             msgImportCSV: '',
-                            csvFile: file
+                            csvFile: file,
+                            buttonSaveDisable: false
                         }, () => {
                             resolve();
                         });
+                        var totalSession = thisState.props.selectedGroup.totalSession;
+                        console.log(totalSession + "|" + thisState.state.importSchedules.length);
+                        if (thisState.state.importSchedules.length > totalSession) {
+                            thisState.setState({
+                                buttonSaveDisable: true,
+                                msgImportCSV: 'You cannot import more than '
+                                    + totalSession
+                                    + ' schedules for this group'
+                            });
+                        }
                     } else {
                         thisState.setState({
                             importSchedules: [],
@@ -167,6 +180,7 @@ class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, 
             }
         ];
         var isLoading = this.state.buttonSaveLoading;
+        var disable = this.state.buttonSaveDisable;
         return (
             <React.Fragment>
                 <Modal
@@ -176,7 +190,7 @@ class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, 
                     centered
                     width='80%'
                     onOk={this.handleSubmit}
-                    okButtonProps={{loading: isLoading}}
+                    okButtonProps={{ loading: isLoading, disabled: disable }}
                     onCancel={this.handleCancel}
                 >
                     <Row gutter={[0, 32]}>
@@ -226,9 +240,9 @@ class ScheduleImportModal extends React.PureComponent<ScheduleImportModalProps, 
 }
 
 const mapStateToProps = (state: ApplicationState, ownProps: Props) => (
-    { 
-        ...state.sessions, 
-        ...state.groups, 
+    {
+        ...state.sessions,
+        ...state.groups,
         ...ownProps
     })
 
