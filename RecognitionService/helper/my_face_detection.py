@@ -58,8 +58,7 @@ def _face_locations_caffe(image):
     return boxes
 
 def _face_locations_hog(image, numberOfTimesToUpSample = 1):
-    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    boxes = face_recognition.face_locations(rgb, model="hog", number_of_times_to_upsample=numberOfTimesToUpSample)
+    boxes = face_recognition.face_locations(image, model="hog", number_of_times_to_upsample=numberOfTimesToUpSample)
     return boxes
 
 

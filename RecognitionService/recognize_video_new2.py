@@ -29,14 +29,18 @@ def recognition_faces(resultFull):
                 if connectQueueApiError.get() is True:
                     if name == "unknown":
                         recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
-                                                                     connectQueueApiError)
+                                                                     connectQueueApiError, sessionId)
                     else:
                         recognition_api.recognize_face_new_thread(name, connectQueueApiError)
                 else:
                     cannotCallApi.change(True)
                     return
             else:
-                recognition_api.recognize_face_new_thread(name, connectQueueApiError)
+                if name == "unknown":
+                    recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
+                                                                 connectQueueApiError, sessionId)
+                else:
+                    recognition_api.recognize_face_new_thread(name, connectQueueApiError)
 
     continueDetect.change(True)
 
@@ -52,26 +56,27 @@ def show_frame():
             cv2image = imutils.resize(frame, width=my_constant.resizeWidthShow)
             (h, w) = cv2image.shape[:2]
             cv2image = cv2image[0:h, 100:w - 100]
-            global currentImage
-            currentImage = copy.deepcopy(cv2image)
+
 
             # Convert to rgb image
-            cv2image = cv2.cvtColor(copy.deepcopy(cv2image), cv2.COLOR_BGR2RGB)
+            cv2imageBGR = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGB)
 
             if continueDetect.isTrue():
-                boxes = my_face_detection.face_locations(cv2image)
+                global currentImage
+                currentImage = copy.deepcopy(cv2image)
+                boxes = my_face_detection.face_locations(cv2imageBGR)
                 if 0 < len(boxes) <= maxNumOfPeople:
                     continueDetect.change(False)
                     for box in boxes:
                         (top, right, bottom, left) = box
-                        cv2.rectangle(cv2image, (left, top), (right, bottom), (0, 0, 225), 2)
+                        cv2.rectangle(cv2imageBGR, (left, top), (right, bottom), (0, 0, 225), 2)
                         y = top - 10 if top - 10 > 10 else top + 10
-                        cv2.putText(cv2image, "", (left, y), cv2.FONT_HERSHEY_SIMPLEX,
+                        cv2.putText(cv2imageBGR, "", (left, y), cv2.FONT_HERSHEY_SIMPLEX,
                                     0.45, (0, 0, 255), 2)
                     pool.starmap_async(my_service.get_label_after_detect_multiple,
-                                       [(cv2image, [box]) for box in boxes], callback=recognition_faces)
+                                       [(cv2imageBGR, [box]) for box in boxes], callback=recognition_faces)
 
-            img = Image.fromarray(cv2image)
+            img = Image.fromarray(cv2imageBGR)
             imgtk = ImageTk.PhotoImage(image=img)
             fps.update()
             lbImage.configure(image=imgtk)
@@ -89,8 +94,10 @@ if __name__ == "__main__":
                     help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
     ap.add_argument("-t", "--time", default=120000,
                     help="Time for recognition in video in milliseconds")
-    ap.add_argument("-a", "--attendance", default=False,
+    ap.add_argument("-a", "--attendance", default=True,
                     help="Open video stream for checking attendance or not")
+    ap.add_argument("-s", "--sessionId", default=1,
+                    help="Session Id")
     args = vars(ap.parse_args())
 
     # Load arguments
@@ -98,6 +105,7 @@ if __name__ == "__main__":
     maxNumOfPeople = int(args["num"])
     durationForRecognitionMilli = int(args["time"])
     isForCheckingAttendance = (str(args["attendance"]) == "True")
+    sessionId = int(args["sessionId"])
 
     # Setup
     print("[INFO] Warming up...")

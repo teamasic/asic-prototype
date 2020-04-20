@@ -5,6 +5,7 @@ import threading
 import time
 import tkinter as tk
 from datetime import datetime
+from os import path
 
 import cv2
 import imutils
@@ -18,10 +19,9 @@ from helper.my_utils import remove_all_files
 
 
 def recognition_faces():
-    isShowingVideo.change(False)
     startime = datetime.now()
-    global currentImage
-    # currentImage = cv2.imread("images/class3.jpg")
+    global currentImage, sessionId
+    # currentImage = cv2.imread(r"C:\Users\thanh\Desktop\123.jpg")
     currentImageRGB = cv2.cvtColor(currentImage, cv2.COLOR_BGR2RGB)
     boxes = my_face_detection.face_locations(currentImageRGB)
     resultFull = pool.starmap(my_service.get_label_after_detect_multiple,
@@ -33,17 +33,20 @@ def recognition_faces():
     print(results)
     if isForCheckingAttendance:
         lbTotalTime['text'] = "Checking attendance ..."
-        codes = []
+        codes = set()
         unknowns = []
         for result in results:
             (box, name, proba) = result
             if name == "unknown":
-                imageName = my_utils.saveImageFunction(currentImage, box)
-                unknowns.append(imageName)
+                pathUnknown = path.join(my_constant.unknownDir, str(sessionId))
+                imageName, success = my_utils.saveImageFunction(copy.deepcopy(currentImage), box, dir=pathUnknown)
+                print(imageName, success)
+                if success:
+                    unknowns.append(imageName)
             else:
-                codes.append(name)
+                codes.add(name)
         try:
-            recognition_api.recognize_multiple_faces(codes, unknowns)
+            recognition_api.recognize_multiple_faces(list(codes), unknowns)
         except:
             cannotCallApi.change(True)
     print(f"Total Time: {datetime.now() - startime}")
@@ -54,6 +57,7 @@ def recognition_faces():
 
 
 def takeSnapshot():
+    isShowingVideo.change(False)
     global startTimeRecognition
     startTimeRecognition = datetime.now()
     print("Image saved!")
@@ -94,12 +98,15 @@ if __name__ == "__main__":
                     help="Open video stream for checking attendance or not")
     ap.add_argument("-b", "--box", default=False,
                     help="Show box in video")
+    ap.add_argument("-s", "--sessionId", default=1,
+                    help="Session Id")
     args = vars(ap.parse_args())
 
     # Load arguments
     rtspString = args["rtsp"]
     isForCheckingAttendance = (str(args["attendance"]) == "True")
     isShowBox = (str(args["box"]) == "True")
+    sessionId = int(args["sessionId"])
 
     # Setup
     print("[INFO] Warming up...")
