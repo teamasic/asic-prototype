@@ -1,61 +1,57 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { bindActionCreators } from 'redux';
-import Group from '../models/Group';
-import Attendee from '../models/Attendee';
 import { ApplicationState } from '../store';
 import { Link, withRouter } from 'react-router-dom';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import {
 	Breadcrumb,
 	Icon,
-	Button,
 	Empty,
-	Table,
 	Spin,
 	Col,
 	Row,
-	Select,
-	Radio,
-	Modal,
-	Input,
-	Badge,
-	TimePicker,
-	Alert
+	Tooltip,
+	AutoComplete
 } from 'antd';
 import { Typography } from 'antd';
 import classNames from 'classnames';
 import '../styles/Session.css';
 import { SessionState } from '../store/session/state';
-import AttendeeRecordPair from '../models/AttendeeRecordPair';
-import { formatFullDateTimeString, minutesOfDay, error } from '../utils';
-import { takeAttendance } from '../services/session';
-import moment from 'moment';
+import { formatFullDateTimeString, error } from '../utils';
 import '../styles/Table.css';
 import TopBar from './TopBar';
-import TakeAttendanceModal from './TakeAttendanceModal';
 import SessionTableView from './SessionTableView';
 import SessionActiveView from './SessionActiveView';
-const { Search } = Input;
+import { EditTwoTone } from '@ant-design/icons';
+import { RoomsState } from '../store/room/state';
+import Room from '../models/Room';
+import { roomActionCreators } from '../store/room/actionCreators';
 const { Title } = Typography;
+const { Option } = AutoComplete
 
 // At runtime, Redux will merge together...
-type SessionProps = SessionState & // ... state we've requested from the Redux store
+type SessionProps = SessionState &
+	RoomsState & // ... state we've requested from the Redux store
+	typeof roomActionCreators &
 	typeof sessionActionCreators // ... plus action creators we've requested
 	& RouteComponentProps<{
 		id?: string;
 	}>; // ... plus incoming routing parameters
 
 interface SessionLocalState {
-	sessionId: number
+	sessionId: number,
+	isUpdateRoom: boolean,
+	rooms: Room[]
 }
 
 class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	public constructor(props: SessionProps) {
 		super(props);
 		this.state = {
-			sessionId: 0
+			sessionId: 0,
+			isUpdateRoom: false,
+			rooms: []
 		};
 	}
 	// This method is called when the component is first added to the document
@@ -70,6 +66,12 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				this.props.requestSession(id);
 			} catch (e) { }
 		}
+		this.loadRooms();
+		this.setState({ rooms: this.props.roomList });
+	}
+
+	public loadRooms = () => {
+		this.props.requestRooms();
 	}
 
 	public markAsPresent = (attendeeCode: string, assumeSuccess: boolean = true) => {
@@ -88,6 +90,44 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 			attendeeCode,
 			present: false
 		}, assumeSuccess);
+	}
+
+	public onUpdateRoom = () => {
+		this.setState({ isUpdateRoom: true });
+	}
+
+	public onSearchRoom = (value: string) => {
+		var results = [];
+		if(value != null && value.length > 0) {
+			results = this.props.roomList.filter(function(room) {
+				return room.name.indexOf(value) === 0;
+			});
+		} else {
+			results = this.props.roomList;
+		}
+		this.setState({ rooms: results});
+	}
+
+	public changeRoom = (value: any) => {
+		var existedInList;
+		console.log(value);
+		console.log(this.props.roomList);
+		this.props.roomList.forEach(room => {
+			if(room.id == value) {
+				existedInList = room;
+			}
+		});
+		console.log(existedInList);
+		if(existedInList) {
+			var updateRoom = {
+				sessionId: this.state.sessionId,
+				roomId: value
+			};
+			this.props.requestUpdateRoom(updateRoom);
+			this.setState({ isUpdateRoom: false });
+		} else {
+			error("Room is not existed!");
+		}
 	}
 
 	public render() {
@@ -116,8 +156,8 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					) : this.props.activeSession ? (
 						this.renderSessionSection()
 					) : (
-							this.renderEmpty()
-						)}
+								this.renderEmpty()
+							)}
 				</div>
 			</React.Fragment>
 		);
@@ -134,17 +174,45 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		/*
 		const sessionView = this.renderSessionActiveView();
 		*/
-		
+		const rooms = this.state.rooms.map(room => <Option key={room.id}>{room.name}</Option>);
 		return (
 			<React.Fragment>
-				<div className="title-container">
-					<Title className="title" level={3}>
-						Session
-					</Title>
-					<span className="subtitle">
+				{/* <div className="title-session-container"> */}
+				<Row className="title-session-container">
+					<Col span={3}>
+						<Title className="title" level={3}>
+							Session
+							</Title>
+					</Col>
+					<Col span={4} className="subtitle">
 						{formatFullDateTimeString(this.props.activeSession!.startTime)}
-					</span>
-				</div>
+					</Col>
+					<Col span={2} className="subtitle">
+						{this.props.activeSession!.name}
+					</Col>
+					<Col span={7} className="subtitle">
+						{this.state.isUpdateRoom ?
+							(
+								<AutoComplete
+									style={{width: '100px'}}
+									defaultValue={this.props.activeSession!.room.name}
+									onBlur={this.changeRoom}
+									onSearch={this.onSearchRoom}>
+									{rooms}
+								</AutoComplete>
+							) :
+							(
+								<div>
+									<span>Room {this.props.activeSession!.room.name}</span>
+									<Tooltip title="Change room">
+										<EditTwoTone onClick={this.onUpdateRoom} />
+									</Tooltip>
+								</div>
+							)
+						}
+					</Col>
+				</Row>
+				{/* </div> */}
 				{sessionView}
 			</React.Fragment>
 		);
@@ -171,10 +239,15 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	}
 }
 
+const mapDispatchToProps = {
+	...roomActionCreators, ...sessionActionCreators
+}
+
 export default withRouter(connect(
 	(state: ApplicationState, ownProps: SessionProps) => ({
 		...state.sessions,
+		...state.rooms,
 		...ownProps
 	}), // Selects which state properties are merged into the component's props
-	dispatch => bindActionCreators(sessionActionCreators, dispatch) // Selects which action creators are merged into the component's props
+	mapDispatchToProps // Selects which action creators are merged into the component's props
 )(Session as any));

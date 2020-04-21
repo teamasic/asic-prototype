@@ -1,8 +1,8 @@
 ﻿import ApiResponse from "../models/ApiResponse";
 import axios from 'axios';
-import ExportRequest from "../models/ExportRequest";
 import SessionStatus from "../models/SessionStatus";
 import ScheduleCreate from "../models/ScheduleCreate";
+import SessionUpdateRoom from "../models/SessionUpdateRoom";
 
 const baseRoute = 'api/session';
 const apify = (path: string) => `${baseRoute}/${path}`;
@@ -48,9 +48,7 @@ export const takeAttendance = async (data: any) => {
 
 export const getPastSession = async (groupCode: string) => {
 	const response = await axios.get(apify("past"), {
-		params: {
-			groupCode
-		}
+		params: { groupCode }
 	});
 	return await response.data;
 }
@@ -74,5 +72,10 @@ export const deleteScheduledSession = async (id: number): Promise<ApiResponse> =
 	const response = await axios.delete(apify("scheduled"), {
 		params: { id: id }
 	});
+	return await response.data;
+}
+
+export const updateRoom = async (data: SessionUpdateRoom): Promise<ApiResponse> => {
+	const response = await axios.post(apify("room"), data);
 	return await response.data;
 }

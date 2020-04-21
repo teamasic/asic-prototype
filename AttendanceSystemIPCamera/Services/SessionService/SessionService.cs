@@ -34,6 +34,8 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions);
         Task ActivateScheduledSession();
         Task<SessionRefactorViewModel> DeleteScheduledSession(int id);
+        SessionViewModel GetSessionByIdWithRoom(int id);
+        Task<SessionViewModel> UpdateRoom(int sessionId, int roomId);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -573,6 +575,37 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                     throw new AppException(HttpStatusCode.BadRequest, null, ErrorMessage.DELETE_INVALID_SESSION);
             }
             throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.SESSION_ID_NOT_EXISTED, id);
+        }
+
+        public SessionViewModel GetSessionByIdWithRoom(int id)
+        {
+            var session = sessionRepository.GetByIdWithRoom(id);
+            if(session != null)
+            {
+                return mapper.Map<SessionViewModel>(session);
+            }
+            throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.SESSION_ID_NOT_EXISTED, id);
+        }
+
+        public async Task<SessionViewModel> UpdateRoom(int sessionId, int roomId)
+        {
+            var session = sessionRepository.GetByIdWithRoom(sessionId);
+            if(session != null)
+            {
+                var room = await roomRepository.GetById(roomId);
+                if(room != null)
+                {
+                    if(room != session.Room)
+                    {
+                        session.Room = room;
+                        sessionRepository.Update(session);
+                        dbContext.SaveChanges();
+                    }
+                    return mapper.Map<SessionViewModel>(session);
+                }
+                throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.NOT_FOUND_ROOM_WITH_ID, roomId);
+            }
+            throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.SESSION_ID_NOT_EXISTED, sessionId);
         }
     }
 }

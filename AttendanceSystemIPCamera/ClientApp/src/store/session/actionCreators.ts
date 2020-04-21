@@ -9,7 +9,8 @@ import {
 	getSessionUnknownImagesList,
 	createScheduledSessions,
 	getScheduledSesionByGroupCode,
-	deleteScheduledSession
+	deleteScheduledSession,
+	updateRoom
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -20,6 +21,7 @@ import UpdateRecord from '../../models/UpdateRecord';
 import { updateRecord } from '../../services/record';
 import ScheduleCreate from '../../models/ScheduleCreate';
 import { success, warning, error } from '../../utils';
+import SessionUpdateRoom from '../../models/SessionUpdateRoom';
 
 export const ACTIONS = {
     RECEIVE_ACTIVE_SESSION: 'RECEIVE_ACTIVE_SESSION',
@@ -242,6 +244,17 @@ export const requestDeleteScheduledSession = (scheduledId: number, reloadSchedul
 	}
 }
 
+export const requestUpdateRoom = (data: SessionUpdateRoom): AppThunkAction => async (dispatchEvent, getState) => {
+	const apiResponse: ApiResponse = await updateRoom(data);
+	if(apiResponse.success) {
+		dispatchEvent(receiveSessionData(apiResponse.data));
+		success("Update room successfully!");
+	} else {
+		error("Update room failed!");
+		console.log(apiResponse.errors);
+	}
+}
+
 function startRealTimeConnection() {
 	return {
 		type: ACTIONS.START_REAL_TIME_CONNECTION,
@@ -305,5 +318,6 @@ export const sessionActionCreators = {
 	updateUnknownRealTimeBatch,
 	requestCreateScheduledSession,
 	requestGetScheduledSessionByGroupCode,
-	requestDeleteScheduledSession
+	requestDeleteScheduledSession,
+	requestUpdateRoom
 };
