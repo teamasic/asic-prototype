@@ -1,6 +1,8 @@
 import os
 import uuid
 from multiprocessing.context import Process
+from os import path
+from pathlib import Path
 from threading import Thread
 
 import cv2
@@ -9,37 +11,23 @@ import imutils
 from config import my_constant
 
 
-def saveImageFunction(image, box, dir=my_constant.unknownDir, num=50):
+def saveImageFunction(image, box, dir, padding=20):
+    Path(dir).mkdir(exist_ok=True)
     (top, right, bottom, left) = box
     (h, w) = image.shape[:2]
-    if top - num < 0:
-        top = 0
-    else:
-        top = top - num
+    cv2.rectangle(image, (left, top), (right, bottom), (0, 0, 225), 1)
+    newTop = 0 if top - padding < 0 else top - padding
+    newBottom = h if bottom + padding > h else bottom + padding
+    newLeft = 0 if left - padding < 0 else left - padding
+    newRight = w if right + padding > w else right + padding
 
-    if bottom + num > h:
-        bottom = h
-    else:
-        bottom = bottom + num
-
-    if left - num < 0:
-        left = 0
-    else:
-        left -= num
-
-    if right + num > w:
-        right = w
-    else:
-        right = right + num
-
-    crop_image = image[top:bottom, left:right]
-    crop_image = imutils.resize(crop_image, width=250)
-
+    crop_image = image[newTop:newBottom, newLeft:newRight]
+    crop_image = imutils.resize(crop_image, width=150)
     unique_filename = "Unknown_{}.jpg".format(str(uuid.uuid4()))
     fullPath = os.path.join(dir, unique_filename)
 
-    cv2.imwrite(fullPath, crop_image)
-    return unique_filename
+    successSave = cv2.imwrite(fullPath, crop_image)
+    return unique_filename, successSave
 
 
 def remove_all_files(folder):
