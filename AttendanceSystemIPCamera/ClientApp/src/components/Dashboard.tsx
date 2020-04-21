@@ -265,7 +265,7 @@ class Dashboard extends React.PureComponent<GroupProps, DashboardComponentState>
                                         {getFieldDecorator('code', {
                                             rules: [
                                                 { required: true, message: 'Please input group code' },
-                                                { min: 3, max: 10, message: 'Group code requires 3-10 characters' }
+                                                { min: 1, max: 50, message: 'Group code requires 1-50 characters' }
                                             ],
                                         })(
                                             <Input placeholder="Enter group code" />

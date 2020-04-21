@@ -338,11 +338,12 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 	}
 	private IsValidToTakeAttendanceAutomatically() {
 		if (this.props.activeSession) {
-			if (compareDate(this.props.activeSession.endTime, new Date()) == -1) {
-				return false;
+			const now = new Date();
+			if (compareDate(now, this.props.activeSession.endTime) != 1) {
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 }
 

@@ -111,14 +111,19 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 
 	public changeRoom = (value: any) => {
 		var existedInList;
-		console.log(value);
-		console.log(this.props.roomList);
 		this.props.roomList.forEach(room => {
 			if (room.id == value) {
 				existedInList = room;
 			}
 		});
-		console.log(existedInList);
+		if (!existedInList) {
+			this.props.roomList.forEach(room => {
+				if (room.name == value) {
+					existedInList = room;
+					value = room.id;
+				}
+			});
+		}
 		if (existedInList) {
 			var updateRoom = {
 				sessionId: this.state.sessionId,
@@ -185,7 +190,6 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 							Session
 							</Title>
 					</Col>
-
 					<Col span={4} className="subtitle">
 						{formatFullDateTimeString(this.props.activeSession!.startTime)}
 					</Col>
@@ -218,7 +222,6 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 							)
 						}
 					</Col>
-
 				</Row>
 				{/* </div> */}
 				{sessionView}
@@ -250,13 +253,15 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		return <Empty></Empty>;
 	}
 
+
 	private IsValidToTakeAttendanceAutomatically() {
 		if (this.props.activeSession) {
-			if (compareDate(this.props.activeSession.endTime, new Date()) == -1) {
-				return false;
+			const now = new Date();
+			if (compareDate(now, this.props.activeSession.endTime) != 1) {
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 }
 
