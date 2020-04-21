@@ -163,15 +163,15 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 	}
 
 	private onPageChange = (page: number) => {
-        this.setState({ currentPage: page });
-    }
+		this.setState({ currentPage: page });
+	}
 
-    private onShowSizeChange = (current: number, pageSize: number) => {
-        this.setState({
+	private onShowSizeChange = (current: number, pageSize: number) => {
+		this.setState({
 			pageSize: pageSize,
 			currentPage: current
 		});
-    }
+	}
 
 	private takeAttendanceMultiple = async () => {
 		if (this.props.activeSession != null) {
@@ -182,7 +182,12 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 			multiple: true
 		});
 		if (data.success == false) {
-			error("Error while taking attendance, please try again")
+			if (this.props.activeSession) {
+				error(`Error while taking attendance at room ${this.props.activeSession.room.name}, please try again`)
+			}
+			else {
+				error("Error while taking attendance, please try again")
+			}
 		}
 		this.props.startTakingAttendance(null);
 		this.props.endTakingAttendance();
@@ -195,8 +200,8 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				key: "index",
 				width: '5%',
 				render: (text: any, record: any, index: number) => {
-                    return (this.state.currentPage - 1) * this.state.pageSize + index + 1
-                }
+					return (this.state.currentPage - 1) * this.state.pageSize + index + 1
+				}
 			},
 			{
 				title: 'Code',
@@ -214,7 +219,7 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				width: '12%',
 				render: (text: string, pair: AttendeeRecordPair) =>
 					<Radio
-					checked={pair.record != null && pair.record.present}
+						checked={pair.record != null && pair.record.present}
 						onChange={() => this.props.markAsPresent(pair.attendee.code)}>
 					</Radio>
 			},
