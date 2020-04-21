@@ -47,9 +47,7 @@ export const updateGroup = async (code: string, updatedGroup: Group): Promise<Ap
 export const deleteAttendeeGroup = async (attendeeCode: string, groupCode: string): Promise<ApiResponse> => {
     var url = baseRoute + '/' + groupCode;
     const response = await axios.delete(url, {
-        params: {
-            attendeeCode
-        }
+        params: { attendeeCode }
     });
     return await response.data;
 }

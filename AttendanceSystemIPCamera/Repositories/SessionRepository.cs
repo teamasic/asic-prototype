@@ -33,6 +33,7 @@ namespace AttendanceSystemIPCamera.Repositories
         Session GetByNameAndDate(string name, DateTime date);
         Task AddRangeAsync(List<Session> sessions);
         Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
+        Session GetByIdWithRoom(int id);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
@@ -163,6 +164,11 @@ namespace AttendanceSystemIPCamera.Repositories
             return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime,
                     includeProperties: "Group,Room")
                 .LastOrDefault();
+        }
+
+        public Session GetByIdWithRoom(int id)
+        {
+            return Get(s => s.Id == id, includeProperties: "Room").FirstOrDefault();
         }
     }
 }

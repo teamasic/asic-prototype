@@ -25,7 +25,12 @@ const unloadedState: GroupsState = {
             startTime: new Date(),
             endTime: new Date(),
             attendees: [],
-            groupCode: ''
+            groupCode: '',
+            room: {
+                id: 0,
+                name: 'None',
+                cameraConnectionString: ''
+            }
         }]
     }
 };

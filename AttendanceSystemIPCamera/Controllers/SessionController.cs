@@ -26,12 +26,11 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpGet("{id}")]
-        public Task<BaseResponse<SessionViewModel>> GetById(int id)
+        public BaseResponse<SessionViewModel> GetById(int id)
         {
-            return ExecuteInMonitoring(async () =>
+            return ExecuteInMonitoring(() =>
             {
-                var session = await sessionService.GetById(id);
-                return mapper.Map<SessionViewModel>(session);
+                return sessionService.GetSessionByIdWithRoom(id);
             });
         }
 
@@ -135,6 +134,15 @@ namespace AttendanceSystemIPCamera.Controllers
             return ExecuteInMonitoring(async () =>
             {
                 return await sessionService.DeleteScheduledSession(id);
+            });
+        }
+
+        [HttpPost("room")]
+        public Task<BaseResponse<SessionViewModel>> UpdateRoom([FromBody] SessionUpdateRoomViewModal updateRoom)
+        {
+            return ExecuteInMonitoring(async () =>
+            {
+                return await sessionService.UpdateRoom(updateRoom.sessionId, updateRoom.roomId);
             });
         }
     }
