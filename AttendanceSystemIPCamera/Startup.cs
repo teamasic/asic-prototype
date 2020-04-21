@@ -246,6 +246,7 @@ namespace AttendanceSystemIPCamera
             }
             UseStaticFiles(app, myConfig.AvatarFolderPath, "/api/avatars");
             UseStaticFiles(app, myConfig.UnknownFolderPath, "/api/unknown");
+            UseStaticFiles(app, myConfig.LogoFolderPath, "/api/logo");
         }
 
         private void UseStaticFiles(IApplicationBuilder app, string path, string requestPath) {

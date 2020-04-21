@@ -89,7 +89,14 @@ class PageLayout extends React.Component<
 					collapsed={this.state.collapsed}
 					onCollapse={this.onCollapse}
 				>
-					<div className="logo">ASIC</div>
+					<div className="logo" >
+						<img
+							src="api/logo/asic logo.png"
+							style={{
+								backgroundSize: 'contain',
+								backgroundPosition: 'center'
+							}} />
+					</div>
 					<Menu theme="dark"
 						selectedKeys={this.state.selectedKeys}
 						onSelect={item => this.setState({
