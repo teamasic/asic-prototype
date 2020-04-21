@@ -111,14 +111,19 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 
 	public changeRoom = (value: any) => {
 		var existedInList;
-		console.log(value);
-		console.log(this.props.roomList);
 		this.props.roomList.forEach(room => {
 			if(room.id == value) {
 				existedInList = room;
 			}
 		});
-		console.log(existedInList);
+		if(!existedInList) {
+			this.props.roomList.forEach(room => {
+				if(room.name == value) {
+					existedInList = room;
+					value = room.id;
+				}
+			});
+		}
 		if(existedInList) {
 			var updateRoom = {
 				sessionId: this.state.sessionId,
