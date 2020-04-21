@@ -118,13 +118,13 @@ const reducers: Reducer<SessionState> = (
 			return {
 				...state,
 				currentlyOngoingSession: action.session,
-				unknownImages: []
+				unknownImages: state.unknownImages
 			};
 		case ACTIONS.END_TAKING_ATTENDANCE:
 			return {
 				...state,
 				currentlyOngoingSession: undefined,
-				unknownImages: []
+				unknownImages: state.unknownImages
 			};
 		case ACTIONS.RECEIVE_UNKNOWN_IMAGES:
 			return {

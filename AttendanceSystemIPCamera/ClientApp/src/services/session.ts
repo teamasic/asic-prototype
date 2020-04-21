@@ -26,14 +26,23 @@ export const getSessionUnknownImagesList = async (
 	return await response.data;
 };
 
+export const removeSessionUnknownImage = async (id: number, image: string): Promise<ApiResponse> => {
+	const response = await axios.delete(apify(`${id.toString()}/unknown`), {
+		params: {
+			image
+		}
+	});
+	return await response.data;
+}
+
 export const createSession = async (data: any) => {
 	const response = await axios.post(baseRoute, data)
 	return await response.data;
 };
 
 export const getActiveSession = async (): Promise<ApiResponse> => {
-    const response = await axios(apify("active"));
-    return await response.data;
+	const response = await axios(apify("active"));
+	return await response.data;
 }
 
 export const exportSession = async (exportRequest: any): Promise<ApiResponse> => {

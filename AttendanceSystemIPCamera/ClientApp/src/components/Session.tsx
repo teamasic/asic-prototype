@@ -27,6 +27,7 @@ import { EditTwoTone } from '@ant-design/icons';
 import { RoomsState } from '../store/room/state';
 import Room from '../models/Room';
 import { roomActionCreators } from '../store/room/actionCreators';
+import UnknownSection from './UnknownSection';
 const { Title } = Typography;
 const { Option } = AutoComplete
 
@@ -219,11 +220,15 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	}
 
 	private renderSessionTableView() {
-		return <SessionTableView
-			sessionId={this.state.sessionId}
-			markAsAbsent={this.markAsAbsent}
-			markAsPresent={this.markAsPresent}
-		/>
+		return <div>
+			<SessionTableView
+				sessionId={this.state.sessionId}
+				markAsAbsent={this.markAsAbsent}
+				markAsPresent={this.markAsPresent}
+			/>
+			<UnknownSection sessionId={this.state.sessionId}
+				markAsPresent={this.markAsPresent} />
+		</div>
 	}
 
 	private renderSessionActiveView() {

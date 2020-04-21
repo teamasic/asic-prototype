@@ -145,6 +145,16 @@ namespace AttendanceSystemIPCamera.Controllers
                 return await sessionService.UpdateRoom(updateRoom.sessionId, updateRoom.roomId);
             });
         }
+
+        [HttpDelete("{id}/unknown")]
+        public dynamic RemoveUnknownImage(int id, string image)
+        {
+            return ExecuteInMonitoring(() =>
+            {
+                sessionService.RemoveUnknownImage(id, image);
+                return "";
+            });
+        }
     }
 }
 
