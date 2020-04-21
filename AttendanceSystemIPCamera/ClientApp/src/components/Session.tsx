@@ -37,6 +37,7 @@ import TopBar from './TopBar';
 import TakeAttendanceModal from './TakeAttendanceModal';
 import SessionTableView from './SessionTableView';
 import SessionActiveView from './SessionActiveView';
+import UnknownSection from './UnknownSection';
 const { Search } = Input;
 const { Title } = Typography;
 
@@ -116,8 +117,8 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					) : this.props.activeSession ? (
 						this.renderSessionSection()
 					) : (
-							this.renderEmpty()
-						)}
+								this.renderEmpty()
+							)}
 				</div>
 			</React.Fragment>
 		);
@@ -134,7 +135,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		/*
 		const sessionView = this.renderSessionActiveView();
 		*/
-		
+
 		return (
 			<React.Fragment>
 				<div className="title-container">
@@ -151,11 +152,15 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	}
 
 	private renderSessionTableView() {
-		return <SessionTableView
-			sessionId={this.state.sessionId}
-			markAsAbsent={this.markAsAbsent}
-			markAsPresent={this.markAsPresent}
-		/>
+		return <div>
+			<SessionTableView
+				sessionId={this.state.sessionId}
+				markAsAbsent={this.markAsAbsent}
+				markAsPresent={this.markAsPresent}
+			/>
+			<UnknownSection sessionId={this.state.sessionId}
+				markAsPresent={this.markAsPresent} />
+		</div>
 	}
 
 	private renderSessionActiveView() {

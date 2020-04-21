@@ -75,7 +75,8 @@ namespace AttendanceSystemIPCamera.Controllers
                 var results = await recordService.RecordAttendanceBatch(viewModel.Codes);
                 globalStateService.AddUnknownImages(viewModel.Unknowns);
                 await realTimeService.MarkAttendeeAsPresentBatch(viewModel.Codes);
-                await realTimeService.MarkAttendeeAsUnknownBatch(viewModel.Unknowns);
+                var unknowns = globalStateService.GetUnknownUrls(viewModel.Unknowns);
+                await realTimeService.MarkAttendeeAsUnknownBatch(unknowns);
                 return results;
             });
         }

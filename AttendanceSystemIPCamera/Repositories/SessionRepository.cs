@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AttendanceSystemIPCamera.Framework;
+using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Framework.GlobalStates;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.Logging;
 using static AttendanceSystemIPCamera.Framework.Constants;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -19,7 +22,7 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface ISessionRepository : IRepository<Session>
     {
         public Task<Session> GetActiveSession();
-        public void SetActiveSession(int sessionId);
+        public void SetActiveSession(int sessionId, string unknownFolderPath);
         bool isSessionRunning();
         List<Session> GetSessionsWithRecords(List<string> groups);
         List<Session> GetSessionExport(string groupCode, DateTime startDate, DateTime endDate);
@@ -27,16 +30,18 @@ namespace AttendanceSystemIPCamera.Repositories
         List<Session> GetPastSessionByGroupCode(string groupCode);
         List<Session> GetSessionByGroupCode(string groupCode);
         Task<Session> GetSessionWithGroupAndTime(string groupCode, DateTime startTime, DateTime endTime);
-        public ICollection<string> GetSessionUnknownImages(int sessionId);
+        public ICollection<string> GetSessionUnknownImages(int sessionId, string unknownFolderPath);
         public void RemoveActiveSession();
         List<Session> GetByGroupCodeAndStatus(string groupCode, string status);
         Session GetByNameAndDate(string name, DateTime date);
         Task AddRangeAsync(List<Session> sessions);
         Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
+        void RemoveSessionUnkownImage(int sessionId, string image, string unknownFolderPath);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
         private GlobalState globalState;
+
         public SessionRepository(DbContext context, GlobalState globalState) : base(context)
         {
             this.globalState = globalState;
@@ -46,10 +51,10 @@ namespace AttendanceSystemIPCamera.Repositories
             return globalState.CurrentActiveSession != -1;
         }
 
-        public void SetActiveSession(int sessionId)
+        public void SetActiveSession(int sessionId, string unknownFolderPath)
         {
             globalState.CurrentActiveSession = sessionId;
-            globalState.CurrentSessionUnknownImages = new List<string>();
+            globalState.CurrentSessionUnknownImages = this.GetSessionUnknownImages(sessionId, unknownFolderPath);
         }
 
         public void RemoveActiveSession()
@@ -129,11 +134,23 @@ namespace AttendanceSystemIPCamera.Repositories
                 orderBy: s => s.OrderByDescending(s => s.StartTime)).ToList();
         }
 
-        public ICollection<string> GetSessionUnknownImages(int sessionId)
+        public ICollection<string> GetSessionUnknownImages(int sessionId, string unknownFolderPath)
         {
             if (sessionId == globalState.CurrentActiveSession && globalState.CurrentActiveSession != -1)
             {
                 return globalState.CurrentSessionUnknownImages;
+            }
+            if (sessionId != -1)
+            {
+                try
+                {
+                    string unknownDir = Path.Combine(unknownFolderPath, sessionId.ToString());
+                    var unknownImages = Directory.GetFiles(unknownDir, "*.jpg").ToList();
+                    return unknownImages.Select(u => string.Format("{0}/{1}", sessionId, Path.GetFileName(u))).ToList();
+                }
+                catch (DirectoryNotFoundException e)
+                {
+                }
             }
             return new List<string>();
         }
@@ -163,6 +180,21 @@ namespace AttendanceSystemIPCamera.Repositories
             return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime,
                     includeProperties: "Group,Room")
                 .LastOrDefault();
+        }
+
+        public void RemoveSessionUnkownImage(int sessionId, string image, string unknownFolderPath)
+        {
+            try
+            {
+                string unknownDir = Path.Combine(unknownFolderPath, image);
+                if (File.Exists(unknownDir))
+                {
+                    File.Delete(unknownDir);
+                }
+            }
+            catch (DirectoryNotFoundException e)
+            {
+            }
         }
     }
 }

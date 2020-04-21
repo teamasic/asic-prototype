@@ -15,6 +15,7 @@ using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using AttendanceSystemIPCamera.Services.RecognitionService;
 using Microsoft.Extensions.Logging;
 using AttendanceSystemIPCamera.Framework;
+using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -34,6 +35,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions);
         Task ActivateScheduledSession();
         Task<SessionRefactorViewModel> DeleteScheduledSession(int id);
+        void RemoveUnknownImage(int sessionId, string image);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -49,11 +51,12 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private readonly IMapper mapper;
         private readonly ILogger logger;
         private TimeSpan activatedTimeBeforeStartTime;
+        private MyConfiguration cfg;
 
         public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, IMapper mapper,
             IRecognitionService recognitionService, UnitService.UnitService unitService,
             ILogger<ISessionService> logger, OtherSettingsService.OtherSettingsService otherSettingsService,
-            IRealTimeService realTimeService) : base(unitOfWork)
+            IRealTimeService realTimeService, MyConfiguration myConfiguration) : base(unitOfWork)
         {
             sessionRepository = unitOfWork.SessionRepository;
             groupRepository = unitOfWork.GroupRepository;
@@ -66,11 +69,12 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             this.mapper = mapper;
             this.logger = logger;
             activatedTimeBeforeStartTime = otherSettingsService.Settings.ActivatedTimeOfScheduleBeforeStartTime;
+            this.cfg = myConfiguration;
         }
 
         public ICollection<string> GetSessionUnknownImages(int sessionId)
         {
-            return sessionRepository.GetSessionUnknownImages(sessionId);
+            return sessionRepository.GetSessionUnknownImages(sessionId, cfg.UnknownFolderPath);
         }
 
         public async Task<ICollection<AttendeeRecordPair>> GetSessionAttendeeRecordMap(int sessionId)
@@ -389,16 +393,18 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
             else
             {
-                sessionRepository.SetActiveSession(viewModel.SessionId);
+                sessionRepository.SetActiveSession(viewModel.SessionId, cfg.UnknownFolderPath);
                 if (viewModel.Multiple)
                 {
-                    await recognitionService.StartRecognitionMultiple(session.Room.CameraConnectionString);
+                    await recognitionService.StartRecognitionMultiple(session.Room.CameraConnectionString, viewModel.SessionId);
                 }
                 else
                 {
                     var durationBeforeStartInMinutes = GetDurationBeforeStartInMinutes(viewModel.StartTime);
                     var durationWhileRunningInMinutes = GetDurationWhileRunningInMinutes(viewModel.StartTime, viewModel.EndTime);
-                    await recognitionService.StartRecognition(durationBeforeStartInMinutes, durationWhileRunningInMinutes, session.Room.CameraConnectionString);
+                    await recognitionService.StartRecognition(durationBeforeStartInMinutes,
+                                                        durationWhileRunningInMinutes, session.Room.CameraConnectionString,
+                                                        viewModel.SessionId);
                 }
                 return mapper.Map<SessionViewModel>(session);
             }
@@ -474,14 +480,14 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             var results = new List<Session>();
             var createdSessions = new List<SessionCreateViewModel>();
             var numberOfSessionWillBeCreated = 0;
-            if(newSessions != null && newSessions.Count > 0)
+            if (newSessions != null && newSessions.Count > 0)
             {
                 var group = await groupRepository.GetByCode(newSessions[0].GroupCode);
                 numberOfSessionWillBeCreated = group.TotalSession - group.Sessions.Count + 1;
             }
             foreach (var session in newSessions)
             {
-                if(numberOfSessionWillBeCreated > 0)
+                if (numberOfSessionWillBeCreated > 0)
                 {
                     var date = session.Date;
                     var currentDate = DateTime.Now;
@@ -573,6 +579,11 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                     throw new AppException(HttpStatusCode.BadRequest, null, ErrorMessage.DELETE_INVALID_SESSION);
             }
             throw new AppException(HttpStatusCode.NotFound, null, ErrorMessage.SESSION_ID_NOT_EXISTED, id);
+        }
+
+        public void RemoveUnknownImage(int sessionId, string image)
+        {
+            sessionRepository.RemoveSessionUnkownImage(sessionId, image, cfg.UnknownFolderPath);
         }
     }
 }

@@ -9,7 +9,8 @@ import {
 	getSessionUnknownImagesList,
 	createScheduledSessions,
 	getScheduledSesionByGroupCode,
-	deleteScheduledSession
+	deleteScheduledSession,
+	removeSessionUnknownImage
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -268,7 +269,14 @@ function updateUnknownRealTime(image: any) {
 	};
 }
 
-function removeUnknownImage(image: string) {
+export const requestRemoveUnknownImage = (id: number, image: string): AppThunkAction => async (dispatchEvent, getState) => {
+	const apiResponse: ApiResponse = await removeSessionUnknownImage(id, image);
+	if(apiResponse.success) {
+		dispatchEvent(removeUnknownImageSuccessfully(image));
+	} 
+}
+
+function removeUnknownImageSuccessfully(image: string) {
 	return {
 		type: ACTIONS.REMOVE_UNKNOWN_IMAGE,
 		image
@@ -300,7 +308,7 @@ export const sessionActionCreators = {
 	startTakingAttendance,
 	endTakingAttendance,
 	updateUnknownRealTime,
-	removeUnknownImage,
+	removeUnknownImage: requestRemoveUnknownImage,
 	updateAttendeeRecordRealTimeBatch,
 	updateUnknownRealTimeBatch,
 	requestCreateScheduledSession,

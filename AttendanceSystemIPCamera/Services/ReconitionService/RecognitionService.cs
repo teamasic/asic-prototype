@@ -22,8 +22,8 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
     public interface IRecognitionService
     {
         ResponsePython RecognitionImage(string imageString);
-        Task<ResponsePython> StartRecognition(int durationBeforeStartInMinutes, int durationWhileRunningInMinutes, string rtspString);
-        public Task<ResponsePython> StartRecognitionMultiple(string rtspString);
+        Task<ResponsePython> StartRecognition(int durationBeforeStartInMinutes, int durationWhileRunningInMinutes, string rtspString, int sessionId);
+        public Task<ResponsePython> StartRecognitionMultiple(string rtspString, int sessionId);
 
     }
     public class RecognitionService : IRecognitionService
@@ -37,13 +37,14 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             this.myConfiguration = myConfiguration;
         }
 
-        public async Task<ResponsePython> StartRecognition(int durationBeforeStartInMinutes, int durationWhileRunningInMinutes, string rtspString)
+        public async Task<ResponsePython> StartRecognition(int durationBeforeStartInMinutes, 
+            int durationWhileRunningInMinutes, string rtspString, int sessionId)
         {
-            return await RecognitionByVideo(durationBeforeStartInMinutes, durationWhileRunningInMinutes, rtspString);
+            return await RecognitionByVideo(durationBeforeStartInMinutes, durationWhileRunningInMinutes, rtspString, sessionId);
         }
-        public async Task<ResponsePython> StartRecognitionMultiple(string rtspString)
+        public async Task<ResponsePython> StartRecognitionMultiple(string rtspString, int sessionId)
         {
-            return await RecognitionByVideoMultiple(rtspString);
+            return await RecognitionByVideoMultiple(rtspString, sessionId);
         }
         public ResponsePython RecognitionImage(string imageString)
         {
@@ -78,7 +79,8 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             startInfo.WorkingDirectory = parentDirectory + "\\" + myConfiguration.RecognitionServiceName;
             return startInfo;
         }
-        private async Task<ResponsePython> RecognitionByVideo(int durationStartIn, int durationMinutes, string rtspString)
+        private async Task<ResponsePython> RecognitionByVideo(int durationStartIn, int durationMinutes, 
+                                string rtspString, int sessionId)
         {
             try
             {
@@ -99,6 +101,10 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
 
                 // set flag for checking attendance
                 args += string.Format(@" --attendance {0}", "True");
+
+                //sessionId to save unknown images
+                args += string.Format(@" --sessionId {0}", sessionId);
+
                 var startInfo = GetProcessStartInfo(cmd, args);
                 // Handle outputs and errors
                 StringBuilder output = new StringBuilder();
@@ -171,7 +177,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
 
         }
 
-        private async Task<ResponsePython> RecognitionByVideoMultiple(string rtspString)
+        private async Task<ResponsePython> RecognitionByVideoMultiple(string rtspString, int sessionId)
         {
             try
             {
@@ -187,6 +193,9 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
 
                 // show box or not
                 args += string.Format(@" --box {0}", "False");
+
+                // session Id to save unknown images
+                args += string.Format(@" --sessionId {0}", sessionId);
 
                 var startInfo = GetProcessStartInfo(cmd, args);
                 // Handle outputs and errors

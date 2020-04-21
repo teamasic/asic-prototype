@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -24,6 +25,8 @@ namespace AttendanceSystemIPCamera.Services.RecordService
     {
         public void AddUnknownImage(string image);
         public void AddUnknownImages(ICollection<string> images);
+        List<string> GetAllUnknownUrls();
+        List<string> GetUnknownUrls(ICollection<string> unknowns);
     }
 
     public class GlobalStateService : IGlobalStateService
@@ -54,6 +57,25 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             {
                 globalState.CurrentSessionUnknownImages.Add(img);
             }
+        }
+
+        public List<string> GetAllUnknownUrls()
+        {
+            if (globalState.CurrentSessionUnknownImages == null)
+            {
+                globalState.CurrentSessionUnknownImages = new List<string>();
+            }
+            return globalState.CurrentSessionUnknownImages.Select(u =>
+                                            Path.Combine(globalState.CurrentActiveSession.ToString(), u)).ToList();
+        }
+    
+        public List<string> GetUnknownUrls(ICollection<string> unknowns)
+        {
+            if (globalState.CurrentSessionUnknownImages == null)
+            {
+                globalState.CurrentSessionUnknownImages = new List<string>();
+            }
+            return unknowns.Select(u => string.Format("{0}/{1}", globalState.CurrentActiveSession, u)).ToList();
         }
     }
 }

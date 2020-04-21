@@ -347,3 +347,6 @@ AttendanceSystemIPCamera/ClientApp/src/**/*.map
 
 #Python
 venv
+
+#Unknown
+unknown/*
