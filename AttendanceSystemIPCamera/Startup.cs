@@ -100,6 +100,8 @@ namespace AttendanceSystemIPCamera
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            SetupStaticFiles(app);
+
             app.UseSpaStaticFiles();
 
             app.UseSwagger();
@@ -121,17 +123,17 @@ namespace AttendanceSystemIPCamera
             });
             loggerFactory.AddFile(string.Format($"{Constant.LOG_TEMPLATE}", "{Date}"));
 
-            //app.UseSpa(spa =>
-            //{
-            //    spa.Options.SourcePath = "ClientApp";
+            app.UseSpa(spa =>
+            {
+                spa.Options.SourcePath = "ClientApp";
 
-            //    if (env.IsDevelopment())
-            //    {
-            //        spa.UseReactDevelopmentServer(npmScript: "start");
-            //    }
-            //});
+                if (env.IsDevelopment())
+                {
+                    spa.UseReactDevelopmentServer(npmScript: "start");
+                }
+            });
 
-            SetupStaticFiles(app);
+            
         }
 
         private void setupSwagger(IServiceCollection services)

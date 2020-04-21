@@ -29,7 +29,7 @@ import classNames from 'classnames';
 import '../styles/Session.css';
 import { SessionState } from '../store/session/state';
 import AttendeeRecordPair from '../models/AttendeeRecordPair';
-import { formatFullDateTimeString, minutesOfDay, error, renderStripedTable } from '../utils';
+import { formatFullDateTimeString, minutesOfDay, error, renderStripedTable, compareDate } from '../utils';
 import { takeAttendance } from '../services/session';
 import moment from 'moment';
 import '../styles/Table.css';
@@ -277,21 +277,25 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 					</Col>
 				</Row>
 				<Row style={{ marginTop: 5 }} type="flex" gutter={[4, 4]} align="bottom">
-					<Col>
-						<div className="row centered">
-							<Button type="primary"
-								className="take-attendance-button"
-								onClick={this.openModelTakingAttendance}>
-								Start taking attendance
+					{this.IsValidToTakeAttendanceAutomatically() ?
+						<Col>
+							<div className="row centered">
+								<Button type="primary"
+									className="take-attendance-button"
+									onClick={this.openModelTakingAttendance}>
+									Start taking attendance
 							</Button>
-							<span className="or-separator"> or </span>
-							<Button
-								className="take-attendance-multiple-button"
-								onClick={this.takeAttendanceMultiple}>
-								Take attendance of multiple at once
+								<span className="or-separator"> or </span>
+								<Button
+									className="take-attendance-multiple-button"
+									onClick={this.takeAttendanceMultiple}>
+									Take attendance of multiple at once
 							</Button>
-						</div>
-					</Col>
+							</div>
+						</Col>
+						: <div></div>
+					}
+
 				</Row>
 				{
 					<TakeAttendanceModal
@@ -331,6 +335,14 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				</div>
 			</div>
 		);
+	}
+	private IsValidToTakeAttendanceAutomatically() {
+		if (this.props.activeSession) {
+			if (compareDate(this.props.activeSession.endTime, new Date()) == -1) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
 

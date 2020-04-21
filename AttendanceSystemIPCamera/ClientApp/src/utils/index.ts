@@ -50,9 +50,9 @@ export const formatTimeOnly = (time: Date | string) => format(new Date(time), 'h
 export const generateUniqueId = () => uniqid.time();
 
 
-export const getErrors = (errors: any[])=>{
+export const getErrors = (errors: any[]) => {
     const values = []
-    for(const key in errors){
+    for (const key in errors) {
         values.push(errors[key]);
     }
     return values.toString();
@@ -62,3 +62,12 @@ export const isChromium = (): boolean => {
     const browser = detect();
     return browser != null && browser.name !== 'firefox';
 };
+
+export const compareDate = (first: Date | string, second: Date | string) => {
+    if (moment(first).isBefore(second)) {
+        return -1;
+    } else if (moment(first).isAfter(second)) {
+        return 1;
+    }
+    return 0;
+}

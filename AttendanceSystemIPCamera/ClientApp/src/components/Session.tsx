@@ -18,7 +18,7 @@ import { Typography } from 'antd';
 import classNames from 'classnames';
 import '../styles/Session.css';
 import { SessionState } from '../store/session/state';
-import { formatFullDateTimeString, error } from '../utils';
+import { formatFullDateTimeString, error, compareDate } from '../utils';
 import '../styles/Table.css';
 import TopBar from './TopBar';
 import SessionTableView from './SessionTableView';
@@ -99,14 +99,14 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 
 	public onSearchRoom = (value: string) => {
 		var results = [];
-		if(value != null && value.length > 0) {
-			results = this.props.roomList.filter(function(room) {
+		if (value != null && value.length > 0) {
+			results = this.props.roomList.filter(function (room) {
 				return room.name.indexOf(value) === 0;
 			});
 		} else {
 			results = this.props.roomList;
 		}
-		this.setState({ rooms: results});
+		this.setState({ rooms: results });
 	}
 
 	public changeRoom = (value: any) => {
@@ -114,12 +114,12 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		console.log(value);
 		console.log(this.props.roomList);
 		this.props.roomList.forEach(room => {
-			if(room.id == value) {
+			if (room.id == value) {
 				existedInList = room;
 			}
 		});
 		console.log(existedInList);
-		if(existedInList) {
+		if (existedInList) {
 			var updateRoom = {
 				sessionId: this.state.sessionId,
 				roomId: value
@@ -185,6 +185,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 							Session
 							</Title>
 					</Col>
+
 					<Col span={4} className="subtitle">
 						{formatFullDateTimeString(this.props.activeSession!.startTime)}
 					</Col>
@@ -195,7 +196,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 						{this.state.isUpdateRoom ?
 							(
 								<AutoComplete
-									style={{width: '100px'}}
+									style={{ width: '100px' }}
 									defaultValue={this.props.activeSession!.room.name}
 									onBlur={this.changeRoom}
 									onSearch={this.onSearchRoom}>
@@ -205,13 +206,19 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 							(
 								<div>
 									<span>Room {this.props.activeSession!.room.name}</span>
-									<Tooltip title="Change room">
-										<EditTwoTone onClick={this.onUpdateRoom} />
-									</Tooltip>
+									{this.IsValidToTakeAttendanceAutomatically() ?
+										<>
+											<Tooltip title="Change room">
+												<EditTwoTone onClick={this.onUpdateRoom} />
+											</Tooltip>
+										</>
+										: <div></div>
+									}
 								</div>
 							)
 						}
 					</Col>
+
 				</Row>
 				{/* </div> */}
 				{sessionView}
@@ -241,6 +248,15 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 
 	private renderEmpty() {
 		return <Empty></Empty>;
+	}
+
+	private IsValidToTakeAttendanceAutomatically() {
+		if (this.props.activeSession) {
+			if (compareDate(this.props.activeSession.endTime, new Date()) == -1) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
 
