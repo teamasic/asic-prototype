@@ -12,6 +12,16 @@
 	margin: 20px 0;
 }
 
+.title-session-container {
+	display: flex;
+	flex-direction: column;
+	margin: 20px 0;
+}
+
+.title-session-container .title {
+	margin-left: 20px;
+}
+
 .title-container .title {
 	margin-right: 20px;
 }

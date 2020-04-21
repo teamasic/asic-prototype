@@ -36,12 +36,12 @@ namespace AttendanceSystemIPCamera.Repositories
         Session GetByNameAndDate(string name, DateTime date);
         Task AddRangeAsync(List<Session> sessions);
         Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
+        Session GetByIdWithRoom(int id);
         void RemoveSessionUnkownImage(int sessionId, string image, string unknownFolderPath);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
         private GlobalState globalState;
-
         public SessionRepository(DbContext context, GlobalState globalState) : base(context)
         {
             this.globalState = globalState;
@@ -195,6 +195,11 @@ namespace AttendanceSystemIPCamera.Repositories
             catch (DirectoryNotFoundException e)
             {
             }
+        }
+
+        public Session GetByIdWithRoom(int id)
+        {
+            return Get(s => s.Id == id, includeProperties: "Room").FirstOrDefault();
         }
     }
 }

@@ -17,6 +17,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public RecordViewModel Record { get; set; }
         [JsonIgnore]
         public GroupViewModel Group { get; set; }
+        public RoomViewModel Room { get; set; }
     }
 
     public class SessionNetworkViewModel : BaseViewModel<Session>
@@ -67,5 +68,11 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public string Slot { get; set; }
         public string Room { get; set; }
         public DateTime Date { get; set; }
+    }
+
+    public class SessionUpdateRoomViewModal
+    {
+        public int sessionId { get; set; }
+        public int roomId { get; set; }
     }
 }

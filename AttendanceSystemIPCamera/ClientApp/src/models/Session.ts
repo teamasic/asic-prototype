@@ -1,6 +1,7 @@
 ﻿import Group from "./Group";
 import Attendee from "./Attendee";
 import Record from "./Record";
+import Room from "./Room";
 
 export default interface Session {
     id: number;
@@ -12,4 +13,5 @@ export default interface Session {
     records?: Record[];
     active: boolean;
     groupCode?: string;
+    room: Room
 }

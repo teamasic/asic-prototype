@@ -36,5 +36,7 @@ namespace AttendanceSystemIPCamera.Framework.ExeptionHandler
         public static string ATTENDEE_ALREADY_EXISTED_IN_GROUP = "Attendee with code {0} is already existed in group with code {1}";
         
         public static string NO_INTERNET_CONNECTION = "No internet connection";
+
+        public static string NOT_FOUND_ROOM_WITH_ID = "Not found room with id {0}";
     }
 }
