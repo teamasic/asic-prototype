@@ -17,5 +17,6 @@ namespace AttendanceSystemIPCamera.Framework.AppSettingConfiguration
         public string UnknownFolderPath { get; set; }
         public string AvatarPlaceholderName { get; set; }
         public string RecognitionProgramMultiplePath { get; set; }
+        public string LogoFolderPath { get; set; }
     }
 }

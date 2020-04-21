@@ -13,7 +13,7 @@ namespace AttendanceSystemIPCamera.Framework.Validators
         {
             public CreateGroupValidator()
             {
-                RuleFor(group => group.Code).NotNull().NotEmpty().Length(3, 100);
+                RuleFor(group => group.Code).NotNull().NotEmpty().Length(1, 50);
                 RuleFor(group => group.Name).NotNull().NotEmpty().Length(3, 100);
                 RuleFor(group => group.TotalSession).NotNull().GreaterThan(0).LessThan(100);
                 RuleFor(group => group.Attendees).NotNull().NotEmpty();
@@ -24,7 +24,7 @@ namespace AttendanceSystemIPCamera.Framework.Validators
         {
             public UpdateGroupValidator()
             {
-                RuleFor(group => group.Code).NotNull().NotEmpty().Length(3, 100);
+                RuleFor(group => group.Code).NotNull().NotEmpty().Length(1, 50);
                 RuleFor(group => group.Name).NotNull().NotEmpty().Length(3, 100);
                 RuleFor(group => group.TotalSession).NotNull().GreaterThan(0).LessThan(100);
             }
