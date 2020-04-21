@@ -69,7 +69,7 @@ class TakeAttendanceModal extends React.PureComponent<ModalProps, TakeAttendance
 	private onOkModel = async () => {
 		let startTime = this.props.startTime;
 		let endTime = this.props.endTime;
-		if (startTime.isSameOrAfter(endTime) || minutesOfDay(startTime) < minutesOfDay(moment())){
+		if (startTime.isSameOrAfter(endTime) || minutesOfDay(startTime) < minutesOfDay(moment())) {
 			error("Start time and end time is not suitable")
 		}
 		else {
@@ -84,8 +84,13 @@ class TakeAttendanceModal extends React.PureComponent<ModalProps, TakeAttendance
 				endTime: this.props.endTime.format('YYYY-MM-DD HH:mm'),
 				multiple: false
 			})
-			if (data.success == false){
-				error("Error while taking attendance, please try again")
+			if (data.success == false) {
+				if (this.props.activeSession) {
+					error(`Error while taking attendance at room ${this.props.activeSession.room.name}, please try again`)
+				}
+				else {
+					error("Error while taking attendance, please try again")
+				}
 			}
 			this.props.startTakingAttendance(null);
 			this.props.endTakingAttendance();
@@ -112,28 +117,28 @@ class TakeAttendanceModal extends React.PureComponent<ModalProps, TakeAttendance
 	}
 	public render() {
 		return (
-				<Modal
+			<Modal
 				title="Start taking attendance"
 				visible={this.props.visible}
 				onCancel={() => this.props.onClose()}
-					onOk={this.onOkModel} okText="Start">
-					<Row justify="start" style={{ marginTop: 5 }} type="flex" align="middle" gutter={[0, 0]}>
-						<Col span={12}>
-							<span style={{ marginRight: 5 }}>Start time</span>
+				onOk={this.onOkModel} okText="Start">
+				<Row justify="start" style={{ marginTop: 5 }} type="flex" align="middle" gutter={[0, 0]}>
+					<Col span={12}>
+						<span style={{ marginRight: 5 }}>Start time</span>
 						<TimePicker onChange={this.props.onChangeStartTime} value={this.props.startTime} format="HH:mm" disabledHours={this.getDisableHours} disabledMinutes={this.getDisableMinutes} />
-						</Col>
-						<Col span={12}>
-							<span style={{ marginRight: 5 }}>End time</span>
+					</Col>
+					<Col span={12}>
+						<span style={{ marginRight: 5 }}>End time</span>
 						<TimePicker onChange={this.props.onChangeEndTime} value={this.props.endTime} format="HH:mm" disabledHours={this.getDisableHours} disabledMinutes={this.getDisableMinutes} />
-						</Col>
-					</Row>
-					{this.state.isError ? 
-					<Row style={{marginTop: 15}} >
+					</Col>
+				</Row>
+				{this.state.isError ?
+					<Row style={{ marginTop: 15 }} >
 						<Col>
-							<p style={{color: "red"}}>* Start time and end time is not suitable</p>
+							<p style={{ color: "red" }}>* Start time and end time is not suitable</p>
 						</Col>
 					</Row> : null}
-				</Modal>
+			</Modal>
 		);
 	}
 }
