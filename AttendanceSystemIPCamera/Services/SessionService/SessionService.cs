@@ -38,6 +38,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         SessionViewModel GetSessionByIdWithRoom(int id);
         Task<SessionViewModel> UpdateRoom(int sessionId, int roomId);
         void RemoveUnknownImage(int sessionId, string image);
+        Task FinishSessions();
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -617,6 +618,28 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         public void RemoveUnknownImage(int sessionId, string image)
         {
             sessionRepository.RemoveSessionUnkownImage(sessionId, image, cfg.UnknownFolderPath);
+        }
+
+        public async Task FinishSessions()
+        {
+            try
+            {
+                var sessionsNeedToFinish = sessionRepository
+                            .GetSessionsNeedToFinish();
+                foreach (var session in sessionsNeedToFinish)
+                {
+                    session.Status = Constants.SessionStatus.FINISHED;
+                }
+                if (sessionsNeedToFinish.Count > 0)
+                {
+                    unitOfWork.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.ToString());
+                throw ex;
+            }
         }
     }
 }

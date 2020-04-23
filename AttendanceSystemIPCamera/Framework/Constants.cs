@@ -15,6 +15,7 @@ namespace AttendanceSystemIPCamera.Framework
             public const string GET_DATA_BY_ATTENDEE_CODE = "3";
             public const long DEFAULT_SYNC_MILISECONDS = 24 * 60 * 60 * 1000;
             public const int DEFAULT_CHECK_SCHEDULED_SESSION = 3; //minute
+            public const int DEFAULT_CHECK_FINISH_SESSION = 3; //minute
 
 
             public const string AES_KEY_PATH = "aes";
