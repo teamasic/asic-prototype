@@ -31,46 +31,9 @@ namespace AttendanceSystemIPCamera.BackgroundServices
 
             RegisterSyncTask(stoppingToken);
 
-            RegisterScheduleTask(stoppingToken);
-
-            RegisterFinishSessionTask(stoppingToken);
+            RegisterUpdateTaskStatus(stoppingToken);
 
             await Task.CompletedTask;
-        }
-
-        private void RegisterFinishSessionTask(CancellationToken stoppingToken)
-        {
-            var finishSessionTask = Task.Factory.StartNew(async () =>
-            {
-                await Task.Delay(new TimeSpan(0, 0, 30), stoppingToken);
-                logger.LogInformation("Finish session task executing - {0}", DateTime.Now);
-                await HandleFinishSessionOperation();
-
-                var waitingTime = new TimeSpan(0, Constant.DEFAULT_CHECK_FINISH_SESSION, 0);
-
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    await Task.Delay(waitingTime, stoppingToken);
-                    logger.LogInformation("Finish session task executing - {0}", DateTime.Now);
-                    await HandleFinishSessionOperation();
-                }
-            }, stoppingToken);
-        }
-
-        private async Task HandleFinishSessionOperation()
-        {
-            try
-            {
-                using (var scope = serviceScopeFactory.CreateScope())
-                {
-                    var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
-                    await sessionService.FinishSessions();
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Finish session error: " + ex);
-            }
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -118,13 +81,13 @@ namespace AttendanceSystemIPCamera.BackgroundServices
             }, stoppingToken);
         }
 
-        private void RegisterScheduleTask(CancellationToken stoppingToken)
+        private void RegisterUpdateTaskStatus(CancellationToken stoppingToken)
         {
             var activateScheduleTask = Task.Factory.StartNew(async () =>
             {
                 await Task.Delay(new TimeSpan(0, 0, 30), stoppingToken);
                 logger.LogInformation("Activate schedule task executing - {0}", DateTime.Now);
-                await HandleActivateScheduleOperation();
+                await HandleSessionStatusChange();
 
                 var waitingTime = new TimeSpan(0, Constant.DEFAULT_CHECK_SCHEDULED_SESSION, 0);
 
@@ -132,7 +95,7 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                 {
                     await Task.Delay(waitingTime, stoppingToken);
                     logger.LogInformation("Activate schedule task executing - {0}", DateTime.Now);
-                    await HandleActivateScheduleOperation();
+                    await HandleSessionStatusChange();
                 }
             }, stoppingToken);
 
@@ -171,15 +134,15 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                 logger.LogError("Sync Error: " + ex);
             }
         }
-        private async Task HandleActivateScheduleOperation()
+        private async Task HandleSessionStatusChange()
         {
             try
             {
-                using (var scope = serviceScopeFactory.CreateScope())
-                {
-                    var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
-                    await sessionService.ActivateScheduledSession();
-                }
+                using var scope = serviceScopeFactory.CreateScope();
+                var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
+                await sessionService.ActivateScheduledSession(); // scheduled -> in-progress
+                sessionService.ChangeSessionsToEditable(); // in-progress -> editable
+                sessionService.FinishSessions(); // editable -> finished
             }
             catch (Exception ex)
             {

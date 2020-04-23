@@ -38,7 +38,8 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         SessionViewModel GetSessionByIdWithRoom(int id);
         Task<SessionViewModel> UpdateRoom(int sessionId, int roomId);
         void RemoveUnknownImage(int sessionId, string image);
-        Task FinishSessions();
+        void FinishSessions();
+        void ChangeSessionsToEditable();
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -620,17 +621,38 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             sessionRepository.RemoveSessionUnkownImage(sessionId, image, cfg.UnknownFolderPath);
         }
 
-        public async Task FinishSessions()
+        public void FinishSessions()
         {
             try
             {
                 var sessionsNeedToFinish = sessionRepository
-                            .GetSessionsNeedToFinish();
+                            .GetSessionsNeedToFinish(otherSettingsService.Settings.EditableDurationBeforeFinished);
                 foreach (var session in sessionsNeedToFinish)
                 {
                     session.Status = Constants.SessionStatus.FINISHED;
                 }
                 if (sessionsNeedToFinish.Count > 0)
+                {
+                    unitOfWork.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.ToString());
+                throw ex;
+            }
+        }
+
+        public void ChangeSessionsToEditable()
+        {
+            try
+            {
+                var sessionsNeedToBecomeEditable = sessionRepository.GetSessionsNeedToBecomeEditable();
+                foreach (var session in sessionsNeedToBecomeEditable)
+                {
+                    session.Status = Constants.SessionStatus.FINISHED;
+                }
+                if (sessionsNeedToBecomeEditable.Count > 0)
                 {
                     unitOfWork.Commit();
                 }
