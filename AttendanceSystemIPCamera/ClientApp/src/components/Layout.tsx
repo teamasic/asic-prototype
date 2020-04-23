@@ -91,10 +91,11 @@ class PageLayout extends React.Component<
 				>
 					<div className="logo" >
 						<img
-							src="api/logo/asic logo.png"
+							src="api/logo/asic logo.jpg"
 							style={{
 								backgroundSize: 'contain',
-								backgroundPosition: 'center'
+								backgroundPosition: 'center',
+								borderRadius: '5px'
 							}} />
 					</div>
 					<Menu theme="dark"
