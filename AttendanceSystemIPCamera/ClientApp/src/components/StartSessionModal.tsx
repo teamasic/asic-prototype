@@ -52,13 +52,16 @@ class StartSessionModal extends React.PureComponent<StartSessionModalProps> {
         }
         else {
             const groupCode = this.props.group.code;
-            let currentSession = this.props.units[sessionIndex];
+            const currentSession = this.props.units[sessionIndex];
+            const startTime = currentSession.startTime;
+            const endTime = currentSession.endTime;
+            const name = currentSession.name;
             const data = await createSession({
                 groupCode,
                 roomId,
-                startTime: currentSession.startTime,
-                endTime: currentSession.endTime,
-                name: currentSession.name
+                startTime,
+                endTime,
+                name
             });
             if (data != null && data.data != null) {
                 this.handleModelCancel();
@@ -71,7 +74,9 @@ class StartSessionModal extends React.PureComponent<StartSessionModalProps> {
                 }
             }
             else {
-                error("Session with this unit existed")
+                const startTimeDate = new Date(startTime);
+                let errorMessage = `Session is already created for ${groupCode} at ${currentSession.name} ${startTimeDate.getDate()}/${startTimeDate.getMonth() + 1}/${startTimeDate.getFullYear()}`;
+                error(errorMessage)
             }
         }
 
