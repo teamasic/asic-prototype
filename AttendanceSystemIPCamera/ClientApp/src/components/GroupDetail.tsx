@@ -207,7 +207,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                     <TabPane tab="Schedule" key="2">
                         <Schedule/>
                     </TabPane>
-                    <TabPane tab="Past Session" key="3">
+                    <TabPane tab="Session List" key="3">
                         <PastSession group={this.props.selectedGroup} redirect={url => this.redirect(url)} />
                     </TabPane>
                 </Tabs>

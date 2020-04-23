@@ -67,3 +67,12 @@
 .take-attendance-multiple-button {
 	margin-left: 10px;
 }
+
+.ant-radio-disabled .ant-radio-inner::after {
+	background-color: #1890ff !important;
+}
+
+.ant-radio-disabled .ant-radio-inner {
+	border-color: #1890ff !important;
+	cursor: not-allowed;
+}
