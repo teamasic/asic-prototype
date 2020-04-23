@@ -38,6 +38,7 @@ namespace AttendanceSystemIPCamera.Repositories
         Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
         Session GetByIdWithRoom(int id);
         void RemoveSessionUnkownImage(int sessionId, string image, string unknownFolderPath);
+        List<Session> GetSessionsNeedToFinish();
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
@@ -200,6 +201,12 @@ namespace AttendanceSystemIPCamera.Repositories
         public Session GetByIdWithRoom(int id)
         {
             return Get(s => s.Id == id, includeProperties: "Room").FirstOrDefault();
+        }
+
+        public List<Session> GetSessionsNeedToFinish()
+        {
+            return Get(s => s.Status == SessionStatus.IN_PROGRESS && DateTime.Now >= s.StartTime,
+                    includeProperties: "Group,Room").ToList();
         }
     }
 }
