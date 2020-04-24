@@ -179,10 +179,8 @@ namespace AttendanceSystemIPCamera.Repositories
         public Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime)
         {
             var compareTime = DateTime.Now.Add(activatedTimeBeforeStartTime);
-            return dbSet.Where(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime)
-                .Include(s => s.Group)
-                .Include(s => s.Room)
-                .LastOrDefault();
+            return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime,
+                includeProperties: "Room,Group").LastOrDefault();
         }
 
         public void RemoveSessionUnkownImage(int sessionId, string image, string unknownFolderPath)
