@@ -14,6 +14,7 @@ import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typo
 import { formatFullDateTimeString, success, error } from '../utils';
 import classNames from 'classnames';
 import { createBrowserHistory } from 'history';
+import SessionStatusConstants from "../constants/SessionStatusConstants";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -36,18 +37,16 @@ type StartSessionModalProps = Props &
     RouteComponentProps<{}>; // ... plus incoming routing parameters
 
 class StartSessionModal extends React.PureComponent<StartSessionModalProps> {
+
     public state = {
         sessionIndex: -1,
         roomId: -1,
-        isError: false
+        isError: false,
     };
 
     private handleModelOk = async () => {
         const { roomId, sessionIndex } = { ...this.state };
         if (roomId == -1 || sessionIndex == -1) {
-            // this.setState({
-            //     isError: true
-            // })
            error("Please choose room and unit")
         }
         else {
@@ -69,8 +68,12 @@ class StartSessionModal extends React.PureComponent<StartSessionModalProps> {
                 this.setState({
                     isError: false
                 });
-                if (sessionId != null) {
-                    this.props.redirect(`session/${sessionId}`);
+                success(`Session is created for ${groupCode} with status ${data.data.status}`)
+                if (data.data.status == SessionStatusConstants.SCHEDULED){
+                    window.location.href = `/group/${groupCode}?tab=2`
+                }
+                else {
+                    this.props.redirect(`/session/${sessionId}`);
                 }
             }
             else {
