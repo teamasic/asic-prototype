@@ -102,7 +102,28 @@ class ChangeRequestModal extends React.PureComponent<ModalProps> {
                     <span className="status">Unresolved</span>
                 </>;
                 break;
+            case ChangeRequestStatus.EXPIRED:
+                status = <>
+                    <Icon type="stop" />
+                    <span className="status">Expired</span>
+                </>;
+                break;
         }
+        const closeButton = <Button key="close"
+                onClick={() => this.props.onClose()}>
+                Close
+            </Button>;
+        const approveButton = <Button key="submit"
+                        disabled={cr.status === ChangeRequestStatus.APPROVED}
+                        type="primary" onClick={() => this.confirmApprove()}>
+                        Approve
+                    </Button>;
+        const rejectButton = <Button key="back"
+                        type="danger"
+                        disabled={cr.status === ChangeRequestStatus.REJECTED}
+                        onClick={() => this.confirmReject()}>
+                        Reject
+                    </Button>;
         return (
             <Modal
                 title="Change request details"
@@ -110,19 +131,8 @@ class ChangeRequestModal extends React.PureComponent<ModalProps> {
                 visible={this.props.visible}
                 onOk={() => { }}
                 onCancel={() => this.props.onClose()}
-                footer={[
-                    <Button key="submit"
-                        disabled={cr.status === ChangeRequestStatus.APPROVED}
-                        type="primary" onClick={() => this.confirmApprove()}>
-                        Approve
-                    </Button>,
-                    <Button key="back"
-                        type="danger"
-                        disabled={cr.status === ChangeRequestStatus.REJECTED}
-                        onClick={() => this.confirmReject()}>
-                        Reject
-                    </Button>
-                ]}
+                footer={cr.status === ChangeRequestStatus.EXPIRED ?
+                    [closeButton] : [approveButton, rejectButton]}
             >
                 <Row className="info-wrapper">
                     <Col span={4}><span className="label shifted-down">Group:</span></Col>

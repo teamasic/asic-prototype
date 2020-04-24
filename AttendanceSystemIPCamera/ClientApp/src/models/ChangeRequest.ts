@@ -1,7 +1,8 @@
 ﻿export enum ChangeRequestStatus {
     UNRESOLVED = 0,
     APPROVED = 1,
-    REJECTED = 2
+    REJECTED = 2,
+    EXPIRED = 3
 };
 
 export enum ChangeRequestStatusFilter {

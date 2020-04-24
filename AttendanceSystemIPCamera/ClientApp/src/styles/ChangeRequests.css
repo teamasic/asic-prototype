@@ -72,3 +72,8 @@
 .badge.unresolved {
     background: #8c8c8c;
 }
+
+.badge.expired {
+    background: #f0f0f0;
+    color: #8c8c8c;
+}

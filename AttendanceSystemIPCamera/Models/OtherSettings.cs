@@ -9,5 +9,6 @@ namespace AttendanceSystemIPCamera.Models
     {
         public int Start { get; set; }
         public TimeSpan ActivatedTimeOfScheduleBeforeStartTime { get; set; }
+        public TimeSpan EditableDurationBeforeFinished { get; set; }
     }
 }
