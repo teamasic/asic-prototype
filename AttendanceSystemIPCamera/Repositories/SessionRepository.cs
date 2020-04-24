@@ -179,7 +179,9 @@ namespace AttendanceSystemIPCamera.Repositories
         public Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime)
         {
             var compareTime = DateTime.Now.Add(activatedTimeBeforeStartTime);
-            return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime)
+            return dbSet.Where(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime)
+                .Include(s => s.Group)
+                .Include(s => s.Room)
                 .LastOrDefault();
         }
 
