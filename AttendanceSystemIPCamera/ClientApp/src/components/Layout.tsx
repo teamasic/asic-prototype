@@ -91,7 +91,7 @@ class PageLayout extends React.Component<
 				>
 					<div className="logo" >
 						<img
-							src="api/logo/asic logo.jpg"
+							src="asic_logo.jpg"
 							style={{
 								backgroundSize: 'contain',
 								backgroundPosition: 'center',
