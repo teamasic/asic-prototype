@@ -235,7 +235,9 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				markAsPresent={this.markAsPresent}
 				isSessionEditable={this.isSessionEditable()}
 			/>
-			<UnknownSection sessionId={this.state.sessionId}
+			<UnknownSection
+				sessionId={this.state.sessionId}
+				editable={this.isSessionEditable()}
 				markAsPresent={this.markAsPresent} />
 		</div>
 	}

@@ -25,6 +25,7 @@ interface State {
 
 interface Props {
     sessionId: number;
+    editable: boolean;
     markAsPresent: (attendeeCode: string) => void;
 }
 
@@ -99,25 +100,29 @@ class UnknownSection extends React.PureComponent<UnknownProps, State>{
                                     className="attendee-box grid-element">
                                     <div className="inner-box">
                                         {this.getImageBox(`url(/api/unknown/${img})`)}
-                                        <div className="inner-box-actions">
-                                            <Tooltip title="Remove this image">
-                                                <Button
-                                                    onClick={() => this.removeImage(img)}
-                                                    size="small"
-                                                    type="danger"
-                                                    shape="circle"
-                                                    icon="close" />
-                                            </Tooltip>
-                                            <Tooltip title="Mark attendee present">
-                                                <Button
-                                                    onClick={() => this.openUnknownModal(img)}
-                                                    className=""
-                                                    type="primary"
-                                                    size="small"
-                                                    shape="circle"
-                                                    icon="issues-close" />
-                                            </Tooltip>
-                                        </div>
+                                        {
+                                            this.props.editable ? 
+                                                <div className="inner-box-actions">
+                                                    <Tooltip title="Remove this image">
+                                                        <Button
+                                                            onClick={() => this.removeImage(img)}
+                                                            size="small"
+                                                            type="danger"
+                                                            shape="circle"
+                                                            icon="close" />
+                                                    </Tooltip>
+                                                    <Tooltip title="Mark attendee present">
+                                                        <Button
+                                                            onClick={() => this.openUnknownModal(img)}
+                                                            className=""
+                                                            type="primary"
+                                                            size="small"
+                                                            shape="circle"
+                                                            icon="issues-close" />
+                                                    </Tooltip>
+                                                </div>
+                                                : <></>
+                                        }
                                     </div>
                                 </div>
                             )

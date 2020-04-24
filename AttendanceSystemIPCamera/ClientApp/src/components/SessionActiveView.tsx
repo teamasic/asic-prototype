@@ -62,8 +62,10 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 				<PresentSection sessionId={this.props.sessionId} 
 				markAsAbsent={this.props.markAsAbsent}  />
 
-				<UnknownSection sessionId={this.props.sessionId} 
-				markAsPresent={this.props.markAsPresent} />
+				<UnknownSection
+					editable={true}
+					sessionId={this.props.sessionId} 
+					markAsPresent={this.props.markAsPresent} />
 				
 			</div>
 		);
