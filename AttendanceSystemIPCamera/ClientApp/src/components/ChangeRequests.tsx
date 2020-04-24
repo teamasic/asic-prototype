@@ -157,6 +157,8 @@ class ChangeRequests extends React.PureComponent<ChangeRequestsComponentProps, C
                             return <span className="badge rejected">Rejected</span>;
                         case ChangeRequestStatus.UNRESOLVED:
                             return <span className="badge unresolved">Unresolved</span>;
+                        case ChangeRequestStatus.EXPIRED:
+                            return <span className="badge expired">Expired</span>;
                         default:
                             return <div></div>;
                     }

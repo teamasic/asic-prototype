@@ -38,7 +38,8 @@ namespace AttendanceSystemIPCamera.Repositories
         Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
         Session GetByIdWithRoom(int id);
         void RemoveSessionUnkownImage(int sessionId, string image, string unknownFolderPath);
-        List<Session> GetSessionsNeedToFinish();
+        List<Session> GetSessionsNeedToFinish(TimeSpan editableDurationBeforeFinished);
+        List<Session> GetSessionsNeedToBecomeEditable();
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
@@ -178,8 +179,9 @@ namespace AttendanceSystemIPCamera.Repositories
         public Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime)
         {
             var compareTime = DateTime.Now.Add(activatedTimeBeforeStartTime);
-            return Get(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime,
-                    includeProperties: "Group,Room")
+            return dbSet.Where(s => s.Status == SessionStatus.SCHEDULED && compareTime >= s.StartTime)
+                .Include(s => s.Group)
+                .Include(s => s.Room)
                 .LastOrDefault();
         }
 
@@ -203,10 +205,15 @@ namespace AttendanceSystemIPCamera.Repositories
             return Get(s => s.Id == id, includeProperties: "Room").FirstOrDefault();
         }
 
-        public List<Session> GetSessionsNeedToFinish()
+        public List<Session> GetSessionsNeedToFinish(TimeSpan editableDurationBeforeFinished)
         {
-            return Get(s => s.Status == SessionStatus.IN_PROGRESS && DateTime.Now >= s.StartTime,
-                    includeProperties: "Group,Room").ToList();
+            var cutoffTime = DateTime.Now.Subtract(editableDurationBeforeFinished);
+            return Get(s => s.Status == SessionStatus.EDITABLE && s.StartTime <= cutoffTime,
+                includeProperties: "Records,Records.ChangeRequest").ToList();
+        }
+        public List<Session> GetSessionsNeedToBecomeEditable()
+        {
+            return Get(s => s.Status == SessionStatus.IN_PROGRESS && DateTime.Now >= s.EndTime).ToList();
         }
     }
 }

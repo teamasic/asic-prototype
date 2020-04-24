@@ -10,7 +10,8 @@ namespace AttendanceSystemIPCamera.Models
     {
         UNRESOLVED = 0,
         APPROVED = 1,
-        REJECTED = 2
+        REJECTED = 2,
+        EXPIRED = 3
     }
     public partial class ChangeRequest
     {

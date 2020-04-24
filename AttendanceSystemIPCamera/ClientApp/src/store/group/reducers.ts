@@ -31,7 +31,7 @@ const unloadedState: GroupsState = {
                 name: 'None',
                 cameraConnectionString: ''
             },
-            status: ""
+            status: 'IN_PROGRESS'
         }]
     }
 };

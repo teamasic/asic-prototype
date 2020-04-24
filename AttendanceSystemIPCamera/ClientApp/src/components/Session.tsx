@@ -28,6 +28,7 @@ import { RoomsState } from '../store/room/state';
 import Room from '../models/Room';
 import { roomActionCreators } from '../store/room/actionCreators';
 import UnknownSection from './UnknownSection';
+import SessionStatus from '../models/SessionStatus';
 const { Title } = Typography;
 const { Option } = AutoComplete
 
@@ -170,10 +171,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 	}
 
 	private renderSessionSection() {
-		const isThisSessionOngoing = this.props.currentlyOngoingSession &&
-			this.props.currentlyOngoingSession.id === this.props.activeSession!.id;
-
-		const sessionView = isThisSessionOngoing ?
+		const sessionView = this.isSessionCurrentlyOngoing() ?
 			this.renderSessionActiveView() :
 			this.renderSessionTableView();
 
@@ -210,7 +208,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 							(
 								<div>
 									<span>Room {this.props.activeSession!.room.name}</span>
-									{this.IsValidToTakeAttendanceAutomatically() ?
+									{this.isSessionEditable() ?
 										<>
 											<Tooltip title="Change room">
 												<EditTwoTone onClick={this.onUpdateRoom} />
@@ -235,6 +233,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				sessionId={this.state.sessionId}
 				markAsAbsent={this.markAsAbsent}
 				markAsPresent={this.markAsPresent}
+				isSessionEditable={this.isSessionEditable()}
 			/>
 			<UnknownSection sessionId={this.state.sessionId}
 				markAsPresent={this.markAsPresent} />
@@ -253,15 +252,15 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		return <Empty></Empty>;
 	}
 
+	private isSessionCurrentlyOngoing() {
+		return this.props.currentlyOngoingSession != null &&
+			this.props.currentlyOngoingSession.id === this.props.activeSession!.id;
+	}
 
-	private IsValidToTakeAttendanceAutomatically() {
-		if (this.props.activeSession) {
-			const now = new Date();
-			if (compareDate(now, this.props.activeSession.endTime) != 1) {
-				return true;
-			}
-		}
-		return false;
+	private isSessionEditable() {
+		return this.props.activeSession != null &&
+			this.props.activeSession.status === SessionStatus.IN_PROGRESS &&
+			!this.isSessionCurrentlyOngoing();
 	}
 }
 

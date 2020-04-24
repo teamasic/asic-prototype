@@ -14,5 +14,5 @@ export default interface Session {
     active: boolean;
     groupCode?: string;
     room: Room;
-    status: string
+    status: string;
 }

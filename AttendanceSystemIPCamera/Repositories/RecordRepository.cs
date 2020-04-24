@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Framework.ViewModels;
 using AttendanceSystemIPCamera.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -68,7 +69,8 @@ namespace AttendanceSystemIPCamera.Repositories
         public List<Record> GetAttendanceDataForSync(DateTime fromTime, DateTime toTime)
         {
             var data = Get(r => (r.StartTime >= fromTime && r.StartTime <= toTime) // from <= start <= to
-                                    || (r.UpdateTime >= fromTime && r.UpdateTime <= toTime), //from <= update <= to
+                                    || (r.UpdateTime >= fromTime && r.UpdateTime <= toTime) //from <= update <= to
+                                    || r.Session.Status.Equals(Constants.SessionStatus.FINISHED),
                 includeProperties: "AttendeeGroup,AttendeeGroup.Group,Session").ToList();
             return data;
         }
