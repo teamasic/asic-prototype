@@ -206,7 +206,8 @@ namespace AttendanceSystemIPCamera.Repositories
         public List<Session> GetSessionsNeedToFinish(TimeSpan editableDurationBeforeFinished)
         {
             var cutoffTime = DateTime.Now.Subtract(editableDurationBeforeFinished);
-            return Get(s => s.Status == SessionStatus.EDITABLE && s.StartTime <= cutoffTime).ToList();
+            return Get(s => s.Status == SessionStatus.EDITABLE && s.StartTime <= cutoffTime,
+                includeProperties: "Records,Records.ChangeRequest").ToList();
         }
         public List<Session> GetSessionsNeedToBecomeEditable()
         {

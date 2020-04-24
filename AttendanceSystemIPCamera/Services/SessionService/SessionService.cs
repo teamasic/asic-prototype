@@ -630,6 +630,13 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 foreach (var session in sessionsNeedToFinish)
                 {
                     session.Status = Constants.SessionStatus.FINISHED;
+                    foreach (var record in session.Records)
+                    {
+                        if (record.ChangeRequest != null && record.ChangeRequest.Status == ChangeRequestStatus.UNRESOLVED)
+                        {
+                            record.ChangeRequest.Status = ChangeRequestStatus.EXPIRED;
+                        }
+                    }
                 }
                 if (sessionsNeedToFinish.Count > 0)
                 {
