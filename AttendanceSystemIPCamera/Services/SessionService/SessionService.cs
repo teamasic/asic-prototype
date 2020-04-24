@@ -380,6 +380,19 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             {
                 var newSession = mapper.Map<Session>(sessionStarterViewModel);
                 newSession.Group = await groupRepository.GetByCode(sessionStarterViewModel.GroupCode);
+                var currentDateTime = DateTime.Now;
+                if (currentDateTime < newSession.StartTime)
+                {
+                    newSession.Status = Constants.SessionStatus.SCHEDULED;
+                }
+                else if (currentDateTime >= newSession.StartTime && DateTime.Now <= newSession.EndTime)
+                {
+                    newSession.Status = Constants.SessionStatus.IN_PROGRESS;
+                }
+                else
+                {
+                    newSession.Status = Constants.SessionStatus.EDITABLE;
+                }
                 return mapper.Map<SessionViewModel>(await Add(newSession));
             }
         }

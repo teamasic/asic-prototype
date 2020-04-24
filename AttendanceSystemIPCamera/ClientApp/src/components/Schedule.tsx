@@ -46,6 +46,11 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
     public componentDidMount() {
         this.loadSchedules();
     }
+    componentDidUpdate(prevProps: Readonly<ScheduleProps>, prevState: Readonly<ScheduleComponentState>, snapshot?: any): void {
+        if (prevProps.selectedGroup.code != this.props.selectedGroup.code){
+            this.loadSchedules();
+        }
+    }
 
     private openModal = () => {
         this.setState({ modalVisible: true });
@@ -147,13 +152,16 @@ class Schedule extends React.PureComponent<ScheduleProps, ScheduleComponentState
     }
 
     private loadSchedules = () => {
-        this.props.requestGetScheduledSessionByGroupCode(this.props.selectedGroup.code, (data: any) => {
-            console.log(data);
-            this.setState({
-                schedules: data,
-                scheduleLoading: false
+        if (this.props.selectedGroup.code != "Loading"){
+            this.props.requestGetScheduledSessionByGroupCode(this.props.selectedGroup.code, (data: any) => {
+                console.log(data);
+                this.setState({
+                    schedules: data,
+                    scheduleLoading: false
+                });
             });
-        });
+        }
+
     }
 }
 
