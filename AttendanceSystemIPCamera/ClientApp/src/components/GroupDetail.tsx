@@ -23,17 +23,20 @@ import TopBar from './TopBar';
 import StartSessionModal from './StartSessionModal';
 import { FormComponentProps } from 'antd/lib/form';
 import Schedule from './Schedule';
+import qs from 'query-string';
 
 const { Title } = Typography;
 const { Paragraph } = Typography
 const { TabPane } = Tabs;
+
 
 interface GroupDetailComponentState {
     modalExportVisible: boolean,
     attendeeLoading: boolean,
     editMaxSession: boolean,
     modalStartSessionVisible: boolean,
-    editGroupName: boolean
+    editGroupName: boolean,
+    tab: string,
 }
 
 // At runtime, Redux will merge together...
@@ -59,15 +62,22 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
             attendeeLoading: true,
             editMaxSession: false,
             modalStartSessionVisible: false,
-            editGroupName: false
+            editGroupName: false,
+            tab: "1",
         }
     }
 
     // This method is called when the component is first added to the document
     public componentDidMount() {
         this.ensureDataFetched();
+        const queryParams = qs.parse(this.props.location.search)
+        const tab = queryParams.tab
+        if (tab == "1" || tab == "2" || tab == "3"){
+            this.setState({
+                tab
+            })
+        }
     }
-
     public editGroupName = (e: any) => {
         this.props.form.validateFields((err: any, values: any) => {
             if(!err) {
@@ -126,6 +136,11 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                 this.props.startUpdateGroup(group, () => {this.setState({editMaxSession: false})});
             }
         });
+    }
+    private handleOnChangeTab = (activeKey: string) => {
+        this.setState({
+            tab: activeKey
+        })
     }
 
     public render() {
@@ -199,7 +214,7 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
                         </Col>
                     </Row>
                 </div>
-                <Tabs defaultActiveKey="1" type="card"
+                <Tabs activeKey={this.state.tab} type="card" onChange={this.handleOnChangeTab}
                     tabBarExtraContent={tabBarExtra}>
                     <TabPane tab="Group Information" key="1">
                         <GroupInfo attendees={this.props.selectedGroup.attendees} attendeeLoading={this.state.attendeeLoading} />
@@ -239,6 +254,8 @@ class GroupDetail extends React.PureComponent<GroupDetailProps, GroupDetailCompo
             this.props.requestUnits();
         }
     }
+
+
 }
 
 export default Form.create<GroupDetailProps>({ name: 'group_detail_form' })

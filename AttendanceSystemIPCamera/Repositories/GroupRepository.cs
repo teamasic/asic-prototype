@@ -69,7 +69,7 @@ namespace AttendanceSystemIPCamera.Repositories
         public async Task<Group> GetByCode(string code)
         {
             return await dbSet
-                .Include(g => g.Sessions)
+                .Include(g => g.Sessions).ThenInclude(s => s.Room)
                 .FirstOrDefaultAsync(g => code.Equals(g.Code));
         }
     }

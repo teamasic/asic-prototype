@@ -13,5 +13,6 @@ export default interface Session {
     records?: Record[];
     active: boolean;
     groupCode?: string;
-    room: Room
+    room: Room;
+    status: string
 }
