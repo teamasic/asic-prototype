@@ -192,7 +192,7 @@ def generate_train_model_softmax():
 
     print("[INFO] training model...")
     logreg = linear_model.LogisticRegression(C=1e5,
-                                             solver='lbfgs', multi_class='multinomial')
+                                             solver='lbfgs', multi_class='multinomial', max_iter=1000)
     logreg.fit(data["embeddings"], labels)
 
     recognizer_model_softmax = {"recognizer": logreg, "le": le}
