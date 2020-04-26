@@ -150,10 +150,12 @@ if __name__ == "__main__":
                 httpString = "http://localhost:{}".format(my_constant.portHttpStream)
             else:
                 httpString = my_service.transfer_rtsp_to_http(rtspString)
-            time.sleep(2.0)
             vs = stream_video.CustomVideoStream(src=httpString)
             if vs.stream.isOpened():
                 isOpenStreamOk = True
+            else:
+                vs.stop()
+                time.sleep(2)
 
         # If cannot connect -> raise exception
         if isOpenStreamOk is False:

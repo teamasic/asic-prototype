@@ -94,7 +94,7 @@ if __name__ == "__main__":
                     help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
     ap.add_argument("-t", "--time", default=120000,
                     help="Time for recognition in video in milliseconds")
-    ap.add_argument("-a", "--attendance", default=True,
+    ap.add_argument("-a", "--attendance", default=False,
                     help="Open video stream for checking attendance or not")
     ap.add_argument("-s", "--sessionId", default=1,
                     help="Session Id")
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     print("[INFO] Warming up...")
     fps = FPS()
     fps.start()
-    pool = multiprocessing.Pool()
+    pool = multiprocessing.Pool(1)
     cannotCallApi = boolean_wrapper.BooleanWrapper(False)
     continueDetect = boolean_wrapper.BooleanWrapper(True)
     connectQueueApiError = Queue()
@@ -142,10 +142,12 @@ if __name__ == "__main__":
                 httpString = "http://localhost:{}".format(my_constant.portHttpStream)
             else:
                 httpString = my_service.transfer_rtsp_to_http(rtspString)
-            time.sleep(2.0)
             vs = stream_video.CustomVideoStream(src=httpString)
             if vs.stream.isOpened():
                 isOpenStreamOk = True
+            else:
+                vs.stop()
+                time.sleep(2)
 
         # If cannot connect -> raise exception
         if isOpenStreamOk is False:
