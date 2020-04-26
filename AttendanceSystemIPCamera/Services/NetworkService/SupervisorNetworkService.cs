@@ -19,6 +19,7 @@ using Newtonsoft.Json;
 using static AttendanceSystemIPCamera.Framework.Constants;
 using AttendanceSystemIPCamera.Framework.AutoMapperProfiles;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AttendanceSystemIPCamera.Services.NetworkService
 {
@@ -31,16 +32,20 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
         private IChangeRequestService changeRequestService;
         private ISessionService sessionService;
         private IAttendeeService attendeeService;
-        private IMapper mapper;
 
         private IServiceScopeFactory serviceScopeFactory;
 
         private Communicator communicator;
 
-        public SupervisorNetworkService(IServiceScopeFactory serviceScopeFactory, IMapper mapper)
+        private ILogger<SupervisorNetworkService> logger;
+        private IMapper mapper;
+
+        public SupervisorNetworkService(IServiceScopeFactory serviceScopeFactory, IMapper mapper,
+            ILogger<SupervisorNetworkService> logger)
         {
             this.serviceScopeFactory = serviceScopeFactory;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         public void Start()
@@ -49,7 +54,6 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             {
                 localServer = new UdpClient(NetworkUtils.RunningPort);
             }
-
             while (true)
             {
                 var remoteHostEP = new IPEndPoint(IPAddress.Any, 0);
@@ -73,9 +77,6 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                         var networkRequest = JsonConvert.DeserializeObject<NetworkRequest<object>>(msg);
                         switch (networkRequest.Route)
                         {
-                            case NetworkRoute.LOGIN:
-                                Login(msg);
-                                break;
                             case NetworkRoute.REFRESH_ATTENDANCE_DATA:
                                 Refresh(msg);
                                 break;
@@ -83,19 +84,19 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
                                 ChangeRequest(msg);
                                 break;
                             default:
-                                //throw new exception
-                                break;
+                                throw new Exception(ErrorMessage.ROUTE_NOT_MATCH);
                         }
                     }
                     catch (Exception e)
                     {
-                        var trace = e.StackTrace;
+                        logger.LogError(e.ToString());
+                        Send(e.Message);
                     }
                 }
             }
         }
 
-        private void Login(string msg)
+        protected void Refresh(string msg)
         {
             var networkData = JsonConvert.DeserializeObject<NetworkRequest<LoginViewModel>>(msg);
             (bool success, Attendee attendee) = ValidateAttendee(networkData.Request);
@@ -114,18 +115,7 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             Send(attendanceData);
         }
 
-        private void Send(object data)
-        {
-            var repsonse = JsonConvert.SerializeObject(data);
-            communicator.Send(Encoding.UTF8.GetBytes(repsonse));
-        }
-
-        private void Refresh(string msg)
-        {
-            Login(msg);
-        }
-
-        private async void ChangeRequest(string msg)
+        protected async void ChangeRequest(string msg)
         {
             var networkData = JsonConvert.DeserializeObject<NetworkRequest<CreateChangeRequestNetworkViewModel>>(msg);
             var createChangeRequest = networkData.Request;
@@ -141,12 +131,18 @@ namespace AttendanceSystemIPCamera.Services.NetworkService
             }
         }
 
+        private void Send(object data)
+        {
+            var repsonse = JsonConvert.SerializeObject(data);
+            communicator.Send(Encoding.UTF8.GetBytes(repsonse));
+        }
+
         private (bool success, Attendee attendee) ValidateAttendee(LoginViewModel loginViewModel)
         {
             try
             {
                 Attendee attendee = null;
-                switch (loginViewModel.LoginMethod)
+                switch (loginViewModel.Method)
                 {
                     case Constant.LOGIN_BY_USERNAME_PASSWORD:
                         break;
