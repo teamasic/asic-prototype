@@ -59,6 +59,10 @@ def _face_locations_caffe(image):
 
 def _face_locations_hog(image, numberOfTimesToUpSample = 1):
     boxes = face_recognition.face_locations(image, model="hog", number_of_times_to_upsample=numberOfTimesToUpSample)
+    for box in boxes:
+        top, right, bottom, left = box
+        print("width: ", str(right - left))
+        print("height: ", str(bottom - top))
     return boxes
 
 

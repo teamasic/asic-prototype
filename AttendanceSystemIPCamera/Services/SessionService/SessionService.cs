@@ -410,20 +410,29 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
             else
             {
-                sessionRepository.SetActiveSession(viewModel.SessionId, cfg.UnknownFolderPath);
-                if (viewModel.Multiple)
+                try
                 {
-                    await recognitionService.StartRecognitionMultiple(session.Room.CameraConnectionString, viewModel.SessionId);
+                    sessionRepository.SetActiveSession(viewModel.SessionId, cfg.UnknownFolderPath);
+                    if (viewModel.Multiple)
+                    {
+                        await recognitionService.StartRecognitionMultiple(session.Room.CameraConnectionString, viewModel.SessionId);
+                    }
+                    else
+                    {
+                        var durationBeforeStartInSecond = GetDurationBeforeStartInSecond(viewModel.StartTime);
+                        var durationWhileRunningInSecond = GetDurationWhileRunningInSecond(viewModel.StartTime, viewModel.EndTime);
+                        await recognitionService.StartRecognition(durationBeforeStartInSecond,
+                                                            durationWhileRunningInSecond, session.Room.CameraConnectionString,
+                                                            viewModel.SessionId);
+                    }
+                    return mapper.Map<SessionViewModel>(session);
                 }
-                else
+                catch (AppException ex)
                 {
-                    var durationBeforeStartInMinutes = GetDurationBeforeStartInMinutes(viewModel.StartTime);
-                    var durationWhileRunningInMinutes = GetDurationWhileRunningInMinutes(viewModel.StartTime, viewModel.EndTime);
-                    await recognitionService.StartRecognition(durationBeforeStartInMinutes,
-                                                        durationWhileRunningInMinutes, session.Room.CameraConnectionString,
-                                                        viewModel.SessionId);
+                    sessionRepository.RemoveActiveSession();
+                    throw ex;
                 }
-                return mapper.Map<SessionViewModel>(session);
+                
             }
         }
 
@@ -459,20 +468,20 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             return sessionRepository.GetPastSessionByGroupCode(groupCode);
         }
 
-        private int GetDurationWhileRunningInMinutes(DateTime startTime, DateTime endTime)
+        private int GetDurationWhileRunningInSecond(DateTime startTime, DateTime endTime)
         {
-            return (int)endTime.Subtract(startTime).TotalMinutes;
+            return (int)endTime.Subtract(startTime).TotalSeconds;
         }
 
-        private int GetDurationBeforeStartInMinutes(DateTime startTime)
+        private int GetDurationBeforeStartInSecond(DateTime startTime)
         {
             var currentTime = DateTime.Now;
-            var timeDifferenceInMinutes = (int)Math.Ceiling(startTime.Subtract(currentTime).TotalMinutes);
-            if (timeDifferenceInMinutes < 0)
+            var timeDifferenceInSecond = (int)startTime.Subtract(currentTime).TotalSeconds - 5;
+            if (timeDifferenceInSecond < -5)
             {
                 throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
             }
-            return timeDifferenceInMinutes;
+            return timeDifferenceInSecond;
         }
 
         public async Task<List<SessionRefactorViewModel>> GetByGroupCodeAndStatus(string groupCode, string status)
