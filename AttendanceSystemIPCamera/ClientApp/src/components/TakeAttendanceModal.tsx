@@ -86,7 +86,7 @@ class TakeAttendanceModal extends React.PureComponent<ModalProps, TakeAttendance
 			})
 			if (data.success == false) {
 				if (this.props.activeSession) {
-					error(`Error while taking attendance at room ${this.props.activeSession.room.name}, please try again`)
+					error(`Error while taking attendance, please check again room ${this.props.activeSession.room.name} or start time, end time of process`)
 				}
 				else {
 					error("Error while taking attendance, please try again")
