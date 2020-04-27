@@ -10,6 +10,8 @@ import createSignalRConnection from './middlewares/SignalRConnection';
 import { attachEvents } from './middlewares/SignalRMiddleware';
 import { config } from "dotenv"
 import { resolve } from "path"
+import ErrorBoundary from 'react-error-boundary';
+import ErrorDisplay from './ErrorDisplay';
 
 config({ path: resolve(__dirname, "../.env") })
 
@@ -23,12 +25,14 @@ const history = createBrowserHistory({ basename: baseUrl });
 const store = configureStore(history);
 const connection = createSignalRConnection();
 attachEvents(connection, store.dispatch);
-connection.start();
+connection.start().catch(err => console.log(err));
 
 ReactDOM.render(
 	<Provider store={store}>
 		<ConnectedRouter history={history}>
-			<App />
+			<ErrorBoundary FallbackComponent={ErrorDisplay}>
+				<App />
+			</ErrorBoundary>
 		</ConnectedRouter>
 	</Provider>,
 	document.getElementById('root')
