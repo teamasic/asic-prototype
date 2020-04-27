@@ -1,0 +1,27 @@
+﻿.badge.in-progress {
+    background: #73d13d;
+}
+
+.badge.editable {
+    background: #faad14;
+}
+
+.badge.finished {
+    background: #8c8c8c;
+}
+
+.status-label {
+    font-weight: bold;
+}
+
+.status-label.in-progress {
+    color: #52c41a;
+}
+
+.status-label.editable {
+    color: #faad14
+}
+
+.status-label.finished {
+    color: #8c8c8c;
+}
