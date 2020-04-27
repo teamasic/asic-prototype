@@ -36,7 +36,7 @@ import '../styles/Table.css';
 import TopBar from './TopBar';
 import TakeAttendanceModal from './TakeAttendanceModal';
 import TableConstants from '../constants/TableConstants';
-import SessionStatus from '../models/SessionStatus';
+import SessionStatusConstants from '../constants/SessionStatusConstants';
 const { Search } = Input;
 const { Title } = Typography;
 
@@ -222,7 +222,7 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				render: (text: string, pair: AttendeeRecordPair) =>
 					<Radio
 						checked={pair.record != null && pair.record.present}
-						disabled={this.props.activeSession!.status === SessionStatus.FINISHED}
+						disabled={this.props.activeSession!.status === SessionStatusConstants.FINISHED}
 						onChange={() => this.props.markAsPresent(pair.attendee.code)}>
 					</Radio>
 			},
@@ -233,7 +233,7 @@ class SessionTableView extends React.PureComponent<SessionProps, State> {
 				render: (text: string, pair: AttendeeRecordPair) =>
 					<Radio
 						checked={pair.record != null && !pair.record.present}
-						disabled={this.props.activeSession!.status === SessionStatus.FINISHED}
+						disabled={this.props.activeSession!.status === SessionStatusConstants.FINISHED}
 						onChange={() => this.props.markAsAbsent(pair.attendee.code)}></Radio>
 			}
 		];
