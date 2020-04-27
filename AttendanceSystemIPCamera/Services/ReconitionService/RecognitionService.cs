@@ -133,7 +133,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
                     process.BeginErrorReadLine();
 
                     // Wait for exit
-                    var exitWait = process.WaitForExit(1000 * (durationSeconds + 2));
+                    var exitWait = process.WaitForExit(1000 * (durationSeconds + 60));
                     if (exitWait)
                     {
                         // ok

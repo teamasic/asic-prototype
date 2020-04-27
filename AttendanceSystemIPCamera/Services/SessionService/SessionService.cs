@@ -476,8 +476,8 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private int GetDurationBeforeStartInSecond(DateTime startTime)
         {
             var currentTime = DateTime.Now;
-            var timeDifferenceInSecond = (int)startTime.Subtract(currentTime).TotalSeconds - 5;
-            if (timeDifferenceInSecond < -5)
+            var timeDifferenceInSecond = (int)startTime.Subtract(currentTime).TotalSeconds - 8;
+            if (timeDifferenceInSecond < -8)
             {
                 throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
             }
