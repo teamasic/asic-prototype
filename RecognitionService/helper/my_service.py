@@ -83,6 +83,8 @@ def generate_more_embeddings(datasetPath, alignFace=False):
 
         # load the image
         image = cv2.imread(imagePath)
+        image = imutils.resize(image, width=400)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         boxes = my_face_detection.face_locations(image)
         if len(boxes) > 1:
             print(imagePath, "> 1")
@@ -223,7 +225,7 @@ def augment_images(datasetDir, augmentedDir, genImageNum=4):
         # load the image, resize it to have a width of 400 pixels (while
         # maintaining the aspect ratio)
         image = cv2.imread(imagePath)
-        image = imutils.resize(image, width=400)
+        # image = imutils.resize(image, width=400)
         if name == "unknown":
             unknown_batch.append(image)
             pass
@@ -240,7 +242,7 @@ def augment_images(datasetDir, augmentedDir, genImageNum=4):
         if name in name_image_dict:
             name_image_dict[name].append(image)
         else:
-            name_image_dict[name] = []
+            name_image_dict[name] = [image]
     # add all unknown images into the dictionary
     name_image_dict["unknown"] = unknown_batch
 
