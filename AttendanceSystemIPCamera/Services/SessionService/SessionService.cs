@@ -679,7 +679,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 var sessionsNeedToBecomeEditable = sessionRepository.GetSessionsNeedToBecomeEditable();
                 foreach (var session in sessionsNeedToBecomeEditable)
                 {
-                    session.Status = Constants.SessionStatus.FINISHED;
+                    session.Status = Constants.SessionStatus.EDITABLE;
                 }
                 if (sessionsNeedToBecomeEditable.Count > 0)
                 {
