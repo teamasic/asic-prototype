@@ -30,13 +30,13 @@ class MenuBar extends React.Component<Props> {
 	render() {
 		const notificationCount = this.props.notifications.filter(n => !n.read).length;
 		return <Content className="menu-bar row">
-				<div className="fullname">{this.props.currentUser.name}</div>
-				<Avatar className="avatar" src={this.props.currentUser.image} />
 				<Dropdown overlay={this.renderNotificationMenu()} trigger={['click']}>
 					<Badge count={notificationCount}>
 					<Icon type="bell" className="notification-icon" />
 					</Badge>
 				</Dropdown>
+				<Avatar className="avatar" src={this.props.currentUser.image} />
+				<div className="fullname">{this.props.currentUser.name}</div>
 			</Content>;
 	}
 
