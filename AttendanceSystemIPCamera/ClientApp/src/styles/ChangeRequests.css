@@ -50,17 +50,6 @@
     padding-left: 0 !important;
 }
 
-.badge {
-    color: white;
-    font-size: 12px;
-    width: 90px;
-    font-weight: 700;
-    text-align: center;
-    display: inline-block;
-    padding: 4px 4px;
-    border-radius: 6px;
-}
-
 .badge.approved {
     background: #95de64;
 }

@@ -25,6 +25,7 @@ namespace AttendanceSystemIPCamera.Framework.AutoMapperProfiles
             CreateMap<Record, RecordViewModel>().ReverseMap();
             CreateMap<AttendeeRecordPair, AttendeeRecordPairViewModel>().ReverseMap();
             CreateMap<AttendeeGroup, AttendeeGroupViewModel>().ReverseMap();
+            CreateMap<AttendeeGroup, AttendeeGroupInSyncViewModel>().ReverseMap();
             CreateMap<Record, RecordNetworkViewModel>().ReverseMap();
             CreateMap<ChangeRequest, ChangeRequestViewModel>().ReverseMap();
             CreateMap<ChangeRequest, ChangeRequestSimpleViewModel>().ReverseMap();

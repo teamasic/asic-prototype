@@ -86,3 +86,14 @@ code {
 	height: auto;
 	background: none !important;
 }
+
+.badge {
+	color: white;
+	font-size: 12px;
+	width: 90px;
+	font-weight: 700;
+	text-align: center;
+	display: inline-block;
+	padding: 4px 4px;
+	border-radius: 6px;
+}

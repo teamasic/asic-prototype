@@ -14,7 +14,7 @@ import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typo
 import { formatFullDateTimeString, success, error } from '../utils';
 import classNames from 'classnames';
 import { createBrowserHistory } from 'history';
-import SessionStatusConstants from "../constants/SessionStatusConstants";
+import SessionStatusConstants, { SessionStatusText } from "../constants/SessionStatusConstants";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -68,7 +68,7 @@ class StartSessionModal extends React.PureComponent<StartSessionModalProps> {
                 this.setState({
                     isError: false
                 });
-                success(`Session is created for ${groupCode} with status ${data.data.status}`)
+                success(`Session is created for ${groupCode} with status ${(SessionStatusText as any)[data.data.status]}`)
                 if (data.data.status == SessionStatusConstants.SCHEDULED){
                     window.location.href = `/group/${groupCode}?tab=2`
                 }

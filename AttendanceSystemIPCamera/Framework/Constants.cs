@@ -14,7 +14,7 @@ namespace AttendanceSystemIPCamera.Framework
             public const string LOGIN_BY_FACE = "2";
             public const string GET_DATA_BY_ATTENDEE_CODE = "3";
             public const long DEFAULT_SYNC_MILISECONDS = 24 * 60 * 60 * 1000;
-            public const int DEFAULT_CHECK_SCHEDULED_SESSION = 3; //minute
+            public const int DEFAULT_CHECK_SCHEDULED_SESSION = 1; //minute
             public const int DEFAULT_CHECK_FINISH_SESSION = 3; //minute
 
 
@@ -32,8 +32,8 @@ namespace AttendanceSystemIPCamera.Framework
             public const string CREATE_REQUEST_ERROR = "Failed to create change request.";
             public const string NOT_VALID_USER = "Not valid supervisor";
             public static string USER_NOT_FOUND = "User not found";
-
             public static string LATEST_SYNC_NOT_VALID = "The latest sync time is not valid";
+            public static string ROUTE_NOT_MATCH = "Route not match";
         }
 
         public class NetworkRoute

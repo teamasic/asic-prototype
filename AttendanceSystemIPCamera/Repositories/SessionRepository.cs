@@ -148,7 +148,7 @@ namespace AttendanceSystemIPCamera.Repositories
                 {
                     string unknownDir = Path.Combine(unknownFolderPath, sessionId.ToString());
                     var unknownImages = Directory.GetFiles(unknownDir, "*.jpg").ToList();
-                    return unknownImages.Select(u => string.Format("{0}/{1}", sessionId, Path.GetFileName(u))).ToList();
+                    return unknownImages.Select(u => Path.GetFileName(u)).ToList();
                 }
                 catch (DirectoryNotFoundException e)
                 {

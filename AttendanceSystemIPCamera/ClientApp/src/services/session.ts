@@ -1,6 +1,6 @@
 ﻿import ApiResponse from "../models/ApiResponse";
 import axios from 'axios';
-import SessionStatus from "../models/SessionStatus";
+import SessionStatusConstants from "../constants/SessionStatusConstants";
 import ScheduleCreate from "../models/ScheduleCreate";
 import SessionUpdateRoom from "../models/SessionUpdateRoom";
 
@@ -71,7 +71,7 @@ export const getScheduledSesionByGroupCode = async (groupCode: string): Promise<
 	const response = await axios.get(apify("group"), {
 		params: {
 			code: groupCode,
-			status: SessionStatus.SCHEDULED
+			status: SessionStatusConstants.SCHEDULED
 		}
 	});
 	return await response.data;

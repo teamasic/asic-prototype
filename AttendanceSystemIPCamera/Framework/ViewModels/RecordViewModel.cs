@@ -40,7 +40,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     {
         public int Id { get; set; }
         public SessionInSyncData Session { get; set; }
-        public AttendeeGroupViewModel AttendeeGroup { get; set; }
+        public AttendeeGroupInSyncViewModel AttendeeGroup { get; set; }
         public bool Present { get; set; }
         public DateTime? UpdateTime { get; set; }
     }

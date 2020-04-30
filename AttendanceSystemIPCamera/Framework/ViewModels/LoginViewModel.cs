@@ -11,7 +11,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     {
         public string AttendeeCode { get; set; }
         public string FaceData { get; set; }
-        public string LoginMethod { get; set; }
+        public string Method { get; set; }
     }
 
 }

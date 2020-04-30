@@ -31,7 +31,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     {
         public string Code { get; set; }
         public string Name { get; set; }
-        public int MaxSessionCount { get; set; }
+        public int TotalSession { get; set; }
         public DateTime DateTimeCreated { get; set; }
     }
 }

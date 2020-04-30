@@ -47,41 +47,44 @@ def recognition_faces(resultFull):
 
 def show_frame():
     startTimeMilli = int(round(time.time() * 1000))
-    while int(round(time.time() * 1000)) - startTimeMilli < durationForRecognitionMilli:
-        if cannotCallApi.isTrue():
-            window.quit()
-        else:
-            frame = vs.read()
-            # Resize and cut
-            cv2image = imutils.resize(frame, width=my_constant.resizeWidthShow)
-            (h, w) = cv2image.shape[:2]
-            cv2image = cv2image[0:h, 100:w - 100]
+    try:
+        while int(round(time.time() * 1000)) - startTimeMilli < durationForRecognitionMilli:
+            if cannotCallApi.isTrue():
+                window.quit()
+            else:
+                frame = vs.read()
+                # Resize and cut
+                cv2image = imutils.resize(frame, width=my_constant.resizeWidthShow)
+                (h, w) = cv2image.shape[:2]
+                cv2image = cv2image[0:h, 100:w - 100]
 
 
-            # Convert to rgb image
-            cv2imageBGR = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGB)
+                # Convert to rgb image
+                cv2imageBGR = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGB)
 
-            if continueDetect.isTrue():
-                global currentImage
-                currentImage = copy.deepcopy(cv2image)
-                boxes = my_face_detection.face_locations(cv2imageBGR)
-                if 0 < len(boxes) <= maxNumOfPeople:
-                    continueDetect.change(False)
-                    for box in boxes:
-                        (top, right, bottom, left) = box
-                        cv2.rectangle(cv2imageBGR, (left, top), (right, bottom), (0, 0, 225), 2)
-                        y = top - 10 if top - 10 > 10 else top + 10
-                        cv2.putText(cv2imageBGR, "", (left, y), cv2.FONT_HERSHEY_SIMPLEX,
-                                    0.45, (0, 0, 255), 2)
-                    pool.starmap_async(my_service.get_label_after_detect_multiple,
-                                       [(cv2imageBGR, [box]) for box in boxes], callback=recognition_faces)
+                if continueDetect.isTrue():
+                    global currentImage
+                    currentImage = copy.deepcopy(cv2image)
+                    boxes = my_face_detection.face_locations(cv2imageBGR)
+                    if 0 < len(boxes) <= maxNumOfPeople:
+                        continueDetect.change(False)
+                        for box in boxes:
+                            (top, right, bottom, left) = box
+                            cv2.rectangle(cv2imageBGR, (left, top), (right, bottom), (0, 0, 225), 2)
+                            y = top - 10 if top - 10 > 10 else top + 10
+                            cv2.putText(cv2imageBGR, "", (left, y), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.45, (0, 0, 255), 2)
+                        pool.starmap_async(my_service.get_label_after_detect_multiple,
+                                           [(cv2imageBGR, [box]) for box in boxes], callback=recognition_faces)
 
-            img = Image.fromarray(cv2imageBGR)
-            imgtk = ImageTk.PhotoImage(image=img)
-            fps.update()
-            lbImage.configure(image=imgtk)
-            lbImage.imgtk = imgtk
-            time.sleep(0.05)
+                img = Image.fromarray(cv2imageBGR)
+                imgtk = ImageTk.PhotoImage(image=img)
+                fps.update()
+                lbImage.configure(image=imgtk)
+                lbImage.imgtk = imgtk
+                time.sleep(0.05)
+    except Exception as ex:
+        print(str(ex))
     window.quit()
 
 
@@ -92,9 +95,9 @@ if __name__ == "__main__":
                     help="path to rtsp string")
     ap.add_argument("-n", "--num", default=2,
                     help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
-    ap.add_argument("-t", "--time", default=120000,
+    ap.add_argument("-t", "--time", default=30000,
                     help="Time for recognition in video in milliseconds")
-    ap.add_argument("-a", "--attendance", default=True,
+    ap.add_argument("-a", "--attendance", default=False,
                     help="Open video stream for checking attendance or not")
     ap.add_argument("-s", "--sessionId", default=1,
                     help="Session Id")
@@ -111,7 +114,7 @@ if __name__ == "__main__":
     print("[INFO] Warming up...")
     fps = FPS()
     fps.start()
-    pool = multiprocessing.Pool()
+    pool = multiprocessing.Pool(1)
     cannotCallApi = boolean_wrapper.BooleanWrapper(False)
     continueDetect = boolean_wrapper.BooleanWrapper(True)
     connectQueueApiError = Queue()
@@ -139,13 +142,15 @@ if __name__ == "__main__":
         while countTryOpenStream < timesTryConnect and isOpenStreamOk is False:
             countTryOpenStream += 1
             if countTryOpenStream == 1:
-                httpString = "http://localhost:{}".format(my_constant.portHttpStream)
+                httpString = my_service.transfer_rtsp_to_http(rtspString)
             else:
                 httpString = my_service.transfer_rtsp_to_http(rtspString)
-            time.sleep(2.0)
             vs = stream_video.CustomVideoStream(src=httpString)
             if vs.stream.isOpened():
                 isOpenStreamOk = True
+            else:
+                vs.stop()
+                time.sleep(2)
 
         # If cannot connect -> raise exception
         if isOpenStreamOk is False:

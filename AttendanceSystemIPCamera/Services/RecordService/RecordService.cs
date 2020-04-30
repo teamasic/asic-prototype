@@ -193,10 +193,10 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         {
             var latestSyncTime = FileUtils.GetLatestSyncTime();
             var records = recordRepository.GetAttendanceDataForSync(latestSyncTime, DateTime.Now);
-
-            var attendanceData = mapper.ProjectTo<Record, RecordInSyncData>(records);
-            if (attendanceData != null && attendanceData.Count() > 0)
+            IEnumerable<RecordInSyncData> attendanceData = null;
+            if (records != null && records.Count() > 0)
             {
+                attendanceData = mapper.ProjectTo<Record, RecordInSyncData>(records);
                 Task.Run(async () =>
                 {
                     try

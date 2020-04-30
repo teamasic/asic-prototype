@@ -37,10 +37,10 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             this.myConfiguration = myConfiguration;
         }
 
-        public async Task<ResponsePython> StartRecognition(int durationBeforeStartInMinutes, 
-            int durationWhileRunningInMinutes, string rtspString, int sessionId)
+        public async Task<ResponsePython> StartRecognition(int durationBeforeStartInSeconds, 
+            int durationWhileRunningInSeconds, string rtspString, int sessionId)
         {
-            return await RecognitionByVideo(durationBeforeStartInMinutes, durationWhileRunningInMinutes, rtspString, sessionId);
+            return await RecognitionByVideo(durationBeforeStartInSeconds, durationWhileRunningInSeconds, rtspString, sessionId);
         }
         public async Task<ResponsePython> StartRecognitionMultiple(string rtspString, int sessionId)
         {
@@ -79,12 +79,12 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
             startInfo.WorkingDirectory = parentDirectory + "\\" + myConfiguration.RecognitionServiceName;
             return startInfo;
         }
-        private async Task<ResponsePython> RecognitionByVideo(int durationStartIn, int durationMinutes, 
+        private async Task<ResponsePython> RecognitionByVideo(int durationStartIn, int durationSeconds, 
                                 string rtspString, int sessionId)
         {
             try
             {
-                await Task.Delay(1000 * 60 * durationStartIn);
+                await Task.Delay(1000 * durationStartIn);
 
                 // Get start info
                 var cmd = myConfiguration.RecognitionProgramPathVLC;
@@ -97,7 +97,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
                 args += string.Format(@" --num {0}", 1);
 
                 // duration for recognition
-                args += string.Format(@" --time {0}", 1000 * 60 * durationMinutes);
+                args += string.Format(@" --time {0}", 1000 * durationSeconds);
 
                 // set flag for checking attendance
                 args += string.Format(@" --attendance {0}", "True");
@@ -133,7 +133,7 @@ namespace AttendanceSystemIPCamera.Services.RecognitionService
                     process.BeginErrorReadLine();
 
                     // Wait for exit
-                    var exitWait = process.WaitForExit(1000 * 60 * (durationMinutes + 1));
+                    var exitWait = process.WaitForExit(1000 * (durationSeconds + 60));
                     if (exitWait)
                     {
                         // ok
