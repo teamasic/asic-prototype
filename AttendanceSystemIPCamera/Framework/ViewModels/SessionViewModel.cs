@@ -64,7 +64,7 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
         public string Status { get; set; }
     }
 
-    public class SessionCreateViewModel
+    public class CreateScheduleViewModel
     {
         public string GroupCode { get; set; }
         public string Slot { get; set; }
