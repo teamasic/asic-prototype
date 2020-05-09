@@ -46,7 +46,8 @@ namespace AttendanceSystemIPCamera.Repositories
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
         private GlobalState globalState;
-        public SessionRepository(DbContext context, GlobalState globalState) : base(context)
+        public SessionRepository(DbContext context, GlobalState globalState) 
+            : base(context)
         {
             this.globalState = globalState;
         }
@@ -152,7 +153,7 @@ namespace AttendanceSystemIPCamera.Repositories
                     var unknownImages = Directory.GetFiles(unknownDir, "*.jpg").ToList();
                     return unknownImages.Select(u => Path.GetFileName(u)).ToList();
                 }
-                catch (DirectoryNotFoundException e)
+                catch (DirectoryNotFoundException)
                 {
                 }
             }
@@ -206,13 +207,13 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             try
             {
-                string unknownDir = Path.Combine(unknownFolderPath, image);
-                if (File.Exists(unknownDir))
+                string unknownPath = Path.Combine(unknownFolderPath, sessionId.ToString(), image);
+                if (File.Exists(unknownPath))
                 {
-                    File.Delete(unknownDir);
+                    File.Delete(unknownPath);
                 }
             }
-            catch (DirectoryNotFoundException e)
+            catch (Exception e)
             {
             }
         }
