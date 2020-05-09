@@ -63,7 +63,7 @@ def get_label_after_detect_multiple(image, boxes):
     results = []
     for i, vec in enumerate(vecs):
         name, proba = _get_label(vec)
-        results.append((boxes[i], name, proba))
+        results.append((boxes[i], name, proba, vec))
     print(datetime.now() - startitme)
     return results
 

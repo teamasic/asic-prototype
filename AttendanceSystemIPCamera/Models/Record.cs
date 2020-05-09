@@ -24,5 +24,7 @@ namespace AttendanceSystemIPCamera.Models
         public Attendee Attendee => AttendeeGroup?.Attendee;
         [NotMapped]
         public Group Group => AttendeeGroup?.Group;
+        [NotMapped]
+        public string Image { get; set; }
     }
 }
