@@ -157,6 +157,7 @@ class PageLayout extends React.Component<
 			firebase.auth.doSignOut().then(() => {
 				localStorage.removeItem(constants.AUTH_IN_LOCAL_STORAGE);
 				this.props.logout();
+				// window.location.href = "/";
 			});
 		}
 	}

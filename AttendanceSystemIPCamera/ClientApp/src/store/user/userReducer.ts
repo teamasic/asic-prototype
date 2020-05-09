@@ -56,8 +56,10 @@ const reducers: Reducer<UserState> = (state: UserState | undefined, incomingActi
             }
         case ACTIONS.LOG_OUT:
             return {
-                ...state,
+                // ...state,
                 ...unloadedState,
+                isLoading: false,
+                successfullyLoaded: true
             }
     }
 

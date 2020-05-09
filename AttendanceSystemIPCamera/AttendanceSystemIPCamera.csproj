@@ -8,6 +8,7 @@
     <SpaRoot>ClientApp\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <Platforms>AnyCPU;x64;x86</Platforms>
+    <ApplicationIcon>asic_ico.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
