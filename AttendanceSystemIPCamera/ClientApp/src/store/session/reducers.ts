@@ -102,7 +102,8 @@ const reducers: Reducer<SessionState> = (
 					updatedRecord = {
 						id: -1,
 						attendee: updatedAttendeeRecord.attendee,
-						present: true
+						present: true,
+						image: `${updatedAttendeeRecord.attendee.code}.jpg`
 					};
 				}
 				return {
@@ -161,7 +162,8 @@ const reducers: Reducer<SessionState> = (
 					updatedRecord = {
 						id: -1,
 						attendee: ar.attendee,
-						present: true
+						present: true,
+						image: `${ar.attendee.code}.jpg`
 					};
 				}
 				changes[ar.attendee.code] = updatedRecord;
