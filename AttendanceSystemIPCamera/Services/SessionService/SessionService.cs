@@ -89,6 +89,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             var groupAttendees = session.Group.Attendees;
             var recordAttendees = session.Records.Select(r => r.AttendeeGroup.Attendee);
             var attendeeRecordMap = session.Records.ToDictionary(record => record.AttendeeGroup.Attendee, record => record);
+            var sessionRecognizedImages = sessionRepository.GetSessionRecognizedImages(sessionId, cfg.RecognizedFolderPath);
             foreach (var attendee in groupAttendees)
             {
                 if (!attendeeRecordMap.ContainsKey(attendee))
@@ -101,6 +102,10 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 if (record != null)
                 {
                     record.AttendeeGroup = null;
+                    if (sessionRecognizedImages.ContainsKey(record.AttendeeCode))
+                    {
+                        record.Image = sessionRecognizedImages[record.AttendeeCode];
+                    }
                 }
             }
             return attendeeRecordMap.Select(ar => new AttendeeRecordPair
@@ -109,6 +114,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 Record = ar.Value
             }).OrderBy(ar => ar.Attendee.Code).ToList();
         }
+
         //public async Task CallReconitionService2(int duration, string rtspString)
         //{
         //    try

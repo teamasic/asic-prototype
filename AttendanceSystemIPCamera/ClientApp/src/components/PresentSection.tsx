@@ -30,6 +30,7 @@ import classNames from 'classnames';
 import '../styles/Session.css';
 import { SessionState } from '../store/session/state';
 import AttendeeRecordPair from '../models/AttendeeRecordPair';
+import Record from '../models/Record';
 import { formatFullDateTimeString, minutesOfDay, error } from '../utils';
 import { takeAttendance } from '../services/session';
 import moment from 'moment';
@@ -86,6 +87,14 @@ class PresentSection extends React.PureComponent<PresentProps> {
         </div>;
     }
 
+    private getRecordImage(ar: AttendeeRecordPair) {
+        if (ar.record && ar.record.image) {
+            return `url(/api/people/${this.props.sessionId}/${ar.record.image})`;
+        } else {
+            return `url(/api/avatars/${ar.attendee.image})`;
+        }
+    }
+
     public render() {
         const records = this.props.attendeeRecords.filter(ar => ar.record != null);
         const presentRecords = records
@@ -101,7 +110,9 @@ class PresentSection extends React.PureComponent<PresentProps> {
                                 <div key={ar.attendee.code}
                                     className="attendee-box grid-element">
                                     <div className="inner-box">
-                                        {this.getImageBox(`url(/api/avatars/${ar.attendee.image})`)}
+                                        {
+                                            this.getImageBox(this.getRecordImage(ar))
+                                        }
                                         <div className="inner-box-actions">
                                             <Tooltip title="Mark attendee absent">
                                                 <Button

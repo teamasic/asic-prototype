@@ -157,7 +157,8 @@ const createOrUpdateRecord = (
 				name: '',
 				image: ''
 			},
-			present: updateInfo.present
+			present: updateInfo.present,
+			image: ''
 		};
 		dispatch(updateAttendeeRecord(updateInfo, temporaryUpdatedRecord));
 	}

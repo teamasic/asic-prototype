@@ -40,6 +40,8 @@ namespace AttendanceSystemIPCamera.Repositories
         void RemoveSessionUnkownImage(int sessionId, string image, string unknownFolderPath);
         List<Session> GetSessionsNeedToFinish(TimeSpan editableDurationBeforeFinished);
         List<Session> GetSessionsNeedToBecomeEditable();
+        public IDictionary<string, string> GetSessionRecognizedImages(int sessionId, string recognizedFolderPath);
+        public void RemovePresentImage(int sessionId, string attendeeCode, string recognizedFolderPath);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
@@ -156,6 +158,23 @@ namespace AttendanceSystemIPCamera.Repositories
             }
             return new List<string>();
         }
+        public IDictionary<string, string> GetSessionRecognizedImages(int sessionId, string recognizedFolderPath)
+        {
+            if (sessionId != -1)
+            {
+                try
+                {
+                    string unknownDir = Path.Combine(recognizedFolderPath, sessionId.ToString());
+                    var unknownImages = Directory.GetFiles(unknownDir, "*.jpg").ToList();
+                    return unknownImages.ToDictionary(u => Path.GetFileNameWithoutExtension(u),
+                        u => Path.GetFileName(u));
+                }
+                catch (DirectoryNotFoundException)
+                {
+                }
+            }
+            return new Dictionary<string, string>();
+        }
 
         public List<Session> GetByGroupCodeAndStatus(string groupCode, string status)
         {
@@ -212,6 +231,19 @@ namespace AttendanceSystemIPCamera.Repositories
         public List<Session> GetSessionsNeedToBecomeEditable()
         {
             return Get(s => s.Status == SessionStatus.IN_PROGRESS && DateTime.Now >= s.EndTime).ToList();
+        }
+        public void RemovePresentImage(int sessionId, string attendeeCode, string recognizedFolderPath)
+        {
+            try
+            {
+                string peopleDir = Path.Combine(recognizedFolderPath, sessionId.ToString());
+                string filePath = Path.Combine(peopleDir, $"{attendeeCode}.jpg");
+                File.Delete(filePath);
+            }
+            catch (DirectoryNotFoundException)
+            {
+            }
+
         }
     }
 }

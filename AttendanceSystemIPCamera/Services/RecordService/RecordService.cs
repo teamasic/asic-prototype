@@ -150,6 +150,11 @@ namespace AttendanceSystemIPCamera.Services.RecordService
                 record.UpdateTime = DateTime.Now;
             }
             unitOfWork.Commit();
+            if (!record.Present)
+            {
+                sessionRepository.RemovePresentImage(session.Id, record.AttendeeCode, 
+                    myConfiguration.RecognizedFolderPath);
+            }
             return record;
         }
 
