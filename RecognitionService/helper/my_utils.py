@@ -11,7 +11,7 @@ import imutils
 from config import my_constant
 
 
-def saveImageFunction(image, box, dir, padding=20):
+def saveImageFunction(image, box, dir, padding=20, imageName = None, isOverwrite=False):
     Path(dir).mkdir(exist_ok=True)
     (top, right, bottom, left) = box
     (h, w) = image.shape[:2]
@@ -22,12 +22,14 @@ def saveImageFunction(image, box, dir, padding=20):
     newRight = w if right + padding > w else right + padding
 
     crop_image = image[newTop:newBottom, newLeft:newRight]
-    crop_image = imutils.resize(crop_image, width=150)
-    unique_filename = "Unknown_{}.jpg".format(str(uuid.uuid4()))
-    fullPath = os.path.join(dir, unique_filename)
-
-    successSave = cv2.imwrite(fullPath, crop_image)
-    return unique_filename, successSave
+    crop_image = imutils.resize(crop_image, width=150, height=150)
+    if imageName is None:
+        imageName = "{}.jpg".format(str(uuid.uuid4()))
+    fullPath = os.path.join(dir, imageName)
+    successSave = False
+    if (path.exists(fullPath) is False) or (path.exists(fullPath) is True and isOverwrite):
+        successSave = cv2.imwrite(fullPath, crop_image)
+    return imageName, successSave
 
 
 def remove_all_files(folder):

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -22,6 +23,8 @@ namespace AttendanceSystemIPCamera.Repositories
         List<Record> GetAttendanceDataForSync(DateTime fromTime, DateTime toTime);
         IEnumerable<Record> GetRecords();
         public Task<Record> GetRecordByAttendeeGroupStartTime(string attendeeCode, string groupCode, DateTime startTime);
+
+        Task AddRange(List<Record> records);
     }
     public class RecordRepository : Repository<Record>, IRecordRepository
     {
@@ -78,6 +81,12 @@ namespace AttendanceSystemIPCamera.Repositories
         public IEnumerable<Record> GetRecords()
         {
             return dbSet.AsEnumerable();
+        }
+
+        public async Task AddRange(List<Record> records)
+        {
+            await dbSet.AddRangeAsync(records);
+            context.SaveChanges();
         }
     }
 }

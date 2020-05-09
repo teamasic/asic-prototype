@@ -7,9 +7,9 @@
         xmlns:local="clr-namespace:SupervisorApp"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="0,1">
-            <wpf:ChromiumWebBrowser x:Name="Browser" Address="https://www.google.com/"/>
+    <Grid x:Name="grid">
+        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="0,1" x:Name="panel">
+            <!--<wpf:ChromiumWebBrowser x:Name="Browser" Address="https://localhost:44359/"/>-->
         </Border>
     </Grid>
 </Window>

@@ -95,8 +95,8 @@ class UnknownSection extends React.PureComponent<UnknownProps, State>{
                 unknowns.length > 0 ?
                     <div className="box-container fixed-grid--around">
                         {
-                            unknowns.map(img =>
-                                <div key={img}
+                            unknowns.map((img, i) =>
+                                <div key={i}
                                     className="attendee-box grid-element">
                                     <div className="inner-box">
                                         {this.getImageBox(`url(/api/unknown/${this.props.sessionId}/${img})`)}

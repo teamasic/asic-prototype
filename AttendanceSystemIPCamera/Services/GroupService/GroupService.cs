@@ -13,6 +13,8 @@ using System.Net;
 using AttendanceSystemIPCamera.Services.AttendeeService;
 using AttendanceSystemIPCamera.Services.AttendeeGroupService;
 using static AttendanceSystemIPCamera.Framework.Validators.GroupValidator;
+using AttendanceSystemIPCamera.Services.SessionService;
+using AttendanceSystemIPCamera.Services.RecordService;
 
 namespace AttendanceSystemIPCamera.Services.GroupService
 {
@@ -29,17 +31,20 @@ namespace AttendanceSystemIPCamera.Services.GroupService
     public class GroupService : BaseService<Group>, IGroupService
     {
         private readonly IGroupRepository groupRepository;
-        private readonly ISessionRepository sessionRepository;
+        private readonly ISessionService sessionService;
         private readonly IAttendeeService attendeeService;
+        private readonly IRecordService recordService;
         private readonly IAttendeeGroupService attendeeGroupService;
         private readonly IMapper mapper;
         public GroupService(MyUnitOfWork unitOfWork, IAttendeeService attendeeService,
-            IMapper mapper, IAttendeeGroupService attendeeGroupService) : base(unitOfWork)
+            IMapper mapper, IAttendeeGroupService attendeeGroupService, 
+            ISessionService sessionService, IRecordService recordService) : base(unitOfWork)
         {
             groupRepository = unitOfWork.GroupRepository;
-            sessionRepository = unitOfWork.SessionRepository;
+            this.sessionService = sessionService;
             this.attendeeService = attendeeService;
             this.attendeeGroupService = attendeeGroupService;
+            this.recordService = recordService;
             this.mapper = mapper;
         }
 
@@ -49,23 +54,23 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             if(groupInDb != null)
             {
                 var attendeeInDb = await attendeeService.GetByAttendeeCode(attendee.Code);
+                AttendeeGroup attendeeGroup = null;
                 if (attendeeInDb == null)
                 {
                     var newAttendee = mapper.Map<Attendee>(attendee);
                     attendeeInDb = await attendeeService.Add(newAttendee);
-                    var attendeeGroup = new AttendeeGroup()
+                    attendeeGroup = new AttendeeGroup()
                     {
                         AttendeeCode = attendeeInDb.Code,
                         GroupCode = groupCode,
                         IsActive = true
                     };
                     await attendeeGroupService.AddAsync(attendeeGroup);
-                    return attendeeInDb;
                 }
                 else
                 {
-                    var attendeeGroup = await attendeeGroupService
-                        .GetByAttendeeCodeAndGroupCode(attendeeInDb.Code, groupCode);
+                    attendeeGroup = await attendeeGroupService
+                        .GetByAttendeeCodeAndGroupCodeWithStatus(attendeeInDb.Code, groupCode);
                     if (attendeeGroup == null)
                     {
                         attendeeGroup = new AttendeeGroup()
@@ -76,12 +81,16 @@ namespace AttendanceSystemIPCamera.Services.GroupService
                             IsActive = true
                         };
                         await attendeeGroupService.AddAsync(attendeeGroup);
-                        return attendeeInDb;
-                    }
-                    throw new AppException(HttpStatusCode.Conflict,
-                        ErrorMessage.ATTENDEE_ALREADY_EXISTED_IN_GROUP,
-                        attendee.Code, groupInDb.Code);
+                    } else if (attendeeGroup.IsActive == false)
+                    {
+                        await attendeeGroupService.UpdateStatus(attendeeGroup.Id, true);
+                    } else
+                        throw new AppException(HttpStatusCode.Conflict,
+                            ErrorMessage.ATTENDEE_ALREADY_EXISTED_IN_GROUP,
+                            attendee.Code, groupInDb.Code);
                 }
+                await MarkAbsentForPastSession(groupCode, attendeeGroup);
+                return attendeeInDb;
             }
             throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, groupCode);
         }
@@ -155,6 +164,38 @@ namespace AttendanceSystemIPCamera.Services.GroupService
             }
             var invalidMsg = result.ToString("\n");
             throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.INVALID_GROUP, invalidMsg);
+        }
+
+        private async Task MarkAbsentForPastSession(string groupCode, AttendeeGroup attendeeGroup)
+        {
+            var pastSessions = sessionService.GetByGroupCodeAndStatusIsNotScheduled(groupCode);
+            if(pastSessions != null && pastSessions.Count > 0)
+            {
+                var records = new List<Record>();
+                foreach (var session in pastSessions)
+                {
+                    var record = session.Records.Where(r => r.AttendeeGroupId == attendeeGroup.Id)
+                        .FirstOrDefault();
+                    if(record == null)
+                    {
+                        record = new Record()
+                        {
+                            AttendeeGroupId = attendeeGroup.Id,
+                            SessionId = session.Id,
+                            Present = false,
+                            AttendeeCode = attendeeGroup.AttendeeCode,
+                            SessionName = session.Name,
+                            StartTime = session.StartTime,
+                            EndTime = session.EndTime
+                        };
+                        records.Add(record);
+                    }
+                }
+                if(records.Count > 0)
+                {
+                    await recordService.AddRangeAsync(records);
+                }
+            }
         }
     }
 }

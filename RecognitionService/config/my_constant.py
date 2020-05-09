@@ -7,6 +7,7 @@ portHttpStream: Final = 9911
 transferToHttpBatchPath = "transfer_to_http.bat"
 threshold = 0.8
 unknownDir: Final = r"..\unknown"
+peopleDir: Final = r"..\people"
 
 cropleft: Final = 0
 cropRight: Final = 0

@@ -14,7 +14,7 @@ namespace AttendanceSystemIPCamera.Repositories
 {
     public interface IChangeRequestRepository : IRepository<ChangeRequest>
     {
-        public Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel);
+        public IEnumerable<ChangeRequest> GetAll(SearchChangeRequestViewModel viewModel);
         public Task<ChangeRequest> GetByRecordIdSimple(object id);
     }
     public class ChangeRequestRepository : Repository<ChangeRequest>, IChangeRequestRepository
@@ -41,7 +41,7 @@ namespace AttendanceSystemIPCamera.Repositories
                         .ThenInclude(s => s.Group)
                 .FirstOrDefaultAsync(cr => cr.RecordId == (int)id);
         }
-        public async Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel)
+        public IEnumerable<ChangeRequest> GetAll(SearchChangeRequestViewModel viewModel)
         {
             bool filterStatus(ChangeRequest cr)
             {
