@@ -42,7 +42,22 @@ namespace AttendanceSystemIPCamera.Utils
 
         }
 
+        public static bool IsPortAvailable(int port)
+        {
+            bool isAvailable = true;
 
-        
+            IPGlobalProperties ipProperties = IPGlobalProperties.GetIPGlobalProperties();
+            IPEndPoint[] ipEndPoints = ipProperties.GetActiveTcpListeners();
+            foreach (IPEndPoint endPoint in ipEndPoints)
+            {
+                if (endPoint.Port == port)
+                {
+                    isAvailable = false;
+                    break;
+                }
+            }
+            return isAvailable;
+        }
+
     }
 }

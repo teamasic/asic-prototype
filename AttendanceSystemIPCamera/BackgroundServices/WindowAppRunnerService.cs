@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SupervisorApp;
+//using SupervisorApp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.BackgroundServices
 {
-    public class WindowAppRunnerService : BackgroundService
+    public class WindowAppRunnerService
     {
         public WindowAppRunnerService()
         {
         }
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public void Run()
         {
             Thread myThread = new Thread(() =>
             {
@@ -23,7 +24,7 @@ namespace AttendanceSystemIPCamera.BackgroundServices
             });
             myThread.SetApartmentState(ApartmentState.STA);
             myThread.Start();
-            await Task.CompletedTask;
         }
+     
     }
 }

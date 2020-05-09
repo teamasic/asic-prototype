@@ -217,7 +217,7 @@ namespace AttendanceSystemIPCamera
 
         private void SetupBackgroundService(IServiceCollection services)
         {
-            services.AddHostedService<WindowAppRunnerService>();
+            //services.AddHostedService<WindowAppRunnerService>();
             services.AddHostedService<SupervisorRunnerService>();
         }
 
