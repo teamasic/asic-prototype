@@ -74,7 +74,7 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpPost("scheduled")]
-        public Task<BaseResponse<List<SessionCreateViewModel>>> Create([FromBody] List<SessionCreateViewModel> sessions)
+        public Task<BaseResponse<List<CreateScheduleViewModel>>> Create([FromBody] List<CreateScheduleViewModel> sessions)
         {
             return ExecuteInMonitoring(async () =>
             {

@@ -25,11 +25,10 @@ namespace AttendanceSystemIPCamera.Services.RecordService
         public Task<IEnumerable<SetRecordViewModel>> UpdateRecordsAfterEndSession();
         public Task<SetRecordViewModel> RecordAttendance(AttendeeViewModel viewModel);
         public IEnumerable<Record> GetRecordsBySessionId(int sessionId);
-
         public IEnumerable<RecordInSyncData> SyncAttendanceData();
-
         IEnumerable<Record> GetRecords();
         public Task<IEnumerable<SetRecordViewModel>> RecordAttendanceBatch(ICollection<string> codes);
+        public Task AddRangeAsync(List<Record> records);
     }
 
     public class RecordService : BaseService<Record>, IRecordService
@@ -284,6 +283,11 @@ namespace AttendanceSystemIPCamera.Services.RecordService
             }
             unitOfWork.Commit();
             return mapper.ProjectTo<Record, SetRecordViewModel>(recordResults);
+        }
+
+        public async Task AddRangeAsync(List<Record> records)
+        {
+            await recordRepository.AddRange(records);
         }
     }
 }

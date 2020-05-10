@@ -32,7 +32,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         List<Session> GetPastSessionByGroupCode(string groupCode);
         public ICollection<string> GetSessionUnknownImages(int sessionId);
         Task<List<SessionRefactorViewModel>> GetByGroupCodeAndStatus(string groupCode, string status);
-        Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions);
+        Task<List<CreateScheduleViewModel>> AddRangeAsync(List<CreateScheduleViewModel> newSessions);
         Task ActivateScheduledSession();
         Task<SessionRefactorViewModel> DeleteScheduledSession(int id);
         SessionViewModel GetSessionByIdWithRoom(int id);
@@ -40,6 +40,8 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         void RemoveUnknownImage(int sessionId, string image);
         void FinishSessions();
         void ChangeSessionsToEditable();
+
+        List<Session> GetByGroupCodeAndStatusIsNotScheduled(string groupCode);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -506,11 +508,11 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NOT_FOUND_GROUP_WITH_CODE, groupCode);
         }
 
-        public async Task<List<SessionCreateViewModel>> AddRangeAsync(List<SessionCreateViewModel> newSessions)
+        public async Task<List<CreateScheduleViewModel>> AddRangeAsync(List<CreateScheduleViewModel> newSessions)
         {
             var units = unitService.Units;
             var results = new List<Session>();
-            var createdSessions = new List<SessionCreateViewModel>();
+            var createdSessions = new List<CreateScheduleViewModel>();
             var numberOfSessionWillBeCreated = 0;
             if (newSessions != null && newSessions.Count > 0)
             {
@@ -697,6 +699,12 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 logger.LogError(ex.ToString());
                 throw ex;
             }
+        }
+
+        public List<Session> GetByGroupCodeAndStatusIsNotScheduled(string groupCode)
+        {
+            return sessionRepository
+                .GetByGroupCodeAndStatusIsNot(groupCode, Constants.SessionStatus.SCHEDULED);
         }
     }
 }

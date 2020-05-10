@@ -33,6 +33,7 @@ namespace AttendanceSystemIPCamera.Repositories
         public ICollection<string> GetSessionUnknownImages(int sessionId, string unknownFolderPath);
         public void RemoveActiveSession();
         List<Session> GetByGroupCodeAndStatus(string groupCode, string status);
+        List<Session> GetByGroupCodeAndStatusIsNot(string groupCode, string status);
         Session GetByNameAndDate(string name, DateTime date);
         Task AddRangeAsync(List<Session> sessions);
         Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
@@ -46,7 +47,8 @@ namespace AttendanceSystemIPCamera.Repositories
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
         private GlobalState globalState;
-        public SessionRepository(DbContext context, GlobalState globalState) : base(context)
+        public SessionRepository(DbContext context, GlobalState globalState) 
+            : base(context)
         {
             this.globalState = globalState;
         }
@@ -152,7 +154,7 @@ namespace AttendanceSystemIPCamera.Repositories
                     var unknownImages = Directory.GetFiles(unknownDir, "*.jpg").ToList();
                     return unknownImages.Select(u => Path.GetFileName(u)).ToList();
                 }
-                catch (DirectoryNotFoundException e)
+                catch (DirectoryNotFoundException)
                 {
                 }
             }
@@ -206,13 +208,13 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             try
             {
-                string unknownDir = Path.Combine(unknownFolderPath, image);
-                if (File.Exists(unknownDir))
+                string unknownPath = Path.Combine(unknownFolderPath, sessionId.ToString(), image);
+                if (File.Exists(unknownPath))
                 {
-                    File.Delete(unknownDir);
+                    File.Delete(unknownPath);
                 }
             }
-            catch (DirectoryNotFoundException e)
+            catch (Exception e)
             {
             }
         }
@@ -244,6 +246,12 @@ namespace AttendanceSystemIPCamera.Repositories
             {
             }
 
+        }
+
+        public List<Session> GetByGroupCodeAndStatusIsNot(string groupCode, string status)
+        {
+            return Get(s => s.GroupCode == groupCode && s.Status != status, 
+                includeProperties: "Records").ToList();
         }
     }
 }
