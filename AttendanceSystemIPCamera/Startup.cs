@@ -37,6 +37,8 @@ using static AttendanceSystemIPCamera.Framework.Constants;
 using AttendanceSystemIPCamera.Services.LogService;
 using AttendanceSystemIPCamera.Services.OtherSettingsService;
 using Microsoft.AspNetCore.Http.Connections;
+using ElectronNET.API;
+using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera
 {
@@ -133,7 +135,8 @@ namespace AttendanceSystemIPCamera
                 }
             });
 
-
+            // Open the Electron-Window here
+            Task.Run(async () => await Electron.WindowManager.CreateWindowAsync());
         }
 
         private void setupSwagger(IServiceCollection services)

@@ -1,5 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
@@ -9,10 +8,10 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="9.0.0" />
     <PackageReference Include="CsvHelper" Version="15.0.0" />
+    <PackageReference Include="ElectronNET.API" Version="8.31.1" />
     <PackageReference Include="FluentValidation" Version="9.0.0-preview3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.0" />
@@ -34,7 +33,6 @@
     </PackageReference>
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
-
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
     <Compile Remove="GPUCache\**" />
@@ -49,7 +47,6 @@
     <None Remove="Logs\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="Migrations\20200214112808_Update1.cs" />
     <Compile Remove="Migrations\20200214112808_Update1.Designer.cs" />
@@ -58,11 +55,9 @@
     <Compile Remove="Migrations\20200229085155_Update2.cs" />
     <Compile Remove="Migrations\20200229085155_Update2.Designer.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="Services\NetworkService\AttendeeNetworkService.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <None Remove="ClientApp\src\components\ChangeRequestModal.tsx" />
     <None Remove="ClientApp\src\components\GroupCard.tsx" />
@@ -102,16 +97,10 @@
     <None Remove="ClientApp\src\utils\utils.ts" />
     <None Remove="debug.log" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Framework\Helpers\" />
     <Folder Include="Services\NetworkService\" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\SupervisorApp\SupervisorApp.csproj" />
-  </ItemGroup>
-
   <ItemGroup>
     <TypeScriptCompile Include="ClientApp\src\components\ChangeRequestModal.tsx">
       <SubType>Code</SubType>
@@ -184,7 +173,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\store\group\state.ts" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="ClientApp\src\models\Attendee - Copy.js">
       <DependentUpon>Attendee.ts</DependentUpon>
@@ -199,7 +187,6 @@
       <DependentUpon>Attendee.js</DependentUpon>
     </None>
   </ItemGroup>
-
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">
@@ -209,12 +196,10 @@
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
   </Target>
-
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
     <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
-
     <!-- Include the newly-built files in the publish output -->
     <ItemGroup>
       <DistFiles Include="$(SpaRoot)build\**; $(SpaRoot)build-ssr\**" />
@@ -225,5 +210,9 @@
       </ResolvedFileToPublish>
     </ItemGroup>
   </Target>
-
+  <ItemGroup>
+    <Content Update="electron.manifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

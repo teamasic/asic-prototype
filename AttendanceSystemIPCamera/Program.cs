@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using AttendanceSystemIPCamera.BackgroundServices;
 using AttendanceSystemIPCamera.Utils;
+using ElectronNET.API;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,26 +20,6 @@ namespace AttendanceSystemIPCamera
 
         public static void Main(string[] args)
         {
-            //if (NetworkUtils.IsPortAvailable(DEFAULT_PORT) )
-            //{
-            //    Console.WriteLine("Port is available");
-            //    CreateHostBuilder(args).ConfigureLogging((hostingContext, logging) =>
-            //    {
-            //        logging.AddConsole();
-            //        logging.AddDebug();
-            //        logging.AddEventSourceLogger();
-            //    }).Build().Run();
-            //}
-            //else
-            //{
-            //    Console.WriteLine("Port is in use");
-            //}
-
-            //WindowAppRunnerService wpf = new WindowAppRunnerService();
-            //wpf.Run();
-
-            //Console.WriteLine("Start successfully!");
-
             CreateHostBuilder(args).ConfigureLogging((hostingContext, logging) =>
             {
                 logging.AddConsole();
@@ -56,6 +37,7 @@ namespace AttendanceSystemIPCamera
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseElectron(args);
                     webBuilder.UseStartup<Startup>();
                 });
     
