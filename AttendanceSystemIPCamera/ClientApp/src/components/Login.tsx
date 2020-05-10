@@ -61,7 +61,7 @@ class NormalLoginForm extends React.Component<LoginProps, UserState> {
 
   render() {
     return (
-      <div className="container">
+      <div className="container-login">
         <Row align="middle" className="login">
           <div className="content">
             <Col>{(this.props.isLoading) ? <Spin /> : this.getForm()}</Col>

@@ -17,3 +17,10 @@
 .login {
     width: 80%;
 }
+
+.container-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
