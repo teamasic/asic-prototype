@@ -240,3 +240,5 @@ Logs
 #Sync file
 LatestSync.txt
 ShutDownTime.txt
+
+BrowserCache/*
