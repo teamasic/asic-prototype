@@ -12,6 +12,7 @@ import { createSession } from '../services/session';
 import { formatFullDateTimeString, formatDateString, success, error } from '../utils';
 import { Card, Button, Dropdown, Icon, Menu, Row, Col, Typography, Modal, Tooltip } from 'antd';
 import StartSessionModal from './StartSessionModal';
+import SessionStatusConstants from '../constants/SessionStatusConstants';
 
 const { Title } = Typography;
 const { confirm } = Modal;
@@ -103,12 +104,17 @@ class GroupCard extends React.PureComponent<GroupProps> {
         });
     }
 
+    private getLastSession(group: Group) {
+        const notScheduledSessions = this.props.group.sessions
+            .filter(s => s.status !== SessionStatusConstants.SCHEDULED);
+        if (notScheduledSessions.length > 0) {
+            return notScheduledSessions[notScheduledSessions.length - 1].startTime;
+        }
+    }
+
     public render() {
         var group = this.props.group;
-        const lastSessionTime =
-            group.sessions.length > 0
-                ? group.sessions[group.sessions.length - 1].startTime
-                : null;
+        const lastSessionTime = this.getLastSession(group);
         const menu = (
             <Menu onClick={(click: any) => console.log(click)}>
                 <Menu.Item key="1" onClick={this.showConfirm}>
