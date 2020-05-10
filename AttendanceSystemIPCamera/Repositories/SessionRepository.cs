@@ -43,6 +43,7 @@ namespace AttendanceSystemIPCamera.Repositories
         List<Session> GetSessionsNeedToBecomeEditable();
         public IDictionary<string, string> GetSessionRecognizedImages(int sessionId, string recognizedFolderPath);
         public void RemovePresentImage(int sessionId, string attendeeCode, string recognizedFolderPath);
+        public Task MarkAllNotYetAttendeesAsAbsent(int sessionId);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
@@ -252,6 +253,33 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             return Get(s => s.GroupCode == groupCode && s.Status != status, 
                 includeProperties: "Records").ToList();
+        }
+
+        public async Task MarkAllNotYetAttendeesAsAbsent(int sessionId)
+        {
+            var session = await dbSet
+                .Include(s => s.Records)
+                .Include(s => s.Group)
+                    .ThenInclude(g => g.AttendeeGroups)
+                        .ThenInclude(ag => ag.Attendee)
+                .FirstOrDefaultAsync(x => sessionId == x.Id);
+            var attendeesWithRecords = session.Records.Select(r => r.AttendeeCode).ToHashSet();
+            var attendeeGroupsWithoutRecords = session.Group.AttendeeGroups
+                .Where(a => !attendeesWithRecords.Contains(a.AttendeeCode));
+            foreach (var attendeeGroup in attendeeGroupsWithoutRecords)
+            {
+                var newRecord = new Record
+                {
+                    AttendeeCode = attendeeGroup.AttendeeCode,
+                    SessionId = session.Id,
+                    SessionName = session.Name,
+                    StartTime = session.StartTime,
+                    EndTime = session.EndTime,
+                    Present = false,
+                    AttendeeGroupId = attendeeGroup.Id
+                };
+                session.Records.Add(newRecord);
+            }
         }
     }
 }
