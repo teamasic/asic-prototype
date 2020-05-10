@@ -163,7 +163,7 @@ const startUpdateGroup = (group: Group, success: Function): AppThunkAction => as
 const startDeleteAttendeeGroup = (attendeeCode: string, groupCode: string, success: Function): AppThunkAction => async (dispatch, getState) => {
     const apiResponse: ApiResponse = await deleteAttendeeGroup(attendeeCode, groupCode);
     if (apiResponse.success) {
-        console.log(apiResponse.data.attendeeCode);
+        // console.log(apiResponse.data.attendeeCode);
         dispatch(refreshListAttendeeAfterDeleteSuccess(apiResponse.data.attendeeCode));
         success();
     } else {

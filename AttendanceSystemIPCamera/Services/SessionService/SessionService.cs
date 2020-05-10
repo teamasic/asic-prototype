@@ -40,6 +40,8 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         void RemoveUnknownImage(int sessionId, string image);
         void FinishSessions();
         void ChangeSessionsToEditable();
+
+        List<Session> GetByGroupCodeAndStatusIsNotScheduled(string groupCode);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -697,6 +699,12 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 logger.LogError(ex.ToString());
                 throw ex;
             }
+        }
+
+        public List<Session> GetByGroupCodeAndStatusIsNotScheduled(string groupCode)
+        {
+            return sessionRepository
+                .GetByGroupCodeAndStatusIsNot(groupCode, Constants.SessionStatus.SCHEDULED);
         }
     }
 }
