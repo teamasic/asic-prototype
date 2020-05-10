@@ -39,8 +39,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         Task<SessionViewModel> UpdateRoom(int sessionId, int roomId);
         void RemoveUnknownImage(int sessionId, string image);
         void FinishSessions();
-        void ChangeSessionsToEditable();
-
+        Task ChangeSessionsToEditable();
         List<Session> GetByGroupCodeAndStatusIsNotScheduled(string groupCode);
     }
 
@@ -680,7 +679,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
             }
         }
 
-        public void ChangeSessionsToEditable()
+        public async Task ChangeSessionsToEditable()
         {
             try
             {
@@ -688,6 +687,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
                 foreach (var session in sessionsNeedToBecomeEditable)
                 {
                     session.Status = Constants.SessionStatus.EDITABLE;
+                    await sessionRepository.MarkAllNotYetAttendeesAsAbsent(session.Id);
                 }
                 if (sessionsNeedToBecomeEditable.Count > 0)
                 {
