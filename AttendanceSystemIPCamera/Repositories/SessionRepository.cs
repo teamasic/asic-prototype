@@ -33,6 +33,7 @@ namespace AttendanceSystemIPCamera.Repositories
         public ICollection<string> GetSessionUnknownImages(int sessionId, string unknownFolderPath);
         public void RemoveActiveSession();
         List<Session> GetByGroupCodeAndStatus(string groupCode, string status);
+        List<Session> GetByGroupCodeAndStatusIsNot(string groupCode, string status);
         Session GetByNameAndDate(string name, DateTime date);
         Task AddRangeAsync(List<Session> sessions);
         Session GetSessionNeedsToActivate(TimeSpan activatedTimeBeforeStartTime);
@@ -42,11 +43,13 @@ namespace AttendanceSystemIPCamera.Repositories
         List<Session> GetSessionsNeedToBecomeEditable();
         public IDictionary<string, string> GetSessionRecognizedImages(int sessionId, string recognizedFolderPath);
         public void RemovePresentImage(int sessionId, string attendeeCode, string recognizedFolderPath);
+        public Task MarkAllNotYetAttendeesAsAbsent(int sessionId);
     }
     public class SessionRepository : Repository<Session>, ISessionRepository
     {
         private GlobalState globalState;
-        public SessionRepository(DbContext context, GlobalState globalState) : base(context)
+        public SessionRepository(DbContext context, GlobalState globalState) 
+            : base(context)
         {
             this.globalState = globalState;
         }
@@ -152,7 +155,7 @@ namespace AttendanceSystemIPCamera.Repositories
                     var unknownImages = Directory.GetFiles(unknownDir, "*.jpg").ToList();
                     return unknownImages.Select(u => Path.GetFileName(u)).ToList();
                 }
-                catch (DirectoryNotFoundException e)
+                catch (DirectoryNotFoundException)
                 {
                 }
             }
@@ -206,13 +209,13 @@ namespace AttendanceSystemIPCamera.Repositories
         {
             try
             {
-                string unknownDir = Path.Combine(unknownFolderPath, image);
-                if (File.Exists(unknownDir))
+                string unknownPath = Path.Combine(unknownFolderPath, sessionId.ToString(), image);
+                if (File.Exists(unknownPath))
                 {
-                    File.Delete(unknownDir);
+                    File.Delete(unknownPath);
                 }
             }
-            catch (DirectoryNotFoundException e)
+            catch (Exception e)
             {
             }
         }
@@ -244,6 +247,39 @@ namespace AttendanceSystemIPCamera.Repositories
             {
             }
 
+        }
+
+        public List<Session> GetByGroupCodeAndStatusIsNot(string groupCode, string status)
+        {
+            return Get(s => s.GroupCode == groupCode && s.Status != status, 
+                includeProperties: "Records").ToList();
+        }
+
+        public async Task MarkAllNotYetAttendeesAsAbsent(int sessionId)
+        {
+            var session = await dbSet
+                .Include(s => s.Records)
+                .Include(s => s.Group)
+                    .ThenInclude(g => g.AttendeeGroups)
+                        .ThenInclude(ag => ag.Attendee)
+                .FirstOrDefaultAsync(x => sessionId == x.Id);
+            var attendeesWithRecords = session.Records.Select(r => r.AttendeeCode).ToHashSet();
+            var attendeeGroupsWithoutRecords = session.Group.AttendeeGroups
+                .Where(a => !attendeesWithRecords.Contains(a.AttendeeCode));
+            foreach (var attendeeGroup in attendeeGroupsWithoutRecords)
+            {
+                var newRecord = new Record
+                {
+                    AttendeeCode = attendeeGroup.AttendeeCode,
+                    SessionId = session.Id,
+                    SessionName = session.Name,
+                    StartTime = session.StartTime,
+                    EndTime = session.EndTime,
+                    Present = false,
+                    AttendeeGroupId = attendeeGroup.Id
+                };
+                session.Records.Add(newRecord);
+            }
         }
     }
 }

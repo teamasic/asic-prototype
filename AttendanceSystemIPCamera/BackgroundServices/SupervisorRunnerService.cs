@@ -139,7 +139,7 @@ namespace AttendanceSystemIPCamera.BackgroundServices
                 using var scope = serviceScopeFactory.CreateScope();
                 var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
                 await sessionService.ActivateScheduledSession(); // scheduled -> in-progress
-                sessionService.ChangeSessionsToEditable(); // in-progress -> editable
+                await sessionService.ChangeSessionsToEditable(); // in-progress -> editable
                 sessionService.FinishSessions(); // editable -> finished
             }
             catch (Exception ex)

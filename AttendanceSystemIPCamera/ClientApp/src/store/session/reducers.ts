@@ -96,7 +96,8 @@ const reducers: Reducer<SessionState> = (
 				if (updatedAttendeeRecord.record != null) {
 					updatedRecord = {
 						...updatedAttendeeRecord.record,
-						present: true
+						present: true,
+						image: `${updatedAttendeeRecord.attendee.code}.jpg`
 					};
 				} else {
 					updatedRecord = {
@@ -156,7 +157,8 @@ const reducers: Reducer<SessionState> = (
 				if (ar.record != null) {
 					updatedRecord = {
 						...ar.record,
-						present: true
+						present: true,
+						image: `${ar.attendee.code}.jpg`
 					};
 				} else {
 					updatedRecord = {

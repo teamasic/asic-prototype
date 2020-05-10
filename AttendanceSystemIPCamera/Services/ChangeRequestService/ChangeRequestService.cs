@@ -22,7 +22,7 @@ namespace AttendanceSystemIPCamera.Services.ChangeRequestService
     {
         public Task<ChangeRequest> Add(CreateChangeRequestNetworkViewModel viewModel);
         public Task<ChangeRequest> Process(ProcessChangeRequestViewModel viewModel);
-        public Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel);
+        public IEnumerable<ChangeRequest> GetAll(SearchChangeRequestViewModel viewModel);
     }
 
     public class ChangeRequestService: BaseService<ChangeRequest>, IChangeRequestService
@@ -62,9 +62,9 @@ namespace AttendanceSystemIPCamera.Services.ChangeRequestService
             return newRequest;
         }
 
-        public async Task<IEnumerable<ChangeRequest>> GetAll(SearchChangeRequestViewModel viewModel)
+        public IEnumerable<ChangeRequest> GetAll(SearchChangeRequestViewModel viewModel)
         {
-            return await changeRequestRepository.GetAll(viewModel);
+            return changeRequestRepository.GetAll(viewModel);
         }
 
         public async Task<ChangeRequest> Process(ProcessChangeRequestViewModel viewModel)

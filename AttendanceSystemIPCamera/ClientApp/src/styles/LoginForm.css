@@ -9,3 +9,18 @@
 #components-form-demo-normal-login .login-form-button {
     width: 100%;
 }
+
+.login-form {
+    text-align: center;
+}
+
+.login {
+    width: 80%;
+}
+
+.container-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}

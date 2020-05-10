@@ -18,6 +18,8 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
         Task<IEnumerable<AttendeeGroup>> GetByGroupCode(string groupCode);
         Task<AttendeeGroup> Delete(string attendeeCode, string groupCode);
         Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode);
+        Task<AttendeeGroup> GetByAttendeeCodeAndGroupCodeWithStatus(string attendeeCode, string groupCode);
+        Task UpdateStatus(int id, bool status);
     }
     public class AttendeeGroupService : IAttendeeGroupService
     {
@@ -71,8 +73,8 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
         public async Task<AttendeeGroup> Delete(string attendeeCode, string groupCode)
         {
             var attendeeGroupInDb = await attendeeGroupRepository
-                .GetByAttendeeCodeAndGroupCode(attendeeCode, groupCode);
-            if (attendeeGroupInDb != null)
+                .GetByAttendeeCodeAndGroupCodeWithStatus(attendeeCode, groupCode);
+            if (attendeeGroupInDb != null && attendeeGroupInDb.IsActive)
             {
                 attendeeGroupInDb.IsActive = false;
                 unitOfWork.Commit();
@@ -83,6 +85,21 @@ namespace AttendanceSystemIPCamera.Services.AttendeeGroupService
         public async Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode)
         {
             return await attendeeGroupRepository.GetByAttendeeCodeAndGroupCode(attendeeCode, groupCode);
+        }
+
+        public async Task UpdateStatus(int id, bool status)
+        {
+            var attendeeGroup = await attendeeGroupRepository.GetById(id);
+            if(attendeeGroup != null)
+            {
+                attendeeGroup.IsActive = status;
+                attendeeGroupRepository.Update(attendeeGroup);
+            }
+        }
+
+        public async Task<AttendeeGroup> GetByAttendeeCodeAndGroupCodeWithStatus(string attendeeCode, string groupCode)
+        {
+            return await attendeeGroupRepository.GetByAttendeeCodeAndGroupCodeWithStatus(attendeeCode, groupCode);
         }
     }
 }
