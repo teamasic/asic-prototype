@@ -104,12 +104,13 @@ class GroupCard extends React.PureComponent<GroupProps> {
         });
     }
 
-    private getLastSession(group: Group) {
-        const notScheduledSessions = this.props.group.sessions
+    private getLastSession(group: Group): Date | null {
+        const notScheduledSessions = group.sessions
             .filter(s => s.status !== SessionStatusConstants.SCHEDULED);
         if (notScheduledSessions.length > 0) {
             return notScheduledSessions[notScheduledSessions.length - 1].startTime;
         }
+        return null;
     }
 
     public render() {
