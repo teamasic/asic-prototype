@@ -33,12 +33,12 @@ namespace AttendanceSystemIPCamera.Controllers
         }
 
         [HttpGet]
-        public Task<BaseResponse<IEnumerable<ChangeRequestSimpleViewModel>>> GetAllChangeRequests(
+        public BaseResponse<IEnumerable<ChangeRequestSimpleViewModel>> GetAllChangeRequests(
             [FromQuery] SearchChangeRequestViewModel viewModel)
         {
-            return ExecuteInMonitoring(async () =>
+            return ExecuteInMonitoring(() =>
             {
-                var changeRequests = await changeRequestService.GetAll(viewModel);
+                var changeRequests = changeRequestService.GetAll(viewModel);
                 return mapper.ProjectTo<ChangeRequest, ChangeRequestSimpleViewModel>(changeRequests);
             });
         }

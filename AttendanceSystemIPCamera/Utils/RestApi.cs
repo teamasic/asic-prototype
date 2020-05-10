@@ -29,7 +29,6 @@ namespace AttendanceSystemIPCamera.Utils
                 }
             }
             throw new BaseException(await response.Content.ReadAsStringAsync());
-            return null;
         }
         public static async Task<T> GetAsync<T>(string url) where T : class
         {
