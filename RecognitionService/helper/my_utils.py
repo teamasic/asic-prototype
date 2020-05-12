@@ -22,7 +22,7 @@ def saveImageFunction(image, box, dir, padding=20, imageName = None, isOverwrite
     newRight = w if right + padding > w else right + padding
 
     crop_image = image[newTop:newBottom, newLeft:newRight]
-    crop_image = imutils.resize(crop_image, width=150, height=150)
+    crop_image = cv2.resize(crop_image, (150, 150), interpolation=cv2.INTER_AREA)
     if imageName is None:
         imageName = "{}.jpg".format(str(uuid.uuid4()))
     fullPath = os.path.join(dir, imageName)

@@ -34,7 +34,7 @@ def recognition_faces(resultFull):
                             recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                          connectQueueApiError, sessionId)
                         else:
-                            if face_recognition.face_distance([preUnknown], vec)[0] > 0.5:
+                            if face_recognition.face_distance([preUnknown], vec)[0] > 0.6:
                                 print("AAA", face_recognition.face_distance([preUnknown], vec))
                                 recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                              connectQueueApiError, sessionId)
@@ -51,7 +51,7 @@ def recognition_faces(resultFull):
                         recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                      connectQueueApiError, sessionId)
                     else:
-                        if face_recognition.face_distance([preUnknown], vec)[0] > 0.5:
+                        if face_recognition.face_distance([preUnknown], vec)[0] > 0.6:
                             print("AAA", face_recognition.face_distance([preUnknown], vec))
                             recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                          connectQueueApiError, sessionId)
