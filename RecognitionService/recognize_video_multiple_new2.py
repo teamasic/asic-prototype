@@ -93,6 +93,14 @@ def show_frame():
                 videoStreamLock.acquire()
 
 
+def changePositionWindownFromRight(width, height, fromRight, fromTop):
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = screen_width - fromRight - width
+    y = fromTop
+    window.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
+
 if __name__ == "__main__":
     # get arguments
     ap = argparse.ArgumentParser()
@@ -141,6 +149,9 @@ if __name__ == "__main__":
     lbImage = tk.Label(window)
     lbImage.grid(row=0, column=0, columnspan=2, padx=10, pady=5)
 
+    # change position window
+    changePositionWindownFromRight(620, 425, 50, 50)
+
     # Warm up camera
     isOpenStreamOk = False
     countTryOpenStream = 0
@@ -151,7 +162,7 @@ if __name__ == "__main__":
         while countTryOpenStream < timesTryConnect and isOpenStreamOk is False:
             countTryOpenStream += 1
             if countTryOpenStream == 1:
-                httpString = my_service.transfer_rtsp_to_http(rtspString)
+                httpString = "http://localhost:{}".format(my_constant.portHttpStream)
             else:
                 httpString = my_service.transfer_rtsp_to_http(rtspString)
             vs = stream_video.CustomVideoStream(src=httpString)

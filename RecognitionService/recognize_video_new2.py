@@ -106,14 +106,22 @@ def show_frame():
     window.quit()
 
 
+def changePositionWindownFromRight(width, height, fromRight, fromTop):
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = screen_width - fromRight - width
+    y = fromTop
+    window.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
+
 if __name__ == "__main__":
     # get arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.4:8554/unicast",
+    ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.29:8554/unicast",
                     help="path to rtsp string")
     ap.add_argument("-n", "--num", default=2,
                     help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
-    ap.add_argument("-t", "--time", default=30000,
+    ap.add_argument("-t", "--time", default=60000 * 2,
                     help="Time for recognition in video in milliseconds")
     ap.add_argument("-a", "--attendance", default=False,
                     help="Open video stream for checking attendance or not")
@@ -151,6 +159,9 @@ if __name__ == "__main__":
     btnExit = tk.Button(window, text="Exit", command=window.quit)
     btnExit.grid(row=1, column=0, padx=10, pady=5, sticky='EWNS')
 
+    # change position window
+    changePositionWindownFromRight(420,390,50,50)
+
     # Warm up camera
     isOpenStreamOk = False
     countTryOpenStream = 0
@@ -161,7 +172,7 @@ if __name__ == "__main__":
         while countTryOpenStream < timesTryConnect and isOpenStreamOk is False:
             countTryOpenStream += 1
             if countTryOpenStream == 1:
-                httpString = my_service.transfer_rtsp_to_http(rtspString)
+                httpString = "http://localhost:{}".format(my_constant.portHttpStream)
             else:
                 httpString = my_service.transfer_rtsp_to_http(rtspString)
             vs = stream_video.CustomVideoStream(src=httpString)
