@@ -1,9 +1,11 @@
+import json
 import os
 import uuid
 from multiprocessing.context import Process
 from os import path
 from pathlib import Path
 from threading import Thread
+import numpy as np
 
 import cv2
 import imutils
@@ -43,3 +45,60 @@ def remove_all_files(folder):
                 pass
     else:
         raise Exception("Folder {} does not exist".format(folder))
+
+
+def getUnknownDictionary(sessionId):
+    pathUnknown = path.join(my_constant.unknownDir, str(sessionId))
+    Path(pathUnknown).mkdir(exist_ok=True)
+    jsonFilePath = path.join(pathUnknown, "unknown.json")
+    return getImageDictionary(jsonFilePath)
+
+def getImageDictionary(jsonFilePath):
+    result = []
+    if os.path.exists(jsonFilePath):
+        with open(jsonFilePath) as json_file:
+            try:
+                data = json.load(json_file)
+                embeddingList = data['embeddings']
+                for i, value in enumerate(embeddingList):
+                    embedding_value = np.asarray(list(value["embedding_value"]))
+                    newDic = {
+                        "image_name": value["image_name"],
+                        "embedding_value": embedding_value
+                    }
+                    result.append(newDic)
+            except Exception as ex:
+                print(ex)
+                print("Read json error")
+    else:
+        data = {"embeddings": []}
+        with open(jsonFilePath, "w", encoding='utf-8') as json_file:
+            json.dump(data, json_file)
+    return result
+
+
+def getPeopleDictionary(sessionId):
+    pathPeople = path.join(my_constant.peopleDir, str(sessionId))
+    Path(pathPeople).mkdir(exist_ok=True)
+    jsonFilePath = path.join(pathPeople, "people.json")
+    return getImageDictionary(jsonFilePath)
+
+
+def saveUnknownEmbeddings(unknownDictionary, sessionId):
+    pathUnknown = path.join(my_constant.unknownDir, str(sessionId))
+    jsonFilePath = path.join(pathUnknown, "unknown.json")
+    for unkownEmbedding in unknownDictionary:
+        unkownEmbedding["embedding_value"] = unkownEmbedding["embedding_value"].tolist()
+    data = {"embeddings": unknownDictionary}
+    with open(jsonFilePath, "w", encoding='utf-8') as json_file:
+        json.dump(data, json_file)
+
+
+def savePeopleEmbeddings(peopleDictionary, sessionId):
+    pathUnknown = path.join(my_constant.peopleDir, str(sessionId))
+    jsonFilePath = path.join(pathUnknown, "people.json")
+    for peopleEmbedding in peopleDictionary:
+        peopleEmbedding["embedding_value"] = peopleEmbedding["embedding_value"].tolist()
+    data = {"embeddings": peopleDictionary}
+    with open(jsonFilePath, "w", encoding='utf-8') as json_file:
+        json.dump(data, json_file)

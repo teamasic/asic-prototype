@@ -17,49 +17,41 @@ from config import my_constant
 from helper import my_service, my_face_detection, stream_video, recognition_api, my_utils, boolean_wrapper
 from helper.my_utils import remove_all_files
 
+def sendRequest(result):
+    (box, name, proba, vec) = result
+    global unknownDictionary, peopleDictionary
+    if name == "unknown":
+        unknownEmbeddingAll = [embedding["embedding_value"] for embedding in unknownDictionary]
+        peopleEmbeddingAll = [embedding["embedding_value"] for embedding in peopleDictionary]
+        faceCompareListUnkown = face_recognition.compare_faces(unknownEmbeddingAll, vec, tolerance=0.5)
+        faceCompareListPeople = face_recognition.compare_faces(peopleEmbeddingAll, vec, tolerance=0.5)
+        isUnknownDifferent = all(element == False for element in faceCompareListUnkown) and all(element == False for element in faceCompareListPeople)
+        print(face_recognition.face_distance(unknownEmbeddingAll, vec))
+        print(face_recognition.face_distance(peopleEmbeddingAll, vec))
+        print(faceCompareListUnkown)
+        print(faceCompareListPeople)
+        print(isUnknownDifferent)
+        if isUnknownDifferent:
+            recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
+                                                         connectQueueApiError, sessionId, unknownDictionary, vec)
+
+    else:
+        recognition_api.recognize_face_new_thread(name, copy.deepcopy(currentImage), box, connectQueueApiError,
+                                                  sessionId, peopleDictionary, vec)
+
 
 def recognition_faces(resultFull):
-    global preUnknown
     results = [result[0] for result in resultFull]
     for result in results:
         (box, name, proba, vec) = result
-        print(name)
-        # Show and call API
+        print(name, "-", proba)
         if isForCheckingAttendance:
-            if connectQueueApiError.empty() is False:
-                if connectQueueApiError.get() is True:
-                    if name == "unknown":
-                        if preUnknown is None:
-                            preUnknown = vec
-                            recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
-                                                                         connectQueueApiError, sessionId)
-                        else:
-                            if face_recognition.face_distance([preUnknown], vec)[0] > 0.6:
-                                print("AAA", face_recognition.face_distance([preUnknown], vec))
-                                recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
-                                                                             connectQueueApiError, sessionId)
-                                preUnknown = copy.deepcopy(vec)
-                    else:
-                        recognition_api.recognize_face_new_thread(name, copy.deepcopy(currentImage), box, connectQueueApiError, sessionId)
-                else:
-                    cannotCallApi.change(True)
-                    return
+            isApiError = connectQueueApiError.empty() is False and connectQueueApiError.get() is False
+            if isApiError is False:
+                sendRequest(result)
             else:
-                if name == "unknown":
-                    if preUnknown is None:
-                        preUnknown = copy.deepcopy(vec)
-                        recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
-                                                                     connectQueueApiError, sessionId)
-                    else:
-                        if face_recognition.face_distance([preUnknown], vec)[0] > 0.6:
-                            print("AAA", face_recognition.face_distance([preUnknown], vec))
-                            recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
-                                                                         connectQueueApiError, sessionId)
-                            preUnknown = copy.deepcopy(vec)
-                else:
-                    recognition_api.recognize_face_new_thread(name, copy.deepcopy(currentImage), box,
-                                                              connectQueueApiError, sessionId)
-
+                cannotCallApi.change(True)
+                return
     continueDetect.change(True)
 
 
@@ -109,15 +101,15 @@ def show_frame():
 if __name__ == "__main__":
     # get arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.4:8554/unicast",
+    ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.29:8554/unicast",
                     help="path to rtsp string")
     ap.add_argument("-n", "--num", default=2,
                     help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
-    ap.add_argument("-t", "--time", default=30000,
+    ap.add_argument("-t", "--time", default=120000,
                     help="Time for recognition in video in milliseconds")
-    ap.add_argument("-a", "--attendance", default=False,
+    ap.add_argument("-a", "--attendance", default=True,
                     help="Open video stream for checking attendance or not")
-    ap.add_argument("-s", "--sessionId", default=1,
+    ap.add_argument("-s", "--sessionId", default=570,
                     help="Session Id")
     args = vars(ap.parse_args())
 
@@ -137,8 +129,8 @@ if __name__ == "__main__":
     continueDetect = boolean_wrapper.BooleanWrapper(True)
     connectQueueApiError = Queue()
     currentImage = None
-    preUnknown = None
-
+    unknownDictionary = my_utils.getUnknownDictionary(sessionId)
+    peopleDictionary = my_utils.getPeopleDictionary(sessionId)
 
     # Setup gui
     window = tk.Tk()
@@ -191,4 +183,6 @@ if __name__ == "__main__":
         cv2.destroyAllWindows()
         vs.stop()
         pool.close()
-        remove_all_files(my_constant.unknownDir)
+        my_utils.saveUnknownEmbeddings(unknownDictionary, sessionId)
+        my_utils.savePeopleEmbeddings(peopleDictionary, sessionId)
+        # remove_all_files(my_constant.unknownDir)

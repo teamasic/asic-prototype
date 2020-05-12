@@ -125,11 +125,11 @@ class TakeAttendanceModal extends React.PureComponent<ModalProps, TakeAttendance
 				<Row justify="start" style={{ marginTop: 5 }} type="flex" align="middle" gutter={[0, 0]}>
 					<Col span={12}>
 						<span style={{ marginRight: 5 }}>Start time</span>
-						<TimePicker onChange={this.props.onChangeStartTime} value={this.props.startTime} format="HH:mm" disabledHours={this.getDisableHours} disabledMinutes={this.getDisableMinutes} />
+						<TimePicker onChange={this.props.onChangeStartTime} value={this.props.startTime} format="HH:mm" />
 					</Col>
 					<Col span={12}>
 						<span style={{ marginRight: 5 }}>End time</span>
-						<TimePicker onChange={this.props.onChangeEndTime} value={this.props.endTime} format="HH:mm" disabledHours={this.getDisableHours} disabledMinutes={this.getDisableMinutes} />
+						<TimePicker onChange={this.props.onChangeEndTime} value={this.props.endTime} format="HH:mm" />
 					</Col>
 				</Row>
 				{this.state.isError ?
