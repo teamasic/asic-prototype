@@ -10,9 +10,10 @@ import { bindActionCreators } from 'redux';
 import Session from '../models/Session';
 import SessionViewModel from '../models/SessionViewModel';
 import '../styles/Table.css';
+import '../styles/GroupDetail.css';
 import { renderStripedTable } from '../utils'
 import TableConstants from '../constants/TableConstants';
-import SessionStatusConstants from "../constants/SessionStatusConstants";
+import SessionStatusConstants, { SessionStatusText } from "../constants/SessionStatusConstants";
 
 
 interface Props {
@@ -127,8 +128,20 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
                 title: 'Status',
                 key: 'status',
                 dataIndex: 'status',
-                render: (text: any, record: any) =>
-                    <p  style={{color: record.colorStatus, fontWeight: "bold"}}>{record.status}</p>
+                render: (text: string, record: any) => {
+                    switch (record.status) {
+                        case SessionStatusConstants.SCHEDULED:
+                            return <span className="badge scheduled">Scheduled</span>;
+                        case SessionStatusConstants.IN_PROGRESS:
+                            return <span className="badge in-progress">In progress</span>;
+                        case SessionStatusConstants.EDITABLE:
+                            return <span className="badge editable">Editable</span>;
+                        case SessionStatusConstants.FINISHED:
+                            return <span className="badge finished">Finished</span>;
+                        default:
+                            return <span></span>;
+                    }
+                }
             },
             {
                 title: 'Action',
@@ -159,9 +172,18 @@ class PastSession extends React.PureComponent<SessionProps, PastSessionComponent
                        rowClassName={renderStripedTable}
                 />
                 <div>
-                    <p><span style={{color: this.getColorByStatus(SessionStatusConstants.IN_PROGRESS), fontWeight: "bold"}}>{SessionStatusConstants.IN_PROGRESS}: </span>This session is working, supervisor can take attendance manually or by IP Camera</p>
-                    <p><span style={{color: this.getColorByStatus(SessionStatusConstants.EDITABLE), fontWeight: "bold"}}>{SessionStatusConstants.EDITABLE}: </span>This session is not working, but supervisor can still take attendance manually </p>
-                    <p><span style={{color: this.getColorByStatus(SessionStatusConstants.FINISHED), fontWeight: "bold"}}>{SessionStatusConstants.FINISHED}: </span>This session is finished, supervisor cannot take attendance</p>
+                    <p>
+                        <span className="status-label in-progress">{SessionStatusText.IN_PROGRESS}: </span>
+                        This session is working, supervisor can take attendance manually or by IP Camera
+                    </p>
+                    <p>
+                        <span className="status-label editable">{SessionStatusText.EDITABLE}: </span>
+                        This session is not working, but supervisor can still take attendance manually
+                        </p>
+                    <p>
+                        <span className="status-label finished">{SessionStatusText.FINISHED}: </span>
+                        This session is finished, supervisor cannot take attendance
+                    </p>
                 </div>
             </React.Fragment>
 

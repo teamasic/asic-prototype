@@ -28,7 +28,7 @@ import { RoomsState } from '../store/room/state';
 import Room from '../models/Room';
 import { roomActionCreators } from '../store/room/actionCreators';
 import UnknownSection from './UnknownSection';
-import SessionStatus from '../models/SessionStatus';
+import SessionStatusConstants from '../constants/SessionStatusConstants';
 const { Title } = Typography;
 const { Option } = AutoComplete
 
@@ -261,7 +261,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 
 	private isSessionEditable() {
 		return this.props.activeSession != null &&
-			this.props.activeSession.status === SessionStatus.IN_PROGRESS &&
+			this.props.activeSession.status === SessionStatusConstants.IN_PROGRESS &&
 			!this.isSessionCurrentlyOngoing();
 	}
 }

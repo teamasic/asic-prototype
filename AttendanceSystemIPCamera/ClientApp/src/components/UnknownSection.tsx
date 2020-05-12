@@ -99,7 +99,7 @@ class UnknownSection extends React.PureComponent<UnknownProps, State>{
                                 <div key={img}
                                     className="attendee-box grid-element">
                                     <div className="inner-box">
-                                        {this.getImageBox(`url(/api/unknown/${img})`)}
+                                        {this.getImageBox(`url(/api/unknown/${this.props.sessionId}/${img})`)}
                                         {
                                             this.props.editable ? 
                                                 <div className="inner-box-actions">
