@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
 using AttendanceSystemIPCamera.Services.SessionService;
+using AttendanceSystemIPCamera.Utils;
+using AttendanceSystemIPCamera.Framework.ExeptionHandler;
+using System.Net;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -153,6 +156,22 @@ namespace AttendanceSystemIPCamera.Controllers
             {
                 sessionService.RemoveUnknownImage(id, image);
                 return "";
+            });
+        }
+
+        [HttpPost("notify-server")]
+        public async Task<BaseResponse<AttendeeViewModel>> NotifyServer(AttendeeViewModel attendeeViewModel)
+        {
+            return await ExecuteInMonitoring(async () =>
+            {
+                if (NetworkUtils.IsInternetAvailable())
+                {
+                    await sessionService.NotifyServerToTrainMore(attendeeViewModel.Code);
+                    return attendeeViewModel;
+                } else
+                {
+                    throw new AppException(HttpStatusCode.NotFound, ErrorMessage.NO_INTERNET_CONNECTION);
+                }
             });
         }
     }

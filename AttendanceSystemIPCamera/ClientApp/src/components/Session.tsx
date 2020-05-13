@@ -94,6 +94,10 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		}, assumeSuccess);
 	}
 
+	public notifyServer = (attendeeCode: string) => {
+		this.props.notifyServerToTrainMore(attendeeCode);
+	}
+
 	public onUpdateRoom = () => {
 		this.setState({ isUpdateRoom: true });
 	}
@@ -236,6 +240,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 				isSessionEditable={this.isSessionEditable()}
 			/>
 			<UnknownSection
+				notifyServer={this.notifyServer}
 				sessionId={this.state.sessionId}
 				editable={this.isSessionEditable()}
 				markAsPresent={this.markAsPresent} />
@@ -244,6 +249,7 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 
 	private renderSessionActiveView() {
 		return <SessionActiveView
+			notifyServer={this.notifyServer}
 			sessionId={this.state.sessionId}
 			markAsAbsent={this.markAsAbsent}
 			markAsPresent={this.markAsPresent}
@@ -261,7 +267,8 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 
 	private isSessionEditable() {
 		return this.props.activeSession != null &&
-			this.props.activeSession.status === SessionStatusConstants.IN_PROGRESS &&
+			(this.props.activeSession.status === SessionStatusConstants.IN_PROGRESS ||
+				this.props.activeSession.status === SessionStatusConstants.EDITABLE) &&
 			!this.isSessionCurrentlyOngoing();
 	}
 }

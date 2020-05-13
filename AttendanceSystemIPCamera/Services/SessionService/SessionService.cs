@@ -16,6 +16,7 @@ using AttendanceSystemIPCamera.Services.RecognitionService;
 using Microsoft.Extensions.Logging;
 using AttendanceSystemIPCamera.Framework;
 using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
+using AttendanceSystemIPCamera.Utils;
 
 namespace AttendanceSystemIPCamera.Services.SessionService
 {
@@ -41,6 +42,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         void FinishSessions();
         Task ChangeSessionsToEditable();
         List<Session> GetByGroupCodeAndStatusIsNotScheduled(string groupCode);
+        Task NotifyServerToTrainMore(string attendeeCode);
     }
 
     public class SessionService : BaseService<Session>, ISessionService
@@ -56,7 +58,7 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private readonly IMapper mapper;
         private readonly ILogger logger;
         private TimeSpan activatedTimeBeforeStartTime;
-        private MyConfiguration cfg;
+        private readonly MyConfiguration cfg;
 
         public SessionService(MyUnitOfWork unitOfWork, IRecordService recordService, IMapper mapper,
             IRecognitionService recognitionService, UnitService.UnitService unitService,
@@ -705,6 +707,12 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         {
             return sessionRepository
                 .GetByGroupCodeAndStatusIsNot(groupCode, Constants.SessionStatus.SCHEDULED);
+        }
+
+        public async Task NotifyServerToTrainMore(string attendeeCode)
+        {
+            string api = $"{cfg.ServerUrl}/{Constants.ServerConstants.TrainMoreApi}{attendeeCode}";
+            await RestApi.PostAsync<SettingsUpdateViewModel>(api);
         }
     }
 }

@@ -76,3 +76,7 @@
 	border-color: #1890ff !important;
 	cursor: not-allowed;
 }
+
+.notify-server-box {
+	margin-top: 12px !important;
+}

@@ -12,13 +12,21 @@ namespace AttendanceSystemIPCamera.Utils
 {
     public class RestApi
     {
+        public static async Task<T> PostAsync<T>(string url) where T : class
+        {
+            return await PostAsync<T>(url, null);
+        }
 
         public static async Task<T> PostAsync<T>(string url, object requestMessage) where T : class
         {
             HttpClient client = new HttpClient();
-            var content = new StringContent(JsonConvert.SerializeObject(requestMessage),
-                                            Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(new Uri(url), content);
+            StringContent messageContent = null;
+            if (requestMessage != null)
+            {
+                messageContent = new StringContent(JsonConvert.SerializeObject(requestMessage),
+                                Encoding.UTF8, "application/json");
+            }
+            var response = await client.PostAsync(new Uri(url), messageContent);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 string responseData = await response.Content.ReadAsStringAsync();

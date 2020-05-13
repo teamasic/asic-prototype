@@ -11,7 +11,8 @@ import {
 	getScheduledSesionByGroupCode,
 	deleteScheduledSession,
 	removeSessionUnknownImage,
-	updateRoom
+	updateRoom,
+	notifyServerToTrainMore as notifyServer,
 } from '../../services/session';
 import Session from '../../models/Session';
 import Record from '../../models/Record';
@@ -241,7 +242,7 @@ export const requestDeleteScheduledSession = (scheduledId: number, reloadSchedul
 		success("Delete schedule success!");
 		reloadSchedule();
 	} else {
-		error("Delete schedule falied!");
+		error("Delete schedule failed!");
 		console.log(apiResponse.errors);
 	}
 }
@@ -311,6 +312,15 @@ function updateAttendeeRecordRealTimeBatch(attendeeCodes: string[]) {
 	};
 }
 
+export const notifyServerToTrainMore = (attendeeCode: string): AppThunkAction => async (dispatchEvent, getState) => {
+	const apiResponse: ApiResponse = await notifyServer(attendeeCode);
+	if (apiResponse.success) {
+		success("The administrator has been successfully notified.");
+	} else {
+		error("Cannot connect to server. Please check your internet connection.");
+	}
+}
+
 export const sessionActionCreators = {
 	requestSession,
 	createOrUpdateRecord,
@@ -328,5 +338,6 @@ export const sessionActionCreators = {
 	requestCreateScheduledSession,
 	requestGetScheduledSessionByGroupCode,
 	requestDeleteScheduledSession,
-	requestUpdateRoom
+	requestUpdateRoom,
+	notifyServerToTrainMore
 };

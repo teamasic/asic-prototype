@@ -27,6 +27,7 @@ interface Props {
     sessionId: number;
     editable: boolean;
     markAsPresent: (attendeeCode: string) => void;
+    notifyServer: (attendeeCode: string) => void;
 }
 
 type UnknownProps =
@@ -138,6 +139,7 @@ class UnknownSection extends React.PureComponent<UnknownProps, State>{
                     hideModal={() => this.closeUnknownModal()}
                     markAsPresent={this.props.markAsPresent}
                     attendeeRecords={this.props.attendeeRecords}
+                    notifyServer={this.props.notifyServer}
                 />
             }
         </div>;

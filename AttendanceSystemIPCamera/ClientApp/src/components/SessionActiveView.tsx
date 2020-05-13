@@ -22,6 +22,7 @@ interface Props {
 	sessionId: number;
 	markAsPresent: (attendeeCode: string) => void;
 	markAsAbsent: (attendeeCode: string, assumeSuccess: boolean) => void;
+	notifyServer: (attendeeCode: string) => void;
 }
 
 // At runtime, Redux will merge together...
@@ -63,6 +64,7 @@ class SessionActiveView extends React.PureComponent<SessionProps, State> {
 				markAsAbsent={this.props.markAsAbsent}  />
 
 				<UnknownSection
+					notifyServer={this.props.notifyServer}
 					editable={true}
 					sessionId={this.props.sessionId} 
 					markAsPresent={this.props.markAsPresent} />

@@ -10,7 +10,7 @@ import * as moment from 'moment'
 import Room from '../models/Room';
 import Attendee from '../models/Attendee';
 import { createSession } from '../services/session';
-import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, InputNumber, Typography, Modal, TimePicker, message, Tooltip } from 'antd';
+import { Card, Button, Dropdown, Icon, Menu, Row, Col, Select, Checkbox, Typography, Modal, TimePicker, message, Tooltip } from 'antd';
 import { formatFullDateTimeString, success, error } from '../utils';
 import classNames from 'classnames';
 import { createBrowserHistory } from 'history';
@@ -27,11 +27,13 @@ interface ModalProps {
     attendeeRecords: AttendeeRecordPair[];
     markAsPresent: (attendeeCode: string) => void;
     removeUnknownImage: (image: string) => void;
+    notifyServer: (attendeeCode: string) => void;
 }
 
 interface State {
     attendeeCode: string;
     isError: boolean;
+    notifyServer: boolean;
 }
 
 class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
@@ -39,7 +41,8 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
         super(props);
         this.state = {
             attendeeCode: '',
-            isError: false
+            isError: false,
+            notifyServer: false
         };
     }
 
@@ -59,6 +62,9 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
                 if (!present) {
                     this.props.markAsPresent(attendeeCode);
                 }
+                if (this.state.notifyServer) {
+                    this.props.notifyServer(attendeeCode);
+                }
                 this.props.removeUnknownImage(this.props.unknownImage);
                 this.props.hideModal();
             },
@@ -72,6 +78,11 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
     private onChangeAttendee = (attendeeCode: string) => {
         this.setState({
             attendeeCode
+        });
+    }
+    private onChangeNotifyServer = (notifyServer: boolean) => {
+        this.setState({
+            notifyServer
         });
     }
     private renderAttendeeOptions = () => {
@@ -117,6 +128,14 @@ class MarkUnknownPresentModal extends React.PureComponent<ModalProps, State> {
                 {this.state.isError ? <Row type="flex" justify="start" align="top" gutter={[16, 16]}>
                     <Col span={14}><p style={{ color: "red" }}>Please choose an attendee</p></Col>
                 </Row> : null}
+                <Row className="notify-server-box" type="flex" justify="start" align="top" gutter={[16, 16]}>
+                    <Checkbox
+                        checked={this.state.notifyServer}
+                        onChange={e => this.onChangeNotifyServer(e.target.checked)}
+                    >
+                        Notify server about issues taking attendance of this attendee
+                    </Checkbox>
+                </Row>
             </div>
         </Modal>;
     }

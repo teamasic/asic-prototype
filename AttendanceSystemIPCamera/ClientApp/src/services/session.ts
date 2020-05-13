@@ -88,3 +88,10 @@ export const updateRoom = async (data: SessionUpdateRoom): Promise<ApiResponse> 
 	const response = await axios.post(apify("room"), data);
 	return await response.data;
 }
+
+export const notifyServerToTrainMore = async (attendeeCode: string): Promise<ApiResponse> => {
+	const response = await axios.post(apify("notify-server"), {
+		code: attendeeCode
+	});
+	return await response.data;
+};
