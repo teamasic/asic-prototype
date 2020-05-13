@@ -483,10 +483,14 @@ namespace AttendanceSystemIPCamera.Services.SessionService
         private int GetDurationBeforeStartInSecond(DateTime startTime)
         {
             var currentTime = DateTime.Now;
-            var timeDifferenceInSecond = (int)startTime.Subtract(currentTime).TotalSeconds - 8;
-            if (timeDifferenceInSecond < -8)
+            var timeDifferenceInSecond = (int)startTime.Subtract(currentTime).TotalSeconds;
+            if (timeDifferenceInSecond < -60)
             {
                 throw new AppException(HttpStatusCode.BadRequest, ErrorMessage.WRONG_SESSION_START_TIME);
+            }
+            else if (timeDifferenceInSecond >= -60 && timeDifferenceInSecond <= 0)
+            {
+                timeDifferenceInSecond = 0;
             }
             return timeDifferenceInSecond;
         }
