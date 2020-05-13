@@ -5,11 +5,11 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <Platforms>AnyCPU;x64;x86</Platforms>
-    <ApplicationIcon>asic_ico.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CefSharp.Wpf" Version="79.1.350" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,5 +26,19 @@
       <Private>true</Private>
     </Reference>
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Copy SourceFiles="$(ProjectDir)wpfsettings.json" DestinationFolder="$(TargetDir)" ContinueOnError="false" />
+  </Target>
+
+  <Target Name="PublishDistFiles" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <DistFiles Include="wpfsettings.json" />
+      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>%(DistFiles.Identity)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 
 </Project>
