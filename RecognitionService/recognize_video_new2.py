@@ -1,6 +1,7 @@
 import argparse
 import copy
 import multiprocessing
+import os
 import threading
 import time
 import tkinter as tk
@@ -202,4 +203,4 @@ if __name__ == "__main__":
         cv2.destroyAllWindows()
         vs.stop()
         pool.close()
-        remove_all_files(my_constant.unknownDir)
+        os.system("terminate_vlc.bat")
