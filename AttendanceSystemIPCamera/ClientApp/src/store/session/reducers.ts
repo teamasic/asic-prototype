@@ -4,6 +4,7 @@ import { ACTIONS } from './actionCreators';
 import Record from '../../models/Record';
 import AttendeeRecordPair from '../../models/AttendeeRecordPair';
 import UpdateRecord from '../../models/UpdateRecord';
+import { addNoCacheString } from '../../utils';
 
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
@@ -97,14 +98,14 @@ const reducers: Reducer<SessionState> = (
 					updatedRecord = {
 						...updatedAttendeeRecord.record,
 						present: true,
-						image: `${updatedAttendeeRecord.attendee.code}.jpg`
+						image: addNoCacheString(`${updatedAttendeeRecord.attendee.code}.jpg`)
 					};
 				} else {
 					updatedRecord = {
 						id: -1,
 						attendee: updatedAttendeeRecord.attendee,
 						present: true,
-						image: `${updatedAttendeeRecord.attendee.code}.jpg`
+						image: addNoCacheString(`${updatedAttendeeRecord.attendee.code}.jpg`)
 					};
 				}
 				return {
@@ -158,14 +159,14 @@ const reducers: Reducer<SessionState> = (
 					updatedRecord = {
 						...ar.record,
 						present: true,
-						image: `${ar.attendee.code}.jpg`
+						image: addNoCacheString(`${ar.attendee.code}.jpg`)
 					};
 				} else {
 					updatedRecord = {
 						id: -1,
 						attendee: ar.attendee,
 						present: true,
-						image: `${ar.attendee.code}.jpg`
+						image: addNoCacheString(`${ar.attendee.code}.jpg`)
 					};
 				}
 				changes[ar.attendee.code] = updatedRecord;

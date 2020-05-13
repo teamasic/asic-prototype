@@ -1,14 +1,10 @@
 [
 	{
-		"name": "111",
-		"rtspString": "lalala"
+		"name": "CAM01",
+		"cameraConnectionString": "rtsp://192.168.1.29:8554/unicast"
 	},
 	{
-		"name": "222",
-		"rtspString": "lululu"
-	},
-	{
-		"name": "555",
-		"rtspString": "huhu"
+		"name": "CAM02",
+		"cameraConnectionString": "rtsp://192.168.1.29:8554/unicast"
 	}
 ]

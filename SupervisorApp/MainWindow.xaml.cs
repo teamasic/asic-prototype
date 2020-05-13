@@ -3,6 +3,7 @@ using CefSharp.Wpf;
 using SupervisorApp.Handler;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,6 +26,8 @@ namespace SupervisorApp
     {
         private ChromiumWebBrowser browser;
         private string initUrl = "https://localhost:44359/";
+        private const string CACHE_PATH = "BrowserCache";
+
 
         public MainWindow()
         {
@@ -36,7 +39,7 @@ namespace SupervisorApp
         private void InitBrowser()
         {
             CefSettings settings = new CefSettings();
-            settings.CachePath = "BrowserCache";
+            settings.CachePath = System.IO.Path.GetFullPath(CACHE_PATH);
 
             Cef.Initialize(settings);
 

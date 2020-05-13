@@ -1,6 +1,7 @@
 import argparse
 import copy
 import multiprocessing
+import os
 import threading
 import time
 import tkinter as tk
@@ -34,7 +35,7 @@ def recognition_faces(resultFull):
                             recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                          connectQueueApiError, sessionId)
                         else:
-                            if face_recognition.face_distance([preUnknown], vec)[0] > 0.5:
+                            if face_recognition.face_distance([preUnknown], vec)[0] > 0.6:
                                 print("AAA", face_recognition.face_distance([preUnknown], vec))
                                 recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                              connectQueueApiError, sessionId)
@@ -51,7 +52,7 @@ def recognition_faces(resultFull):
                         recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                      connectQueueApiError, sessionId)
                     else:
-                        if face_recognition.face_distance([preUnknown], vec)[0] > 0.5:
+                        if face_recognition.face_distance([preUnknown], vec)[0] > 0.6:
                             print("AAA", face_recognition.face_distance([preUnknown], vec))
                             recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                          connectQueueApiError, sessionId)
@@ -106,14 +107,22 @@ def show_frame():
     window.quit()
 
 
+def changePositionWindownFromRight(width, height, fromRight, fromTop):
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = screen_width - fromRight - width
+    y = fromTop
+    window.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
+
 if __name__ == "__main__":
     # get arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.4:8554/unicast",
+    ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.29:8554/unicast",
                     help="path to rtsp string")
     ap.add_argument("-n", "--num", default=2,
                     help="num of maximum people to recognize image, recommend 1 for real time with normal cpu")
-    ap.add_argument("-t", "--time", default=30000,
+    ap.add_argument("-t", "--time", default=60000 * 2,
                     help="Time for recognition in video in milliseconds")
     ap.add_argument("-a", "--attendance", default=False,
                     help="Open video stream for checking attendance or not")
@@ -150,6 +159,9 @@ if __name__ == "__main__":
 
     btnExit = tk.Button(window, text="Exit", command=window.quit)
     btnExit.grid(row=1, column=0, padx=10, pady=5, sticky='EWNS')
+
+    # change position window
+    changePositionWindownFromRight(420,390,50,50)
 
     # Warm up camera
     isOpenStreamOk = False
@@ -191,4 +203,4 @@ if __name__ == "__main__":
         cv2.destroyAllWindows()
         vs.stop()
         pool.close()
-        remove_all_files(my_constant.unknownDir)
+        os.system("terminate_vlc.bat")

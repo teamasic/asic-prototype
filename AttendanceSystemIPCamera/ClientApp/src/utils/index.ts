@@ -71,3 +71,7 @@ export const compareDate = (first: Date | string, second: Date | string) => {
     }
     return 0;
 }
+
+export const addNoCacheString = (fileName: string) => {
+    return `${fileName}?dummy=${new Date().getTime()}`;
+};
