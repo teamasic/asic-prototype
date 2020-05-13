@@ -123,6 +123,7 @@ namespace AttendanceSystemIPCamera
             });
             loggerFactory.AddFile(string.Format($"{Constant.LOG_TEMPLATE}", "{Date}"));
 
+            
             app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
@@ -132,6 +133,7 @@ namespace AttendanceSystemIPCamera
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
+            
 
 
         }
