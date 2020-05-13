@@ -1,20 +1,8 @@
 ﻿using CefSharp;
 using CefSharp.Wpf;
 using SupervisorApp.Handler;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SupervisorApp.Utils;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SupervisorApp
 {
@@ -24,11 +12,12 @@ namespace SupervisorApp
     public partial class MainWindow : Window
     {
         private ChromiumWebBrowser browser;
-        private string initUrl = "https://localhost:44359/";
+        private Config config;
 
         public MainWindow()
         {
             InitializeComponent();
+            config = Utils.Utils.GetConfig();
 
             InitBrowser();
         }
@@ -40,11 +29,12 @@ namespace SupervisorApp
 
             Cef.Initialize(settings);
 
-            browser = new ChromiumWebBrowser(initUrl);
+            browser = new ChromiumWebBrowser(config.Url);
             browser.DownloadHandler = new DownloadHandler();
             browser.RequestHandler = new CustomRequestHandler();
 
             grid.Children.Add(browser);
         }
+
     }
 }

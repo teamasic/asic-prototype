@@ -187,18 +187,18 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 			<React.Fragment>
 				{/* <div className="title-session-container"> */}
 				<Row className="title-session-container">
-					<Col xl={3} sm={6}>
+					<Col xl={3} sm={8}>
 						<Title className="title" level={3}>
 							Session
 							</Title>
 					</Col>
-					<Col xl={4} sm={8} className="subtitle">
+					<Col xl={4} sm={10} xs={10} className="subtitle">
 						{formatFullDateTimeString(this.props.activeSession!.startTime)}
 					</Col>
-					<Col xl={2} sm={4} className="subtitle">
+					<Col xl={2} sm={4} xs={6} className="subtitle">
 						{this.props.activeSession!.name}
 					</Col>
-					<Col xl={7} sm={6} className="subtitle">
+					<Col xl={7} sm={6} xs={8} className="subtitle">
 						{this.state.isUpdateRoom ?
 							(
 								<AutoComplete

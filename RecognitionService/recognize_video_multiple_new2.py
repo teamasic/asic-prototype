@@ -1,6 +1,7 @@
 import argparse
 import copy
 import multiprocessing
+import os
 import threading
 import time
 import tkinter as tk
@@ -93,10 +94,18 @@ def show_frame():
                 videoStreamLock.acquire()
 
 
+def changePositionWindownFromRight(width, height, fromRight, fromTop):
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = screen_width - fromRight - width
+    y = fromTop
+    window.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
+
 if __name__ == "__main__":
     # get arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.4:8554/unicast",
+    ap.add_argument("-p", "--rtsp", default="rtsp://192.168.1.29:8554/unicast",
                     help="path to rtsp string")
     ap.add_argument("-a", "--attendance", default=False,
                     help="Open video stream for checking attendance or not")
@@ -141,6 +150,9 @@ if __name__ == "__main__":
     lbImage = tk.Label(window)
     lbImage.grid(row=0, column=0, columnspan=2, padx=10, pady=5)
 
+    # change position window
+    changePositionWindownFromRight(620, 425, 50, 50)
+
     # Warm up camera
     isOpenStreamOk = False
     countTryOpenStream = 0
@@ -182,4 +194,4 @@ if __name__ == "__main__":
         cv2.destroyAllWindows()
         vs.stop()
         pool.close()
-        remove_all_files(my_constant.unknownDir)
+        os.system("terminate_vlc.bat")
