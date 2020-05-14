@@ -24,8 +24,8 @@ def sendRequest(result):
     if name == "unknown":
         unknownEmbeddingAll = [embedding["embedding_value"] for embedding in unknownDictionary]
         peopleEmbeddingAll = [embedding["embedding_value"] for embedding in peopleDictionary]
-        faceCompareListUnkown = face_recognition.compare_faces(unknownEmbeddingAll, vec, tolerance=0.5)
-        faceCompareListPeople = face_recognition.compare_faces(peopleEmbeddingAll, vec, tolerance=0.5)
+        faceCompareListUnkown = face_recognition.compare_faces(unknownEmbeddingAll, vec, tolerance=0.55)
+        faceCompareListPeople = face_recognition.compare_faces(peopleEmbeddingAll, vec, tolerance=0.55)
         isUnknownDifferent = all(element == False for element in faceCompareListUnkown) and all(element == False for element in faceCompareListPeople)
         print(face_recognition.face_distance(unknownEmbeddingAll, vec))
         print(face_recognition.face_distance(peopleEmbeddingAll, vec))
