@@ -36,7 +36,7 @@ def recognition_faces():
         codes = set()
         unknowns = []
         for result in results:
-            (box, name, proba) = result
+            (box, name, proba, vec) = result
             if name == "unknown":
                 pathUnknown = path.join(my_constant.unknownDir, str(sessionId))
                 imageName, success = my_utils.saveImageFunction(copy.deepcopy(currentImage), box, dir=pathUnknown)
