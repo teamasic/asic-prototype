@@ -8,11 +8,15 @@ from config import my_constant
 from helper import my_utils
 
 
-def _recognize_face(name, connectQueue):
+def _recognize_face(name, image, box, connectQueue, sessionId):
     try:
-        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        payload = {"code": name}
-        r = requests.post("https://localhost:44359/api/record", json=payload, verify=False, headers=headers)
+        pathPeople = path.join(my_constant.peopleDir, str(sessionId))
+        imageName = name + ".jpg"
+        imageName, successSave = my_utils.saveImageFunction(image, box, pathPeople, padding=20, imageName=imageName)
+        if successSave:
+            headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+            payload = {"code": name, "image": imageName}
+            r = requests.post("https://localhost:44359/api/record", json=payload, verify=False, headers=headers)
     except Exception as e:
         connectQueue.put(False)
         return
@@ -36,8 +40,8 @@ def _recognize_unknown(name, image, box, connectQueue, sessionId):
         return
     connectQueue.put(True)
 
-def recognize_face_new_thread(name, connectQueue):
-    thread = Thread(target=_recognize_face, args=(name, connectQueue, ), daemon=True)
+def recognize_face_new_thread(name, image, box, connectQueue, sessionId):
+    thread = Thread(target=_recognize_face, args=(name, image, box, connectQueue, sessionId), daemon=True)
     thread.start()
 
 def recognize_unknown_new_thread(name, image, box, connectQueue, sessionId):

@@ -39,12 +39,16 @@ def recognition_faces():
             (box, name, proba, vec) = result
             if name == "unknown":
                 pathUnknown = path.join(my_constant.unknownDir, str(sessionId))
-                imageName, success = my_utils.saveImageFunction(copy.deepcopy(currentImage), box, dir=pathUnknown)
-                print(imageName, success)
-                if success:
+                imageName, successSave = my_utils.saveImageFunction(copy.deepcopy(currentImage), box, dir=pathUnknown)
+                print(imageName, successSave)
+                if successSave:
                     unknowns.append(imageName)
             else:
-                codes.add(name)
+                pathPeople = path.join(my_constant.peopleDir, str(sessionId))
+                imageName = name + ".jpg"
+                imageName, successSave = my_utils.saveImageFunction(copy.deepcopy(currentImage), box, dir=pathPeople, imageName=imageName)
+                if successSave:
+                    codes.add(name)
         try:
             recognition_api.recognize_multiple_faces(list(codes), unknowns)
         except:
