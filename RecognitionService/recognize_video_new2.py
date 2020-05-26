@@ -4,7 +4,6 @@ import multiprocessing
 import threading
 import time
 import tkinter as tk
-from datetime import datetime
 from queue import Queue
 
 import cv2
@@ -35,14 +34,13 @@ def recognition_faces(resultFull):
                             recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                          connectQueueApiError, sessionId)
                         else:
-                            print(face_recognition.face_distance([preUnknown], vec))
-                            if face_recognition.face_distance([preUnknown], vec) > 0.5:
+                            if face_recognition.face_distance([preUnknown], vec)[0] > 0.5:
                                 print("AAA", face_recognition.face_distance([preUnknown], vec))
                                 recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                              connectQueueApiError, sessionId)
                                 preUnknown = copy.deepcopy(vec)
                     else:
-                        recognition_api.recognize_face_new_thread(name, connectQueueApiError)
+                        recognition_api.recognize_face_new_thread(name, copy.deepcopy(currentImage), box, connectQueueApiError, sessionId)
                 else:
                     cannotCallApi.change(True)
                     return
@@ -53,14 +51,14 @@ def recognition_faces(resultFull):
                         recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                      connectQueueApiError, sessionId)
                     else:
-                        print(face_recognition.face_distance([preUnknown], vec))
-                        if face_recognition.face_distance([preUnknown], vec) > 0.5:
+                        if face_recognition.face_distance([preUnknown], vec)[0] > 0.5:
                             print("AAA", face_recognition.face_distance([preUnknown], vec))
                             recognition_api.recognize_unknown_new_thread(name, copy.deepcopy(currentImage), box,
                                                                          connectQueueApiError, sessionId)
                             preUnknown = copy.deepcopy(vec)
                 else:
-                    recognition_api.recognize_face_new_thread(name, connectQueueApiError)
+                    recognition_api.recognize_face_new_thread(name, copy.deepcopy(currentImage), box,
+                                                              connectQueueApiError, sessionId)
 
     continueDetect.change(True)
 
