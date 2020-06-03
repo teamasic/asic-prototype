@@ -1,53 +1,50 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { bindActionCreators } from 'redux';
-import Group from '../models/Group';
-import Attendee from '../models/Attendee';
 import { ApplicationState } from '../store';
+import { Link, withRouter } from 'react-router-dom';
 import { sessionActionCreators } from '../store/session/actionCreators';
 import {
 	Breadcrumb,
 	Icon,
-	Button,
 	Empty,
-	Table,
 	Spin,
 	Col,
 	Row,
-	Select
+	Tooltip,
+	AutoComplete
 } from 'antd';
 import { Typography } from 'antd';
-import { Input } from 'antd';
 import classNames from 'classnames';
 import '../styles/Session.css';
 import { SessionState } from '../store/session/state';
-import AttendeeRecordPair from '../models/AttendeeRecordPair';
-import { formatFullDateTimeString } from '../utils';
-
-const { Search } = Input;
+import { formatFullDateTimeString, error, compareDate } from '../utils';
+import '../styles/Table.css';
+import TopBar from './TopBar';
+import SessionTableView from './SessionTableView';
+import SessionActiveView from './SessionActiveView';
+import { EditTwoTone } from '@ant-design/icons';
+import { RoomsState } from '../store/room/state';
+import Room from '../models/Room';
+import { roomActionCreators } from '../store/room/actionCreators';
+import UnknownSection from './UnknownSection';
+import SessionStatusConstants from '../constants/SessionStatusConstants';
 const { Title } = Typography;
+const { Option } = AutoComplete
 
 // At runtime, Redux will merge together...
-type SessionProps = SessionState & // ... state we've requested from the Redux store
-	typeof sessionActionCreators & // ... plus action creators we've requested
-	RouteComponentProps<{
+type SessionProps = SessionState &
+	RoomsState & // ... state we've requested from the Redux store
+	typeof roomActionCreators &
+	typeof sessionActionCreators // ... plus action creators we've requested
+	& RouteComponentProps<{
 		id?: string;
 	}>; // ... plus incoming routing parameters
 
-enum FilterBy {
-	PRESENT,
-	ABSENT,
-	NOT_YET,
-	ALL
-}
-
 interface SessionLocalState {
-	sessionId: number;
-	search: {
-		query: string;
-		filter: FilterBy;
-	};
+	sessionId: number,
+	isUpdateRoom: boolean,
+	rooms: Room[]
 }
 
 class Session extends React.PureComponent<SessionProps, SessionLocalState> {
@@ -55,10 +52,8 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 		super(props);
 		this.state = {
 			sessionId: 0,
-			search: {
-				query: '',
-				filter: FilterBy.ALL
-			}
+			isUpdateRoom: false,
+			rooms: []
 		};
 	}
 	// This method is called when the component is first added to the document
@@ -71,261 +66,222 @@ class Session extends React.PureComponent<SessionProps, SessionLocalState> {
 					sessionId: id
 				});
 				this.props.requestSession(id);
-			} catch (e) {}
+			} catch (e) { }
 		}
+		this.loadRooms();
+		this.setState({ rooms: this.props.roomList });
 	}
 
-	public searchBy(query: string) {
-		this.setState({
-			search: {
-				...this.state.search,
-				query
-			}
-		});
+	public loadRooms = () => {
+		this.props.requestRooms();
 	}
 
-	public filterBy(filter: FilterBy) {
-		this.setState({
-			search: {
-				...this.state.search,
-				filter
-			}
-		});
-	}
-
-	public markAsPresent(attendeeId: number) {
+	public markAsPresent = (attendeeCode: string, assumeSuccess: boolean = true) => {
 		const sessionId = this.state.sessionId;
 		this.props.createOrUpdateRecord({
 			sessionId,
-			attendeeId,
+			attendeeCode,
 			present: true
-		});
+		}, assumeSuccess);
 	}
 
-	public markAsAbsent(attendeeId: number) {
+	public markAsAbsent = (attendeeCode: string, assumeSuccess: boolean = true) => {
 		const sessionId = this.state.sessionId;
 		this.props.createOrUpdateRecord({
 			sessionId,
-			attendeeId,
+			attendeeCode,
 			present: false
-		});
+		}, assumeSuccess);
 	}
 
-	private renderActions(pair: AttendeeRecordPair) {
-		let presentButton = (
-			<Button
-				className="present-button"
-				type="default"
-				size="large"
-				icon="check"
-				onClick={() => this.markAsPresent(pair.attendee.id)}
-			>
-				Present
-			</Button>
-		);
-		let absentButton = (
-			<Button
-				className="absent-button"
-				type="default"
-				size="large"
-				icon="close"
-				onClick={() => this.markAsAbsent(pair.attendee.id)}
-			>
-				Absent
-			</Button>
-		);
-		if (pair.record) {
-			if (pair.record.present) {
-				presentButton = (
-					<Button
-						className="present-button selected"
-						type="primary"
-						size="large"
-						icon="check"
-					>
-						Present
-					</Button>
-				);
-			} else {
-				absentButton = (
-					<Button
-						className="absent-button selected"
-						type="danger"
-						size="large"
-						icon="close"
-					>
-						Absent
-					</Button>
-				);
-			}
+	public notifyServer = (attendeeCode: string) => {
+		this.props.notifyServerToTrainMore(attendeeCode);
+	}
+
+	public onUpdateRoom = () => {
+		this.setState({ isUpdateRoom: true });
+	}
+
+	public onSearchRoom = (value: string) => {
+		var results = [];
+		if (value != null && value.length > 0) {
+			results = this.props.roomList.filter(function (room) {
+				return room.name.indexOf(value) === 0;
+			});
+		} else {
+			results = this.props.roomList;
 		}
-		return (
-			<div className="attendance-actions">
-				{presentButton}
-				{absentButton}
-			</div>
-		);
+		this.setState({ rooms: results });
 	}
 
-	private searchAttendeeList(
-		attendeeRecords: AttendeeRecordPair[],
-		query: string
-	) {
-		return attendeeRecords.filter(
-			ar => ar.attendee.name.includes(query) || ar.attendee.code.includes(query)
-		);
-	}
-
-	private filterAttendeeList(
-		attendeeRecords: AttendeeRecordPair[],
-		filter: FilterBy
-	) {
-		switch (filter) {
-			case FilterBy.ALL:
-				return attendeeRecords;
-			case FilterBy.NOT_YET:
-				return attendeeRecords.filter(ar => ar.record == null);
-			case FilterBy.PRESENT:
-				return attendeeRecords.filter(
-					ar => ar.record != null && ar.record!.present
-				);
-			case FilterBy.ABSENT:
-				return attendeeRecords.filter(
-					ar => ar.record != null && !ar.record!.present
-				);
+	public changeRoom = (value: any) => {
+		var existedInList;
+		this.props.roomList.forEach(room => {
+			if (room.id == value) {
+				existedInList = room;
+			}
+		});
+		if (!existedInList) {
+			this.props.roomList.forEach(room => {
+				if (room.name == value) {
+					existedInList = room;
+					value = room.id;
+				}
+			});
+		}
+		if (existedInList) {
+			var updateRoom = {
+				sessionId: this.state.sessionId,
+				roomId: value
+			};
+			this.props.requestUpdateRoom(updateRoom);
+			this.setState({ isUpdateRoom: false });
+		} else {
+			error("Room is not existed!");
 		}
 	}
 
 	public render() {
 		return (
 			<React.Fragment>
-				<div className="breadcrumb-container">
-					<Breadcrumb>
-						<Breadcrumb.Item href="">
-							<Icon type="home" />
-						</Breadcrumb.Item>
+				<TopBar>
+					{
+						this.props.activeSession &&
 						<Breadcrumb.Item>
-							<Icon type="hdd" />
-							<span>Group</span>
+							<Link to={`/group/${this.props.activeSession.groupCode}`}>
+								<Icon type="team" />
+								<span> Group</span>
+							</Link>
 						</Breadcrumb.Item>
-						<Breadcrumb.Item>
-							<Icon type="calendar" />
-							<span>Session</span>
-						</Breadcrumb.Item>
-					</Breadcrumb>
-				</div>
-				<div className="session-container">
+					}
+					<Breadcrumb.Item>
+						<Icon type="calendar" />
+						<span> Session</span>
+					</Breadcrumb.Item>
+				</TopBar>
+				<div className={classNames('session-container', {
+					'is-loading': this.props.isLoadingSession
+				})}>
 					{this.props.isLoadingSession ? (
 						<Spin size="large" />
 					) : this.props.activeSession ? (
 						this.renderSessionSection()
 					) : (
-						this.renderEmpty()
-					)}
+								this.renderEmpty()
+							)}
 				</div>
 			</React.Fragment>
 		);
 	}
 
 	private renderSessionSection() {
-		const columns = [
-			{
-				title: 'Id',
-				key: 'id',
-				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.code
-			},
-			{
-				title: 'Name',
-				key: 'name',
-				render: (text: string, pair: AttendeeRecordPair) => pair.attendee.name
-			},
-			{
-				title: 'Actions',
-				key: 'actions',
-				render: (text: string, pair: AttendeeRecordPair) =>
-					this.renderActions(pair)
-			}
-		];
-		const processedList = this.searchAttendeeList(
-			this.filterAttendeeList(
-				this.props.attendeeRecords,
-				this.state.search.filter
-			),
-			this.state.search.query
-		);
+		const sessionView = this.isSessionCurrentlyOngoing() ?
+			this.renderSessionActiveView() :
+			this.renderSessionTableView();
 
+		/*
+		const sessionView = this.renderSessionActiveView();
+		*/
+		const rooms = this.state.rooms.map(room => <Option key={room.id}>{room.name}</Option>);
 		return (
-			<div>
-				<div className="title-container">
-					<Title className="title" level={3}>
-						Session
-					</Title>
-					<span className="subtitle">
-						{formatFullDateTimeString(this.props.activeSession!.startTime)}
-					</span>
-				</div>
-				<Row>
-					<Col span={8}>
-						<Search
-							className="search-input"
-							placeholder="Search..."
-							onSearch={value => this.searchBy(value)}
-							enterButton
-						/>
+			<React.Fragment>
+				{/* <div className="title-session-container"> */}
+				<Row className="title-session-container">
+					<Col xl={3} sm={8}>
+						<Title className="title" level={3}>
+							Session
+							</Title>
 					</Col>
-					<Col span={8} offset={8}>
-						<div>
-							<span className="order-by-sub">Filter:</span>
-							<Select
-								className="order-by-select"
-								defaultValue={FilterBy.ALL}
-								onChange={(value: any) => this.filterBy(value)}
-							>
-								<Select.Option value={FilterBy.ALL}>
-									All attendees
-								</Select.Option>
-								<Select.Option value={FilterBy.PRESENT}>
-									Present attendees
-								</Select.Option>
-								<Select.Option value={FilterBy.ABSENT}>
-									Absent attendees
-								</Select.Option>
-								<Select.Option value={FilterBy.NOT_YET}>
-									Undetermined
-								</Select.Option>
-							</Select>
-						</div>
+					<Col xl={4} sm={10} xs={10} className="subtitle">
+						{formatFullDateTimeString(this.props.activeSession!.startTime)}
+					</Col>
+					<Col xl={2} sm={4} xs={6} className="subtitle">
+						{this.props.activeSession!.name}
+					</Col>
+					<Col xl={7} sm={6} xs={8} className="subtitle">
+						{this.state.isUpdateRoom ?
+							(
+								<AutoComplete
+									style={{ width: '100px' }}
+									defaultValue={this.props.activeSession!.room.name}
+									onBlur={this.changeRoom}
+									onSearch={this.onSearchRoom}>
+									{rooms}
+								</AutoComplete>
+							) :
+							(
+								<div>
+									<span>Room {this.props.activeSession!.room.name}</span>
+									{this.isSessionEditable() ?
+										<>
+											<Tooltip title="Change room">
+												<EditTwoTone onClick={this.onUpdateRoom} />
+											</Tooltip>
+										</>
+										: <div></div>
+									}
+								</div>
+							)
+						}
 					</Col>
 				</Row>
-				<div
-					className={classNames({
-						'attendee-container': true,
-						empty: this.props.isLoadingAttendeeRecords
-					})}
-				></div>
-				{this.props.isLoadingAttendeeRecords ? (
-					<Spin size="large" />
-				) : (
-					<Table
-						columns={columns}
-						dataSource={processedList}
-						pagination={false}
-						rowKey="attendee"
-					/>
-				)}
-			</div>
+				{/* </div> */}
+				{sessionView}
+			</React.Fragment>
 		);
+	}
+
+	private renderSessionTableView() {
+		return <div>
+			<SessionTableView
+				sessionId={this.state.sessionId}
+				markAsAbsent={this.markAsAbsent}
+				markAsPresent={this.markAsPresent}
+				isSessionEditable={this.isSessionEditable()}
+			/>
+			<UnknownSection
+				notifyServer={this.notifyServer}
+				sessionId={this.state.sessionId}
+				editable={this.isSessionEditable()}
+				markAsPresent={this.markAsPresent} />
+		</div>
+	}
+
+	private renderSessionActiveView() {
+		return <SessionActiveView
+			notifyServer={this.notifyServer}
+			sessionId={this.state.sessionId}
+			markAsAbsent={this.markAsAbsent}
+			markAsPresent={this.markAsPresent}
+		/>;
 	}
 
 	private renderEmpty() {
 		return <Empty></Empty>;
 	}
+
+	private isSessionCurrentlyOngoing() {
+		return this.props.currentlyOngoingSession != null &&
+			this.props.currentlyOngoingSession.id === this.props.activeSession!.id;
+	}
+
+	private isSessionEditable() {
+		return this.props.activeSession != null &&
+			(this.props.activeSession.status === SessionStatusConstants.IN_PROGRESS ||
+				this.props.activeSession.status === SessionStatusConstants.EDITABLE) &&
+			!this.isSessionCurrentlyOngoing();
+	}
 }
 
-export default connect(
+const mapDispatchToProps = {
+	...roomActionCreators, ...sessionActionCreators
+}
+
+export default withRouter(connect(
 	(state: ApplicationState, ownProps: SessionProps) => ({
 		...state.sessions,
+		...state.rooms,
 		...ownProps
 	}), // Selects which state properties are merged into the component's props
-	dispatch => bindActionCreators(sessionActionCreators, dispatch) // Selects which action creators are merged into the component's props
-)(Session as any);
+	mapDispatchToProps // Selects which action creators are merged into the component's props
+)(Session as any));

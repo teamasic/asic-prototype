@@ -1,5 +1,5 @@
 ﻿export default interface UpdateRecord {
     sessionId: number;
-    attendeeId: number;
+    attendeeCode: string;
     present: boolean;
 }

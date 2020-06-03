@@ -14,6 +14,8 @@ using Microsoft.Extensions.Logging;
 using AutoMapper;
 using AttendanceSystemIPCamera.Services.RecordService;
 using AttendanceSystemIPCamera.Services.NetworkService;
+using AttendanceSystemIPCamera.Services.RecognitionService;
+using AttendanceSystemIPCamera.Utils;
 
 namespace AttendanceSystemIPCamera.Controllers
 {
@@ -22,19 +24,75 @@ namespace AttendanceSystemIPCamera.Controllers
     public class TestController : BaseController
     {
         private readonly SupervisorNetworkService service;
+        private readonly IRecognitionService recognitionService;
+        private readonly IRecordService recordService;
         private readonly IMapper mapper;
-        public TestController(SupervisorNetworkService service, IMapper mapper)
+        private ILogger logger;
+
+        public TestController(SupervisorNetworkService service, IMapper mapper,
+            IRecognitionService recognitionService, IRecordService recordService,
+            ILogger<TestController> logger,
+            ILogger<BaseController> baseLogger) : base(baseLogger)
         {
             this.service = service;
             this.mapper = mapper;
+            this.recognitionService = recognitionService;
+            this.recordService = recordService;
+            this.logger = logger;
         }
-        [HttpGet]
-        public dynamic Get(string message)
+        //[HttpGet]
+        //public dynamic Get(string message)
+        //{
+        //    return ExecuteInMonitoring(() =>
+        //    {
+        //        return service.ProcessRequest(message);
+        //    });
+        //}
+        [HttpPost]
+        public ResponsePython Get([FromBody] StringOnly stringOnly)
         {
-            return ExecuteInMonitoring(() =>
+            return recognitionService.RecognitionImage(stringOnly.Value);
+        }
+        public class StringOnly
+        {
+            public string Value { get; set; }
+        }
+
+        [HttpPost("log")]
+        public void PostLog()
+        {
+            logger.LogInformation("This is log infomation");
+            logger.LogDebug("This is log debug");
+            logger.LogWarning("This is log warning");
+            logger.LogError("This is log error");
+        }
+
+        [HttpGet]
+        public void NormalizeData()
+        {
+            var records = recordService.GetRecords();
+            records.ToList().ForEach(r =>
             {
-                return service.ProcessRequest(message);
+                if (r.Session == null || r.AttendeeGroup.Attendee == null)
+                {
+                    recordService.Delete(r);
+                }
+                else
+                {
+                    r.AttendeeCode = r.AttendeeCode;
+                    r.SessionName = r.Session.Name;
+                    r.StartTime = r.Session.StartTime;
+                    r.EndTime = r.Session.EndTime;
+                    recordService.Update(r);
+                }
+
             });
+        }
+
+        [HttpGet("internet")]
+        public bool CheckInternetConnection()
+        {
+            return NetworkUtils.IsInternetAvailable();
         }
     }
 }

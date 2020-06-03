@@ -17,13 +17,12 @@ import os
 import face_recognition
 import requests
 
-# initialize the video stream, then allow the camera sensor to warm up
-print("[INFO] starting video stream...")
+print("[INFO] starting mock file...")
 
-codes = ["SB12345", "SB12348", "SB12347"]
+codes = ["SE12346", "SE12348", "SB12347"]
 headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
-time.sleep(20)
+time.sleep(10)
 for code in codes:
 	payload = {"code": code}
 	r = requests.post("https://localhost:44359/api/record", json=payload, verify=False, headers=headers)

@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Repositories
 {
-    public interface IRepository<T> : IDisposable where T : class, BaseEntity
+    public interface IRepository<T> : IDisposable where T : class
     {
-        Task<IEnumerable<T>> GetAll();
         Task<T> GetById(object id);
+        Task<IEnumerable<T>> GetAll();
 
         Task Add(T entity);
         Task Add(IEnumerable<T> entities);

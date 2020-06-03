@@ -21,10 +21,22 @@ using Microsoft.Extensions.Hosting;
 using AttendanceSystemIPCamera.Services.AttendeeService;
 using AttendanceSystemIPCamera.Services.AttendeeGroupService;
 using AttendanceSystemIPCamera.Services.RoomService;
+using AttendanceSystemIPCamera.Services.ChangeRequestService;
 using System;
 using AttendanceSystemIPCamera.Framework.AppSettingConfiguration;
 using AttendanceSystemIPCamera.Services.NetworkService;
 using AttendanceSystemIPCamera.Services.RecognitionService;
+using AttendanceSystemIPCamera.Services.UnitService;
+using AttendanceSystemIPCamera.Framework.GlobalStates;
+using Microsoft.Extensions.Logging;
+using AttendanceSystemIPCamera.Services.UserService;
+using AttendanceSystemIPCamera.Services.SettingsService;
+using System.IO;
+using Microsoft.Extensions.FileProviders;
+using static AttendanceSystemIPCamera.Framework.Constants;
+using AttendanceSystemIPCamera.Services.LogService;
+using AttendanceSystemIPCamera.Services.OtherSettingsService;
+using Microsoft.AspNetCore.Http.Connections;
 
 namespace AttendanceSystemIPCamera
 {
@@ -36,12 +48,14 @@ namespace AttendanceSystemIPCamera
         }
 
         public IConfiguration Configuration { get; }
+        private MyConfiguration myConfig;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews()
-                .AddNewtonsoftJson(options => {
+                .AddNewtonsoftJson(options =>
+                {
                     options.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects;
                 });
 
@@ -55,17 +69,23 @@ namespace AttendanceSystemIPCamera
             SetupAutoMapper(services);
             SetupDependencyInjection(services);
             SetupMyConfiguration(services);
+            SetupFilesConfiguration(services);
             SetupBackgroundService(services);
             setupSwagger(services);
         }
 
         private void SetupMyConfiguration(IServiceCollection services)
         {
-            services.AddSingleton(Configuration.GetSection("MyConfiguration").Get<MyConfiguration>());
+            myConfig = Configuration.GetSection("MyConfiguration").Get<MyConfiguration>();
+            services.AddSingleton(myConfig);
+        }
+        private void SetupFilesConfiguration(IServiceCollection services)
+        {
+            services.AddSingleton(Configuration.GetSection("FilesConfiguration").Get<FilesConfiguration>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -80,10 +100,12 @@ namespace AttendanceSystemIPCamera
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            SetupStaticFiles(app);
+
             app.UseSpaStaticFiles();
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ASIC API"));
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Supervisor ASIC API"));
 
             app.UseRouting();
 
@@ -92,10 +114,16 @@ namespace AttendanceSystemIPCamera
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
-                endpoints.MapHub<RealTimeService>("/hub");
+                endpoints.MapHub<RealTimeService>("/hub", options =>
+                {
+                    options.Transports =
+                        HttpTransportType.WebSockets |
+                        HttpTransportType.LongPolling;
+                });
             });
+            loggerFactory.AddFile(string.Format($"{Constant.LOG_TEMPLATE}", "{Date}"));
 
-            /*
+            
             app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
@@ -105,21 +133,26 @@ namespace AttendanceSystemIPCamera
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
-            */
+            
+
+
         }
 
         private void setupSwagger(IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "ASIC API", Version = "v1" });
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Supervisor ASIC", Version = "v1" });
             });
         }
 
 
         private void SetupDatabaseContext(IServiceCollection services)
         {
-            services.AddDbContext<MainDbContext>(options => options.UseSqlite(Configuration.GetConnectionString("SqliteDB")));
+            services.AddDbContext<MainDbContext>(options =>
+            {
+                options.UseSqlite(Configuration.GetConnectionString("SqliteDB"));
+            });
         }
         private void SetupAutoMapper(IServiceCollection services)
         {
@@ -142,10 +175,16 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<DbContext, MainDbContext>();
             services.AddScoped<MyUnitOfWork>();
             services.AddScoped<GroupValidation>();
-            services.AddSignalR();
+            services.AddSignalR(hubOptions =>
+            {
+                hubOptions.HandshakeTimeout = TimeSpan.FromSeconds(15);
+            });
 
             SetupServices(services);
             SetupRepositories(services);
+            SetupUnitConfig(services);
+            SetupOtherSettings(services);
+            SetupGlobalStateManager(services);
         }
 
         private void SetupServices(IServiceCollection services)
@@ -158,7 +197,14 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<IRoomService, RoomService>();
             services.AddScoped<IAttendeeGroupService, AttendeeGroupService>();
             services.AddScoped<SupervisorNetworkService>();
-            services.AddScoped<RecognitionService, RecognitionService>();
+            services.AddScoped<IRecognitionService, RecognitionService>();
+            services.AddScoped<IChangeRequestService, ChangeRequestService>();
+            services.AddScoped<ISettingsService, SettingsService>();
+            services.AddScoped<SettingsUtils>();
+            services.AddHttpClient();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IGlobalStateService, GlobalStateService>();
+            services.AddScoped<ILogService, LogService>();
         }
         private void SetupRepositories(IServiceCollection services)
         {
@@ -168,6 +214,7 @@ namespace AttendanceSystemIPCamera
             services.AddScoped<IAttendeeRepository, AttendeeRepository>();
             services.AddScoped<IRoomRepository, RoomRepository>();
             services.AddScoped<IAttendeeGroupRepository, AttendeeGroupRepository>();
+            services.AddScoped<IChangeRequestRepository, ChangeRequestRepository>();
         }
 
         private void SetupBackgroundService(IServiceCollection services)
@@ -176,6 +223,45 @@ namespace AttendanceSystemIPCamera
             services.AddHostedService<SupervisorRunnerService>();
         }
 
+        private void SetupUnitConfig(IServiceCollection services)
+        {
+            UnitService unitServiceInstance = UnitServiceFactory.Create(Configuration.GetValue<string>("UnitConfigFile"));
+            services.AddSingleton(unitServiceInstance);
+        }
 
+        private void SetupOtherSettings(IServiceCollection services)
+        {
+            OtherSettingsService otherSettingsService = OtherSettingsServiceFactory
+                                .Create(Configuration.GetValue<string>("FilesConfiguration:SettingsConfigFile"));
+            services.AddSingleton(otherSettingsService);
+        }
+
+        private void SetupGlobalStateManager(IServiceCollection services)
+        {
+            var globalState = new GlobalState();
+            services.AddSingleton(globalState);
+        }
+
+        private void SetupStaticFiles(IApplicationBuilder app)
+        {
+            if (myConfig == null)
+            {
+                myConfig = Configuration.GetSection("MyConfiguration").Get<MyConfiguration>();
+            }
+            UseStaticFiles(app, myConfig.AvatarFolderPath, "/api/avatars");
+            UseStaticFiles(app, myConfig.UnknownFolderPath, "/api/unknown");
+            UseStaticFiles(app, myConfig.LogoFolderPath, "/api/logo");
+            UseStaticFiles(app, myConfig.RecognizedFolderPath, "/api/people");
+        }
+
+        private void UseStaticFiles(IApplicationBuilder app, string path, string requestPath) {
+            var combinedPath = Path.Combine(Directory.GetCurrentDirectory(), path);
+            Directory.CreateDirectory(combinedPath);
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(combinedPath),
+                RequestPath = requestPath
+            });
+        }
     }
 }

@@ -230,3 +230,15 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+
+#DB
+*.db
+
+#Log file
+Logs
+
+#Sync file
+LatestSync.txt
+ShutDownTime.txt
+
+BrowserCache/*

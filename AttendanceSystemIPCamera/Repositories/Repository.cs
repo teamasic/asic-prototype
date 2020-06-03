@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Repositories
 {
-    public class Repository<T> : IRepository<T> where T : class, BaseEntity
+    public class Repository<T> : IRepository<T> where T : class
     {
         protected readonly DbSet<T> dbSet;
         protected readonly DbContext context;

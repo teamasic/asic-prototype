@@ -6,7 +6,14 @@ import { createBrowserHistory } from 'history';
 import configureStore from './store/configureStore';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
-import { signalRStart } from './middlewares/SignalRMiddleware';
+import createSignalRConnection from './middlewares/SignalRConnection';
+import { attachEvents } from './middlewares/SignalRMiddleware';
+import { config } from "dotenv"
+import { resolve } from "path"
+import ErrorBoundary from 'react-error-boundary';
+import ErrorDisplay from './ErrorDisplay';
+
+config({ path: resolve(__dirname, "../.env") })
 
 // Create browser history to use in the Redux store
 const baseUrl = document
@@ -16,12 +23,16 @@ const history = createBrowserHistory({ basename: baseUrl });
 
 // Get the application-wide store instance, prepopulating with state from the server where available.
 const store = configureStore(history);
-signalRStart(store);
+const connection = createSignalRConnection();
+attachEvents(connection, store.dispatch);
+connection.start().catch(err => console.log(err));
 
 ReactDOM.render(
 	<Provider store={store}>
 		<ConnectedRouter history={history}>
-			<App />
+			<ErrorBoundary FallbackComponent={ErrorDisplay}>
+				<App />
+			</ErrorBoundary>
 		</ConnectedRouter>
 	</Provider>,
 	document.getElementById('root')

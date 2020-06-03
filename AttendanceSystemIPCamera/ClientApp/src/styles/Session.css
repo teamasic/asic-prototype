@@ -2,10 +2,24 @@
 	color: gray !important;
 }
 
+.inner-layout {
+	min-height: 100vh !important;
+}
+
 .title-container {
 	display: flex;
 	flex-direction: row;
 	margin: 20px 0;
+}
+
+.title-session-container {
+	display: flex;
+	flex-direction: column;
+	margin: 20px 0;
+}
+
+.title-session-container .title {
+	margin-left: 20px;
 }
 
 .title-container .title {
@@ -30,11 +44,12 @@
 	margin-top: 30px;
 }
 
-.attendee-container.empty {
-	height: 50vh;
-	display: flex;
-	justify-content: center;
-	align-items: center;
+.attendee-container.is-loading {
+	height: 60vh;
+}
+
+.session-container.is-loading {
+	height: calc(100vh - 120px);
 }
 
 .present-button {
@@ -43,4 +58,25 @@
 
 .subtitle {
 	padding-top: 7px;
+}
+
+.take-attendance-button {
+	margin-right: 10px;
+}
+
+.take-attendance-multiple-button {
+	margin-left: 10px;
+}
+
+.ant-radio-disabled .ant-radio-inner::after {
+	background-color: #1890ff !important;
+}
+
+.ant-radio-disabled .ant-radio-inner {
+	border-color: #1890ff !important;
+	cursor: not-allowed;
+}
+
+.notify-server-box {
+	margin-top: 12px !important;
 }

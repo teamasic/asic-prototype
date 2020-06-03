@@ -1,0 +1,7 @@
+augmented/**/*
+training/**/*
+images/**/*
+dataset/**/*
+snapshot/**/*
+output_dlib/**/*
+temp/**/*

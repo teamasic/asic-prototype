@@ -5,20 +5,13 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Framework.ViewModels
 {
-    public class SessionStarterViewModel
+    public class CreateSessionViewModel
     {
         public int Id { get; set; }
+        public string Name { get; set; }
         public DateTime StartTime { get; set; }
-        public int Duration { get; set; }
-        public string RtspString { get; set; }
-        public string RoomName { get; set; }
-        public int GroupId { get; set; }
-        public DateTime EndTime
-        {
-            get
-            {
-                return StartTime.AddMinutes(Duration);
-            }
-        }
+        public DateTime EndTime { get; set; }
+        public int RoomId { get; set; }
+        public string GroupCode { get; set; }
     }
 }

@@ -7,66 +7,40 @@ using System.Threading.Tasks;
 
 namespace AttendanceSystemIPCamera.Repositories
 {
-    public interface IAttendeeGroupRepository: IDisposable
+    public interface IAttendeeGroupRepository: IRepository<AttendeeGroup>
     {
-        Task Add(AttendeeGroup entity);
-        Task Add(IEnumerable<AttendeeGroup> entities);
+        IEnumerable<AttendeeGroup> GetByGroupCode(string groupCode);
+        Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode);
+        Task<AttendeeGroup> GetByAttendeeCodeAndGroupCodeWithStatus(string attendeeCode, string groupCode);
+
     }
-    public class AttendeeGroupRepository : IAttendeeGroupRepository
+    public class AttendeeGroupRepository : Repository<AttendeeGroup>, IAttendeeGroupRepository
     {
-        protected readonly DbSet<AttendeeGroup> dbSet;
-        protected readonly DbContext context;
-
-        public AttendeeGroupRepository(DbContext context)
+        public AttendeeGroupRepository(DbContext context): base(context)
         {
-            this.context = context;
-            this.dbSet = context.Set<AttendeeGroup>();
         }
 
-        public async Task Add(AttendeeGroup entity)
+        public IEnumerable<AttendeeGroup> GetByGroupCode(string groupCode)
         {
-            await dbSet.AddAsync(entity);
+            return dbSet.Where(ag => ag.GroupCode.Equals(groupCode)).ToList();
         }
 
-        public async Task Add(IEnumerable<AttendeeGroup> entities)
+        public Task<AttendeeGroup> GetByAttendeeCodeAndGroupCode(string attendeeCode, string groupCode)
         {
-            await dbSet.AddRangeAsync(entities);
+            return dbSet.Where(ag => ag.GroupCode.Equals(groupCode)
+            && ag.AttendeeCode.Equals(attendeeCode) && ag.IsActive)
+                .Include(ag => ag.Attendee)
+                .Include(ag => ag.Group)
+                .FirstOrDefaultAsync();
         }
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        public Task<AttendeeGroup> GetByAttendeeCodeAndGroupCodeWithStatus(string attendeeCode, string groupCode)
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
-            }
+            return dbSet.Where(ag => ag.GroupCode.Equals(groupCode)
+            && ag.AttendeeCode.Equals(attendeeCode))
+                .Include(ag => ag.Attendee)
+                .Include(ag => ag.Group)
+                .FirstOrDefaultAsync();
         }
-
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~Repository()
-        // {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-        #endregion
     }
 }

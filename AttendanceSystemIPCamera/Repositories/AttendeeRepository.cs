@@ -16,8 +16,10 @@ namespace AttendanceSystemIPCamera.Repositories
     public interface IAttendeeRepository : IRepository<Attendee>
     {
         Task<Attendee> GetByAttendeeCode(string attendeeCode);
-        Attendee GetByCode(string code);
-        Attendee GetByCodeWithAttendeeGroups(string code);
+        Attendee GetByCodeForNetwork(string code);
+        List<string> GetAttendeeCodeWithOutImage();
+        Task<Attendee> UpdateImage(string code, string fileName);
+        //List<Attendee> GetAttendanceDataForSync(DateTime latestSyncTime);
     }
     public class AttendeeRepository : Repository<Attendee>, IAttendeeRepository
     {
@@ -30,16 +32,63 @@ namespace AttendanceSystemIPCamera.Repositories
             return await dbSet.FirstOrDefaultAsync(a => a.Code.Equals(attendeeCode));
         }
 
-        public Attendee GetByCode(string code)
+        public Attendee GetByCodeForNetwork(string code)
         {
-            return dbSet.Where(a => code.Equals(a.Code)).FirstOrDefault();
+            //var attendee = dbSet.FirstOrDefault(a => a.Code.Equals(code));
+            //var data = attendee?.AttendeeGroups
+            //    .Join(context.Set<Group>(),
+            //            attGr => attGr.GroupId,
+            //            gr => gr.Id,
+            //            (attGr, group) => new { group })
+            //    .Where(a => a.group.Sessions.Count != 0)
+            //    .Join(context.Set<Sessions>(),
+            //        att => att.group.Id,
+            //        sess => sess.GroupId,
+            //        (att, session) => new { att.group, session })
+            //    .Where(a => a.session.Records.Count != 0)
+            //    .Join(context.Set<Records>(),
+            //    a => a.session.Id,
+            //    re => re.SessionId,
+            //    (att, record) => new { att.group, att.session, record }).ToList();
+
+            //var attendance = new AttendanceNetworkViewModel()
+            //{
+            //    AttendeeCode = attendee.Code,
+            //    AttendeeName = attendee.Name,
+            //    Groups =
+            //}
+
+            return Get(a => a.Code.Equals(code),
+                null,
+                includeProperties:
+                "AttendeeGroups,AttendeeGroups.Group,AttendeeGroups.Group.Sessions,AttendeeGroups.Group.Sessions.Records,AttendeeGroups.Group.Sessions.Records.ChangeRequest")
+                .FirstOrDefault();
         }
 
-        public Attendee GetByCodeWithAttendeeGroups(string code)
+        public List<string> GetAttendeeCodeWithOutImage()
         {
-            return Get(a => a.Code.Equals(code), null, includeProperties: "AttendeeGroups").FirstOrDefault();
+            var results = new List<string>();
+            var attendees = Get(a => a.Image == null).ToList();
+            attendees.ForEach(a => results.Add(a.Code));
+            return results;
         }
 
-
+        public async Task<Attendee> UpdateImage(string code, string fileName)
+        {
+            var attendee = await dbSet.FirstOrDefaultAsync(a => a.Code == code);
+            if(attendee != null)
+            {
+                attendee.Image = fileName;
+                Update(attendee);
+            }
+            return attendee;
+        }
+        //public List<Attendee> GetAttendanceDataForSync(DateTime latestSyncTime)
+        //{
+        //    var data = Get(a => a.Groups.Any(g => g.Sessions.Any(s => s.StartTime >= latestSyncTime)),
+        //        includeProperties: "AttendeeGroups,AttendeeGroups.Group,AttendeeGroups.Group.Sessions")
+        //        .ToList();
+        //    return data;
+        //}
     }
 }

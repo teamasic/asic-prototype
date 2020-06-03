@@ -2,6 +2,9 @@
 import { SessionState } from './state';
 import { ACTIONS } from './actionCreators';
 import Record from '../../models/Record';
+import AttendeeRecordPair from '../../models/AttendeeRecordPair';
+import UpdateRecord from '../../models/UpdateRecord';
+import { addNoCacheString } from '../../utils';
 
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
@@ -9,9 +12,11 @@ const unloadedState: SessionState = {
 	isLoadingSession: false,
 	successfullyLoadedSession: false,
 	activeSession: undefined,
+	currentlyOngoingSession: undefined,
 	isLoadingAttendeeRecords: false,
 	successfullyLoadedAttendeeRecords: false,
-	attendeeRecords: []
+	attendeeRecords: [],
+	unknownImages: []
 };
 
 const reducers: Reducer<SessionState> = (
@@ -26,9 +31,9 @@ const reducers: Reducer<SessionState> = (
 	switch (action.type) {
         case ACTIONS.RECEIVE_ACTIVE_SESSION:
             return {
-                ... state,
-                activeSession: action.activeSession
-            };        
+				...state,
+				currentlyOngoingSession: action.activeSession
+            };
 		case ACTIONS.START_REQUEST_SESSION:
 			return {
 				...state,
@@ -57,14 +62,16 @@ const reducers: Reducer<SessionState> = (
 				...state,
 				isLoadingAttendeeRecords: true,
 				successfullyLoadedAttendeeRecords: false,
-				attendeeRecords: []
+				attendeeRecords: [],
+				unknownImages: []
 			};
 		case ACTIONS.STOP_REQUEST_ATTENDEE_RECORDS_WITH_ERRORS:
 			return {
 				...state,
 				isLoadingAttendeeRecords: false,
 				successfullyLoadedAttendeeRecords: false,
-				attendeeRecords: []
+				attendeeRecords: [],
+				unknownImages: []
 			};
 		case ACTIONS.RECEIVE_ATTENDEE_RECORDS_DATA:
 			return {
@@ -74,10 +81,11 @@ const reducers: Reducer<SessionState> = (
 				attendeeRecords: action.attendeeRecords
 			};
 		case ACTIONS.UPDATE_ATTENDEE_RECORD:
+			const updateInfo: UpdateRecord = action.updateInfo;
 			return {
 				...state,
 				attendeeRecords: state.attendeeRecords.map(ar =>
-					ar.attendee.id === action.updateInfo.attendeeId ? ({
+					ar.attendee.code === updateInfo.attendeeCode ? ({
 						attendee: ar.attendee,
 						record: action.updatedRecord
 					}) : ar)
@@ -89,13 +97,15 @@ const reducers: Reducer<SessionState> = (
 				if (updatedAttendeeRecord.record != null) {
 					updatedRecord = {
 						...updatedAttendeeRecord.record,
-						present: true
+						present: true,
+						image: addNoCacheString(`${updatedAttendeeRecord.attendee.code}.jpg`)
 					};
 				} else {
 					updatedRecord = {
 						id: -1,
 						attendee: updatedAttendeeRecord.attendee,
-						present: true
+						present: true,
+						image: addNoCacheString(`${updatedAttendeeRecord.attendee.code}.jpg`)
 					};
 				}
 				return {
@@ -107,6 +117,68 @@ const reducers: Reducer<SessionState> = (
 						}) : ar)
 				};
 			}
+		case ACTIONS.START_TAKING_ATTENDANCE:
+			return {
+				...state,
+				currentlyOngoingSession: action.session,
+				unknownImages: state.unknownImages
+			};
+		case ACTIONS.END_TAKING_ATTENDANCE:
+			return {
+				...state,
+				currentlyOngoingSession: undefined,
+				unknownImages: state.unknownImages
+			};
+		case ACTIONS.RECEIVE_UNKNOWN_IMAGES:
+			return {
+				...state,
+				unknownImages: action.unknownImages
+			};
+		case ACTIONS.UPDATE_UNKNOWN_REAL_TIME:
+			return {
+				...state,
+				unknownImages: [...state.unknownImages, action.image]
+			};
+		case ACTIONS.REMOVE_UNKNOWN_IMAGE:
+			return {
+				...state,
+				unknownImages: state.unknownImages.filter(img => img !== action.image)
+			};
+		case ACTIONS.UPDATE_UNKNOWN_REAL_TIME_BATCH:
+			return {
+				...state,
+				unknownImages: [...state.unknownImages, ... action.images]
+			};
+		case ACTIONS.UPDATE_ATTENDEE_RECORD_REAL_TIME_BATCH:
+			const updatedAttendeeRecords = state.attendeeRecords
+				.filter(ar => action.attendeeCodes.includes(ar.attendee.code));
+			const changes: { [attendeeCode: string]: Record } = {};
+			updatedAttendeeRecords.forEach(ar => {
+				let updatedRecord: Record | undefined;
+				if (ar.record != null) {
+					updatedRecord = {
+						...ar.record,
+						present: true,
+						image: addNoCacheString(`${ar.attendee.code}.jpg`)
+					};
+				} else {
+					updatedRecord = {
+						id: -1,
+						attendee: ar.attendee,
+						present: true,
+						image: addNoCacheString(`${ar.attendee.code}.jpg`)
+					};
+				}
+				changes[ar.attendee.code] = updatedRecord;
+			});
+			return {
+				...state,
+				attendeeRecords: state.attendeeRecords.map(ar =>
+					action.attendeeCodes.includes(ar.attendee.code) ? ({
+						attendee: ar.attendee,
+						record: changes[ar.attendee.code]
+					}) : ar)
+			};
 	}
 	return state;
 };

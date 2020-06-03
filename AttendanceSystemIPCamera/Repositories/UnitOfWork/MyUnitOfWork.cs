@@ -1,4 +1,5 @@
-﻿using AttendanceSystemIPCamera.Models;
+﻿using AttendanceSystemIPCamera.Framework.GlobalStates;
+using AttendanceSystemIPCamera.Models;
 using AttendanceSystemIPCamera.Services.GroupService;
 using AttendanceSystemIPCamera.Services.SessionService;
 using AutoMapper;
@@ -12,21 +13,24 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
 {
     public class MyUnitOfWork: UnitOfWork
     {
-        public MyUnitOfWork(DbContext dbContext) : base(dbContext)
+        public MyUnitOfWork(DbContext dbContext, GlobalState globalState) : base(dbContext)
         {
+            this.globalState = globalState;
         }
-        public IRepository<T> GetRepository<T>() where T: class, BaseEntity
+        public IRepository<T> GetRepository<T>() where T: class
         {
             return new Repository<T>(DbContext);
         }
 
         #region Repository
+        private GlobalState globalState;
         private IGroupRepository groupRepository;
         private ISessionRepository sessionRepository;
         private IRecordRepository recordRepository;
         private IAttendeeRepository attendeeRepository;
         private IRoomRepository roomRepository;
         private IAttendeeGroupRepository attendeeGroupRepository;
+        private IChangeRequestRepository changeRequestRepository;
 
         public IGroupRepository GroupRepository
         {
@@ -45,7 +49,7 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
             {
                 if (sessionRepository == null)
                 {
-                    sessionRepository = new SessionRepository(DbContext);
+                    sessionRepository = new SessionRepository(DbContext, globalState);
                 }
                 return sessionRepository;
             }
@@ -93,6 +97,18 @@ namespace AttendanceSystemIPCamera.Repositories.UnitOfWork
                     attendeeGroupRepository = new AttendeeGroupRepository(DbContext);
                 }
                 return attendeeGroupRepository;
+            }
+        }
+
+        public IChangeRequestRepository ChangeRequestRepository
+        {
+            get
+            {
+                if (changeRequestRepository == null)
+                {
+                    changeRequestRepository = new ChangeRequestRepository(DbContext);
+                }
+                return changeRequestRepository;
             }
         }
         #endregion

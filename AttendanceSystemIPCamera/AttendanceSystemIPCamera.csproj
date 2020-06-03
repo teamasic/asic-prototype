@@ -8,10 +8,13 @@
     <SpaRoot>ClientApp\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     <Platforms>AnyCPU;x64;x86</Platforms>
+    <ApplicationIcon>asic_ico.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="9.0.0" />
+    <PackageReference Include="CsvHelper" Version="15.0.0" />
+    <PackageReference Include="FluentValidation" Version="9.0.0-preview3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.1" />
@@ -24,6 +27,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0" />
     <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
@@ -35,11 +39,15 @@
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
     <Compile Remove="GPUCache\**" />
+    <Compile Remove="Logs\**" />
     <Content Remove="$(SpaRoot)**" />
     <Content Remove="GPUCache\**" />
+    <Content Remove="Logs\**" />
     <EmbeddedResource Remove="GPUCache\**" />
+    <EmbeddedResource Remove="Logs\**" />
     <None Remove="$(SpaRoot)**" />
     <None Remove="GPUCache\**" />
+    <None Remove="Logs\**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
 
@@ -48,6 +56,8 @@
     <Compile Remove="Migrations\20200214112808_Update1.Designer.cs" />
     <Compile Remove="Migrations\20200214113108_Update1.cs" />
     <Compile Remove="Migrations\20200214113108_Update1.Designer.cs" />
+    <Compile Remove="Migrations\20200229085155_Update2.cs" />
+    <Compile Remove="Migrations\20200229085155_Update2.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,19 +65,35 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\components\ChangeRequestModal.tsx" />
     <None Remove="ClientApp\src\components\GroupCard.tsx" />
+    <None Remove="ClientApp\src\components\MarkUnknownPresentModal.tsx" />
+    <None Remove="ClientApp\src\components\ModalExport.tsx" />
+    <None Remove="ClientApp\src\components\StartSessionModal.tsx" />
     <None Remove="ClientApp\src\middlewares\SignalRConnection.ts" />
     <None Remove="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <None Remove="ClientApp\src\models\ApiResponse.ts" />
     <None Remove="ClientApp\src\models\Attendee.ts" />
+    <None Remove="ClientApp\src\models\AttendeeGroup.ts" />
+    <None Remove="ClientApp\src\models\ExportFormat1.ts" />
+    <None Remove="ClientApp\src\models\ExportFormat2.ts" />
+    <None Remove="ClientApp\src\models\ChangeRequest.ts" />
+    <None Remove="ClientApp\src\models\CreateChangeRequest.ts" />
+    <None Remove="ClientApp\src\models\ExportRequest.ts" />
     <None Remove="ClientApp\src\models\Group - Copy.ts" />
     <None Remove="ClientApp\src\models\Group.ts" />
+    <None Remove="ClientApp\src\models\HttpStatusCode.ts" />
     <None Remove="ClientApp\src\models\Record.ts" />
     <None Remove="ClientApp\src\models\Session.ts" />
+    <None Remove="ClientApp\src\models\SessionViewModel.ts" />
     <None Remove="ClientApp\src\models\UpdateRecord.ts" />
+    <None Remove="ClientApp\src\services\changeRequest.ts" />
+    <None Remove="ClientApp\src\services\attendee.ts" />
     <None Remove="ClientApp\src\services\group.ts" />
     <None Remove="ClientApp\src\services\record.ts" />
     <None Remove="ClientApp\src\services\session.ts" />
+    <None Remove="ClientApp\src\services\settings.ts" />
+    <None Remove="ClientApp\src\services\unit.ts" />
     <None Remove="ClientApp\src\store\classroom\actionCreators.ts" />
     <None Remove="ClientApp\src\store\classroom\reducers.ts" />
     <None Remove="ClientApp\src\store\classroom\state.ts" />
@@ -88,10 +114,33 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\components\ChangeRequestModal.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\components\MarkUnknownPresentModal.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\components\StartSessionModal.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\components\GroupCard.tsx" />
+    <TypeScriptCompile Include="ClientApp\src\components\ModalExport.tsx" />
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRConnection.ts" />
     <TypeScriptCompile Include="ClientApp\src\middlewares\SignalRMiddleware.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\ApiResponse.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\AttendeeGroup.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\models\ExportFormat1.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\ExportFormat2.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\CreateChangeRequest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\models\ChangeRequest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\models\ExportRequest.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\HttpStatusCode.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\Record.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -102,8 +151,19 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\models\Group.ts" />
+    <TypeScriptCompile Include="ClientApp\src\models\SessionViewModel.ts" />
     <TypeScriptCompile Include="ClientApp\src\models\UpdateRecord.ts" />
+    <TypeScriptCompile Include="ClientApp\src\services\attendee.ts" />
     <TypeScriptCompile Include="ClientApp\src\services\record.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\services\changeRequest.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\services\settings.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\services\unit.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\services\session.ts">
@@ -124,7 +184,6 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ClientApp\src\store\group\state.ts" />
-    <TypeScriptCompile Include="ClientApp\src\utils\utils.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -166,6 +225,25 @@
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </ResolvedFileToPublish>
     </ItemGroup>
+
+    <!-- Include aes file in the publish output -->
+    <ItemGroup>
+      <DistFiles Include="aes" />
+      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>%(DistFiles.Identity)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+
+    <!-- Include app.db file in the publish output -->
+    <ItemGroup>
+      <DistFiles Include="app.db" />
+      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>%(DistFiles.Identity)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+    
   </Target>
 
 </Project>

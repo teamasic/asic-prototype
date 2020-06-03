@@ -5,7 +5,13 @@ import { ACTIONS } from "./actionCreators";
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
 const unloadedState: RoomsState = {
-    roomList: [],
+    roomList: [
+        {
+            id: 0,
+            name: 'None',
+            cameraConnectionString: 'None'
+        }
+    ],
 };
 
 const reducers: Reducer<RoomsState> = (state: RoomsState | undefined, incomingAction: AnyAction): RoomsState => {

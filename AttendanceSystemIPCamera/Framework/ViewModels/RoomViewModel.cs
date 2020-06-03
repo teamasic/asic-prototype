@@ -10,6 +10,6 @@ namespace AttendanceSystemIPCamera.Framework.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string RtspString { get; set; }
+        public string CameraConnectionString { get; set; }
     }
 }

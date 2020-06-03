@@ -63,3 +63,16 @@
     text-align: right;
     margin-top: 10px;
 }
+
+/* for space-around style */
+.group-grid .fixed-grid--around {
+    display: grid;
+    grid-gap: 2em;
+    grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+    justify-items: center;
+}
+/* both should run fixed width elements equal to the declared in the container */
+.group-grid .grid-element {
+    width: 100%;
+}
+

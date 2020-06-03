@@ -21,7 +21,8 @@ namespace AttendanceSystemIPCamera.Controllers
     public class RoomController : BaseController
     {
         private readonly IRoomService roomService;
-        public RoomController(IRoomService roomService)
+        public RoomController(IRoomService roomService,
+            ILogger<BaseController> logger) : base(logger)
         {
             this.roomService = roomService;
         }

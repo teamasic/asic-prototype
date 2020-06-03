@@ -18,3 +18,82 @@ code {
 	box-shadow: 0 10px 6px -6px #ddd;
 }
 
+.is-loading {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.ant-select-selection, .ant-input, .ant-input-number {
+	border-color: #40A9FF;
+}
+
+.ant-modal-header {
+	background-color: #1890ff;
+}
+
+.ant-modal-title, .ant-modal-close-x {
+	color: #ffffff;
+}
+
+.ant-table-thead > tr > th {
+	background: #1890FF;
+	color: #ffffff;
+}
+
+.ant-table-row[class*='ant-table-row-level-0'] td {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+.borderless-badge .ant-badge-count {
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
+}
+
+.row {
+	display: flex;
+	flex-direction: row;
+}
+
+.row.centered {
+	align-items: center;
+}
+
+.breadcrumb-container {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.breadcrumb-container i {
+	color: gray;
+}
+
+.tab-bar-extra button {
+	margin: 0 5px;
+}
+
+.logo img {
+	max-width: 100%;
+	max-height: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+
+.logo {
+	height: auto;
+	background: none !important;
+}
+
+.badge {
+	color: white;
+	font-size: 12px;
+	width: 90px;
+	font-weight: 700;
+	text-align: center;
+	display: inline-block;
+	padding: 4px 4px;
+	border-radius: 6px;
+}

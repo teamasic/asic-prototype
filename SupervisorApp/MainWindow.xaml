@@ -6,10 +6,11 @@
         xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
         xmlns:local="clr-namespace:SupervisorApp"
         mc:Ignorable="d"
+        Icon="asic_ico.ico"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="0,1">
-            <wpf:ChromiumWebBrowser x:Name="Browser" Address="https://localhost:44359/"/>
+    <Grid x:Name="grid">
+        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="0,1" x:Name="panel">
+            <!--<wpf:ChromiumWebBrowser x:Name="Browser" Address="https://localhost:44359/"/>-->
         </Border>
     </Grid>
 </Window>
